@@ -1,0 +1,550 @@
+import React from 'react';
+
+const PostulationFinancement = () => {
+  // Search functionality
+  const handleSearch = (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const cards = document.querySelectorAll('.application-card');
+
+    cards.forEach(card => {
+      const text = card.textContent.toLowerCase();
+      if (text.includes(searchTerm)) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  };
+
+  // Status filter
+  const handleStatusFilter = (e) => {
+    const filterValue = e.target.value;
+    const cards = document.querySelectorAll('.application-card');
+
+    cards.forEach(card => {
+      if (filterValue === '' || card.dataset.status === filterValue) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  };
+
+  // Application actions
+  const viewApplication = (id) => {
+    alert(`Affichage des détails de la candidature ${id}`);
+  };
+
+  const viewCV = (id) => {
+    alert(`Ouverture du CV pour la candidature ${id}`);
+  };
+
+  const viewBusinessPlan = (id) => {
+    alert(`Ouverture du business plan pour la candidature ${id}`);
+  };
+
+  const approveApplication = (id) => {
+    if (confirm('Êtes-vous sûr de vouloir approuver cette candidature ?')) {
+      alert(`Candidature ${id} approuvée`);
+    }
+  };
+
+  const rejectApplication = (id) => {
+    if (confirm('Êtes-vous sûr de vouloir refuser cette candidature ?')) {
+      alert(`Candidature ${id} refusée`);
+    }
+  };
+
+  const contactApplicant = (id) => {
+    alert(`Ouverture de l'interface de contact pour la candidature ${id}`);
+  };
+
+  const assignEvaluator = (id) => {
+    alert(`Attribution d'un évaluateur pour la candidature ${id}`);
+  };
+
+  const addNote = (id) => {
+    alert(`Ajout d'une note pour la candidature ${id}`);
+  };
+
+  const viewEvaluationHistory = (id) => {
+    alert(`Affichage de l'historique d'évaluation pour la candidature ${id}`);
+  };
+
+  return (
+    <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
+      <div className="flex flex-col xl:flex-row gap-4 lg:gap-6">
+        {/* Main Content Column */}
+        <div className="xl:w-full">
+          {/* Header Section */}
+          <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm mb-4 sm:mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
+                  <i className="fas fa-users mr-2 text-destiny-gold"></i>
+                  Candidatures - Microcrédit Femmes Entrepreneures
+                </h1>
+                <p className="text-gray-600 mt-1 text-sm sm:text-base">
+                  Gérez et évaluez les candidatures reçues pour ce financement
+                </p>
+              </div>
+              <div className="hidden sm:block">
+                <div className="flex gap-2">
+                  <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200 flex items-center">
+                    <i className="fas fa-download mr-2"></i>
+                    Exporter
+                  </button>
+                  <button className="bg-destiny-gold text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition duration-200 flex items-center">
+                    <i className="fas fa-check-circle mr-2"></i>
+                    Actions groupées
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Funding Summary */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 sm:p-6 shadow-sm mb-4 sm:mb-6 border-l-4 border-blue-500">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">47</div>
+                <div className="text-xs text-gray-600">Total candidatures</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-600">12</div>
+                <div className="text-xs text-gray-600">En cours d'évaluation</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">8</div>
+                <div className="text-xs text-gray-600">Approuvées</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-red-600">15</div>
+                <div className="text-xs text-gray-600">Refusées</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Filters and Search */}
+          <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                  <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Rechercher par nom, email ou entreprise..." 
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-destiny-gold focus:border-destiny-gold"
+                    onChange={handleSearch}
+                  />
+                </div>
+              </div>
+              <div className="sm:w-48">
+                <select 
+                  id="statusFilter" 
+                  className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-destiny-gold focus:border-destiny-gold"
+                  onChange={handleStatusFilter}
+                >
+                  <option value="">Tous les statuts</option>
+                  <option value="pending">En attente</option>
+                  <option value="under_review">En cours d'évaluation</option>
+                  <option value="approved">Approuvée</option>
+                  <option value="rejected">Refusée</option>
+                  <option value="on_hold">En suspens</option>
+                </select>
+              </div>
+              <div className="sm:w-48">
+                <select id="scoreFilter" className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-destiny-gold focus:border-destiny-gold">
+                  <option value="">Toutes les notes</option>
+                  <option value="excellent">Excellent (8-10)</option>
+                  <option value="good">Bon (6-8)</option>
+                  <option value="average">Moyen (4-6)</option>
+                  <option value="poor">Faible (0-4)</option>
+                </select>
+              </div>
+              <div className="sm:w-48">
+                <select id="dateFilter" className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-destiny-gold focus:border-destiny-gold">
+                  <option value="">Toutes les dates</option>
+                  <option value="today">Aujourd'hui</option>
+                  <option value="week">Cette semaine</option>
+                  <option value="month">Ce mois</option>
+                  <option value="older">Plus ancien</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Applications List */}
+          <div className="space-y-4" id="applicationsList">
+            {/* Application Card 1 */}
+            <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border-l-4 border-green-500 application-card" data-status="approved">
+              <div className="flex flex-col lg:flex-row justify-between">
+                <div className="flex-1">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start space-x-4">
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                          <i className="fas fa-user text-pink-600"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Aminata KONE</h3>
+                        <p className="text-sm text-gray-600 mb-2">aminata.kone@email.com • +229 97 45 67 89</p>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">Couture</span>
+                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">2.5M FCFA demandés</span>
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">Cotonou</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end space-y-2">
+                      <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                        <i className="fas fa-check-circle text-xs mr-1"></i>Approuvée
+                      </span>
+                      <div className="flex items-center">
+                        <span className="text-xs text-gray-500 mr-2">Note:</span>
+                        <div className="flex items-center">
+                          <span className="text-sm font-bold text-green-600">8.5</span>
+                          <span className="text-xs text-gray-400 ml-1">/10</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-3">
+                    <p className="text-sm text-gray-700 line-clamp-2">
+                      <strong>Projet:</strong> Création d'un atelier de couture moderne spécialisé dans les vêtements traditionnels béninois avec formation de 5 apprenties...
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-3">
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-gray-900">3 ans</div>
+                      <div className="text-xs text-gray-500">Expérience</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-blue-600">Oui</div>
+                      <div className="text-xs text-gray-500">Business Plan</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-green-600">Forte</div>
+                      <div className="text-xs text-gray-500">Motivation</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-purple-600">5</div>
+                      <div className="text-xs text-gray-500">Employés prévus</div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-gray-500">
+                    Candidature soumise le 15 juin 2025 • Approuvée le 20 juin 2025 • Évaluée par Marie TOGBE
+                  </div>
+                </div>
+                
+                <div className="flex flex-row lg:flex-col gap-2 mt-4 lg:mt-0 lg:ml-4">
+                  <button className="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition duration-200 text-sm" onClick={() => viewApplication(1)}>
+                    <i className="fas fa-eye mr-1"></i>Détails
+                  </button>
+                  <button className="px-3 py-2 text-green-600 hover:bg-green-50 rounded-lg transition duration-200 text-sm" onClick={() => viewCV(1)}>
+                    <i className="fas fa-file-pdf mr-1"></i>CV
+                  </button>
+                  <button className="px-3 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition duration-200 text-sm" onClick={() => viewBusinessPlan(1)}>
+                    <i className="fas fa-chart-line mr-1"></i>Business Plan
+                  </button>
+                  <button className="px-3 py-2 text-orange-600 hover:bg-orange-50 rounded-lg transition duration-200 text-sm" onClick={() => contactApplicant(1)}>
+                    <i className="fas fa-envelope mr-1"></i>Contacter
+                  </button>
+                  <button className="px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition duration-200 text-sm" onClick={() => addNote(1)}>
+                    <i className="fas fa-sticky-note mr-1"></i>Note
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Application Card 2 */}
+            <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border-l-4 border-yellow-500 application-card" data-status="under_review">
+              <div className="flex flex-col lg:flex-row justify-between">
+                <div className="flex-1">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start space-x-4">
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                          <i className="fas fa-user text-blue-600"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Fatou ABDOU</h3>
+                        <p className="text-sm text-gray-600 mb-2">fatou.abdou@email.com • +229 96 78 45 12</p>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs">Restauration</span>
+                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">1.8M FCFA demandés</span>
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">Porto-Novo</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end space-y-2">
+                      <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
+                        <i className="fas fa-clock text-xs mr-1"></i>En évaluation
+                      </span>
+                      <div className="flex items-center">
+                        <span className="text-xs text-gray-500 mr-2">Note:</span>
+                        <div className="flex items-center">
+                          <span className="text-sm font-bold text-yellow-600">7.2</span>
+                          <span className="text-xs text-gray-400 ml-1">/10</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-3">
+                    <p className="text-sm text-gray-700 line-clamp-2">
+                      <strong>Projet:</strong> Ouverture d'un restaurant de spécialités locales avec service de livraison et formation du personnel aux bonnes pratiques d'hygiène...
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-3">
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-gray-900">5 ans</div>
+                      <div className="text-xs text-gray-500">Expérience</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-blue-600">Oui</div>
+                      <div className="text-xs text-gray-500">Business Plan</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-green-600">Moyenne</div>
+                      <div className="text-xs text-gray-500">Motivation</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-purple-600">8</div>
+                      <div className="text-xs text-gray-500">Employés prévus</div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-gray-500">
+                    Candidature soumise le 18 juin 2025 • En cours d'évaluation par Jean DOSSOU
+                  </div>
+                </div>
+                
+                <div className="flex flex-row lg:flex-col gap-2 mt-4 lg:mt-0 lg:ml-4">
+                  <button className="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition duration-200 text-sm" onClick={() => viewApplication(2)}>
+                    <i className="fas fa-eye mr-1"></i>Détails
+                  </button>
+                  <button className="px-3 py-2 text-green-600 hover:bg-green-50 rounded-lg transition duration-200 text-sm" onClick={() => viewCV(2)}>
+                    <i className="fas fa-file-pdf mr-1"></i>CV
+                  </button>
+                  <button className="px-3 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition duration-200 text-sm" onClick={() => viewBusinessPlan(2)}>
+                    <i className="fas fa-chart-line mr-1"></i>Business Plan
+                  </button>
+                  <button className="px-3 py-2 text-green-600 hover:bg-green-50 rounded-lg transition duration-200 text-sm" onClick={() => approveApplication(2)}>
+                    <i className="fas fa-check mr-1"></i>Approuver
+                  </button>
+                  <button className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition duration-200 text-sm" onClick={() => rejectApplication(2)}>
+                    <i className="fas fa-times mr-1"></i>Refuser
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Application Card 3 */}
+            <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border-l-4 border-blue-500 application-card" data-status="pending">
+              <div className="flex flex-col lg:flex-row justify-between">
+                <div className="flex-1">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start space-x-4">
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                          <i className="fas fa-user text-green-600"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Rachelle HOUNGBO</h3>
+                        <p className="text-sm text-gray-600 mb-2">rachelle.houngbo@email.com • +229 95 34 78 90</p>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="px-2 py-1 bg-teal-100 text-teal-800 rounded-full text-xs">Cosmétiques</span>
+                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">3.2M FCFA demandés</span>
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">Parakou</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end space-y-2">
+                      <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                        <i className="fas fa-hourglass text-xs mr-1"></i>En attente
+                      </span>
+                      <div className="flex items-center">
+                        <span className="text-xs text-gray-500 mr-2">Note:</span>
+                        <div className="flex items-center">
+                          <span className="text-sm font-bold text-gray-400">-</span>
+                          <span className="text-xs text-gray-400 ml-1">/10</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-3">
+                    <p className="text-sm text-gray-700 line-clamp-2">
+                      <strong>Projet:</strong> Production de cosmétiques naturels à base de karité et d'huiles essentielles locales pour le marché national et sous-régional...
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-3">
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-gray-900">2 ans</div>
+                      <div className="text-xs text-gray-500">Expérience</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-blue-600">Oui</div>
+                      <div className="text-xs text-gray-500">Business Plan</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-green-600">Forte</div>
+                      <div className="text-xs text-gray-500">Motivation</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-purple-600">12</div>
+                      <div className="text-xs text-gray-500">Employés prévus</div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-gray-500">
+                    Candidature soumise le 22 juin 2025 • En attente d'attribution d'un évaluateur
+                  </div>
+                </div>
+                
+                <div className="flex flex-row lg:flex-col gap-2 mt-4 lg:mt-0 lg:ml-4">
+                  <button className="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition duration-200 text-sm" onClick={() => viewApplication(3)}>
+                    <i className="fas fa-eye mr-1"></i>Détails
+                  </button>
+                  <button className="px-3 py-2 text-green-600 hover:bg-green-50 rounded-lg transition duration-200 text-sm" onClick={() => viewCV(3)}>
+                    <i className="fas fa-file-pdf mr-1"></i>CV
+                  </button>
+                  <button className="px-3 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition duration-200 text-sm" onClick={() => viewBusinessPlan(3)}>
+                    <i className="fas fa-chart-line mr-1"></i>Business Plan
+                  </button>
+                  <button className="px-3 py-2 text-destiny-gold hover:bg-yellow-50 rounded-lg transition duration-200 text-sm" onClick={() => assignEvaluator(3)}>
+                    <i className="fas fa-user-plus mr-1"></i>Assigner
+                  </button>
+                  <button className="px-3 py-2 text-orange-600 hover:bg-orange-50 rounded-lg transition duration-200 text-sm" onClick={() => contactApplicant(3)}>
+                    <i className="fas fa-envelope mr-1"></i>Contacter
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Application Card 4 */}
+            <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border-l-4 border-red-500 application-card" data-status="rejected">
+              <div className="flex flex-col lg:flex-row justify-between">
+                <div className="flex-1">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start space-x-4">
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                          <i className="fas fa-user text-red-600"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Sandra AKPO</h3>
+                        <p className="text-sm text-gray-600 mb-2">sandra.akpo@email.com • +229 94 12 56 78</p>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs">Commerce</span>
+                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">4.5M FCFA demandés</span>
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">Abomey</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end space-y-2">
+                      <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
+                        <i className="fas fa-times-circle text-xs mr-1"></i>Refusée
+                      </span>
+                      <div className="flex items-center">
+                        <span className="text-xs text-gray-500 mr-2">Note:</span>
+                        <div className="flex items-center">
+                          <span className="text-sm font-bold text-red-600">4.1</span>
+                          <span className="text-xs text-gray-400 ml-1">/10</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-3">
+                    <p className="text-sm text-gray-700 line-clamp-2">
+                      <strong>Projet:</strong> Création d'une boutique de vente de produits importés avec focus sur les équipements électroniques...
+                    </p>
+                    <p className="text-sm text-red-600 mt-2">
+                      <strong>Motif de refus:</strong> Business plan incomplet, manque de garanties financières
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-3">
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-gray-900">1 an</div>
+                      <div className="text-xs text-gray-500">Expérience</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-red-600">Incomplet</div>
+                      <div className="text-xs text-gray-500">Business Plan</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-yellow-600">Faible</div>
+                      <div className="text-xs text-gray-500">Motivation</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-purple-600">3</div>
+                      <div className="text-xs text-gray-500">Employés prévus</div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-gray-500">
+                    Candidature soumise le 14 juin 2025 • Refusée le 19 juin 2025 • Évaluée par Paul MARTIN
+                  </div>
+                </div>
+                
+                <div className="flex flex-row lg:flex-col gap-2 mt-4 lg:mt-0 lg:ml-4">
+                  <button className="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition duration-200 text-sm" onClick={() => viewApplication(4)}>
+                    <i className="fas fa-eye mr-1"></i>Détails
+                  </button>
+                  <button className="px-3 py-2 text-green-600 hover:bg-green-50 rounded-lg transition duration-200 text-sm" onClick={() => viewCV(4)}>
+                    <i className="fas fa-file-pdf mr-1"></i>CV
+                  </button>
+                  <button className="px-3 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition duration-200 text-sm" onClick={() => viewBusinessPlan(4)}>
+                    <i className="fas fa-chart-line mr-1"></i>Business Plan
+                  </button>
+                  <button className="px-3 py-2 text-orange-600 hover:bg-orange-50 rounded-lg transition duration-200 text-sm" onClick={() => contactApplicant(4)}>
+                    <i className="fas fa-envelope mr-1"></i>Contacter
+                  </button>
+                  <button className="px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition duration-200 text-sm" onClick={() => viewEvaluationHistory(4)}>
+                    <i className="fas fa-history mr-1"></i>Historique
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Pagination */}
+          <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm mt-6">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-700">Affichage de 1 à 4 sur 47 candidatures
+              </div>
+              <div className="flex items-center space-x-2">
+                <button className="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200" disabled>
+                  <i className="fas fa-chevron-left"></i>
+                </button>
+                <button className="px-3 py-2 bg-destiny-gold text-white rounded-lg">1</button>
+                <button className="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200">2</button>
+                <button className="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200">3</button>
+                <span className="px-2">...</span>
+                <button className="px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200">12</button>
+                <button className="px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition duration-200">
+                  <i className="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+};
+
+export default PostulationFinancement;
