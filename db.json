@@ -1,0 +1,439 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "email": "candidat@example.com",
+      "password": "password123",
+      "role": "candidat",
+      "firstName": "Jeddddddan",
+      "lastName": "Dupddddont",
+      "phone": "+229 90 12 34 56",
+      "avatar": "https://via.placeholder.com/150",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "isActive": true,
+      "profile": {
+        "bio": "Développeur Full Stack passionné",
+        "experience": "3-5 ans",
+        "education": "Master en Informatique",
+        "skills": [
+          "React",
+          "Node.js",
+          "Python",
+          "MongoDB"
+        ],
+        "location": "Cotonou, Bénin",
+        "salary": "800K - 1.2M FCFA"
+      }
+    },
+    {
+      "id": "2",
+      "email": "prestataire@example.com",
+      "password": "password123",
+      "role": "prestataire",
+      "firstName": "Marxxxie",
+      "lastName": "Martxxxxin",
+      "phone": "+229 91 23 45 67",
+      "avatar": "https://via.placeholder.com/150",
+      "createdAt": "2024-01-10T14:30:00Z",
+      "isActive": true,
+      "profile": {
+        "bio": "Consultante en marketing digital",
+        "services": [
+          "Marketing Digital",
+          "SEO",
+          "Réseaux sociaux"
+        ],
+        "experience": "5-7 ans",
+        "hourlyRate": "25K FCFA",
+        "location": "Lomé, Togo",
+        "portfolio": [
+          "Projet A",
+          "Projet B",
+          "Projet C"
+        ]
+      }
+    },
+    {
+      "id": "3",
+      "email": "recrutssseur@example.com",
+      "password": "passsssword123",
+      "role": "recruteur",
+      "firstName": "Pierre",
+      "lastName": "Bernard",
+      "phone": "+229 92 34 56 78",
+      "avatar": "https://via.placeholder.com/150",
+      "createdAt": "2024-01-05T09:15:00Z",
+      "isActive": true,
+      "profile": {
+        "company": "TechCorp Solutions",
+        "position": "Directeur RH",
+        "bio": "Recruteur expérimenté dans le secteur tech",
+        "location": "Cotonou, Bénin",
+        "industry": "Technologie"
+      }
+    },
+    {
+      "id": 1754222435530,
+      "firstName": "Billa4545",
+      "lastName": "ASSOUMA",
+      "email": "az9245054@gmail.com",
+      "password": "99SyDsBbjUV8KKH",
+      "role": "recruteur",
+      "phone": "",
+      "avatar": "https://via.placeholder.com/150",
+      "createdAt": "2025-08-03T12:00:35.530Z",
+      "isActive": true,
+      "profile": {
+        "bio": "",
+        "experience": "",
+        "education": "",
+        "skills": [],
+        "location": "",
+        "salary": ""
+      }
+    }
+  ],
+  "offers": [
+    {
+      "id": "1",
+      "title": "Développeur Full Stack",
+      "company": "TechCorp Solutions",
+      "location": "Cotonou, Bénin",
+      "type": "Temps plein",
+      "salary": "800K - 1.2M FCFA",
+      "experience": "3-5 ans",
+      "education": "Master",
+      "description": "Nous recherchons un développeur Full Stack expérimenté...",
+      "requirements": [
+        "React",
+        "Node.js",
+        "MongoDB",
+        "Git"
+      ],
+      "benefits": [
+        "Assurance santé",
+        "Formation continue",
+        "Télétravail"
+      ],
+      "createdAt": "2024-01-15T10:00:00Z",
+      "isActive": true,
+      "applications": 12,
+      "recruiterId": 3
+    },
+    {
+      "id": "2",
+      "title": "Designer UI/UX",
+      "company": "InnovateHub",
+      "location": "Lomé, Togo",
+      "type": "Temps plein",
+      "salary": "600K - 900K FCFA",
+      "experience": "2-4 ans",
+      "education": "Licence",
+      "description": "Nous cherchons un designer créatif...",
+      "requirements": [
+        "Figma",
+        "Adobe Creative Suite",
+        "Prototyping"
+      ],
+      "benefits": [
+        "Assurance santé",
+        "Équipement fourni"
+      ],
+      "createdAt": "2024-01-12T14:30:00Z",
+      "isActive": true,
+      "applications": 8,
+      "recruiterId": 3
+    },
+    {
+      "id": "1754134619278",
+      "title": "opipoi",
+      "company": "ipoipo",
+      "location": "ipoipip",
+      "type": "Temps plein",
+      "salary": "400000",
+      "experience": "1-2 ans",
+      "education": "Bac",
+      "description": "ythg",
+      "requirements": [
+        "gjjjjjjjjjjjjjh"
+      ],
+      "benefits": [
+        "hg"
+      ],
+      "isActive": true,
+      "recruiterId": "3",
+      "applications": 0,
+      "createdAt": "2025-08-02T11:36:59.278Z"
+    },
+    {
+      "id": "1754147218964",
+      "title": "ihkhkjhkjh",
+      "company": "hjkhkjh",
+      "location": "hkjhkjh",
+      "type": "CDD",
+      "salary": "4654",
+      "experience": "3-5 ans",
+      "education": "Bac",
+      "description": "jhgjhg",
+      "requirements": [
+        "jhhkjhkjh"
+      ],
+      "benefits": [
+        "hkjhkj"
+      ],
+      "isActive": true,
+      "recruiterId": "3",
+      "applications": 0,
+      "createdAt": "2025-08-02T15:06:58.964Z"
+    },
+    {
+      "id": 1754222472351,
+      "title": "hojlkjlkj",
+      "company": "jkljlkj",
+      "location": "jlkjlkj",
+      "type": "Temps plein",
+      "salary": "4889798",
+      "experience": "Débutant",
+      "education": "Licence",
+      "description": "4654654",
+      "requirements": [
+        "465465"
+      ],
+      "benefits": [
+        "4656465"
+      ],
+      "isActive": true,
+      "recruiterId": 1754222435530,
+      "applications": 0,
+      "createdAt": "2025-08-03T12:01:12.351Z"
+    }
+  ],
+  "scholarships": [
+    {
+      "id": "1",
+      "title": "Bourse d'études Master en Informatique",
+      "institution": "Université de Cotonou",
+      "amount": "2M FCFA",
+      "duration": "2 ans",
+      "deadline": "2024-03-15",
+      "description": "Bourse complète pour étudier l'informatique...",
+      "requirements": [
+        "Licence en informatique",
+        "Moyenne > 14/20"
+      ],
+      "createdAt": "2024-01-10T09:00:00Z",
+      "isActive": true,
+      "applications": 25
+    }
+  ],
+  "consultations": [
+    {
+      "id": "1",
+      "title": "Développement d'application mobile",
+      "client": "StartupTech",
+      "budget": "500K - 800K FCFA",
+      "duration": "3 mois",
+      "description": "Création d'une application mobile pour startup...",
+      "requirements": [
+        "React Native",
+        "Firebase",
+        "API REST"
+      ],
+      "createdAt": "2024-01-14T11:00:00Z",
+      "isActive": true,
+      "applications": 5
+    },
+    {
+      "id": "ac6a",
+      "title": "Consultation Test",
+      "client": "TestClient",
+      "budget": "300K FCFA",
+      "duration": "2 mois",
+      "description": "Description de test",
+      "requirements": [
+        "React",
+        "Node.js"
+      ],
+      "createdAt": "2024-01-15T10:00:00Z",
+      "isActive": true,
+      "applications": 0
+    }
+  ],
+  "applications": [
+    {
+      "id": "2",
+      "userId": 2,
+      "consultationId": 1,
+      "status": "en_attente",
+      "appliedAt": "2024-01-15T14:30:00Z",
+      "proposal": "Je propose de développer l'application...",
+      "portfolio": "portfolio_marie_martin.pdf"
+    },
+    {
+      "id": "1754205648532",
+      "userId": "1",
+      "offerId": 1,
+      "coverLetter": "jifdljrekljlfkjfdlkfrrrr",
+      "appliedAt": "2025-08-03T07:20:48.532Z",
+      "status": "en_attente",
+      "updatedAt": "2025-08-03T09:27:24.193Z"
+    },
+    {
+      "id": "1754205700198",
+      "userId": "1",
+      "offerId": 1754134619278,
+      "coverLetter": "ijjjjjjkjljljlkjljlkjlkjl",
+      "appliedAt": "2025-08-03T07:21:40.198Z",
+      "status": "en_attente"
+    },
+    {
+      "id": "1754206000000",
+      "consultationId": 1,
+      "userId": 1,
+      "proposal": "Test de candidature consultation",
+      "proposedBudget": "5000",
+      "timeline": "2 mois",
+      "methodology": "Agile",
+      "experience": "5 ans",
+      "additionalInfo": "D�tails suppl�mentaires",
+      "status": "en_attente",
+      "appliedAt": "2025-01-03T10:00:00Z"
+    },
+    {
+      "id": 1754214879012,
+      "userId": "2",
+      "consultationId": 1,
+      "proposal": "gfvc",
+      "portfolio": "gf",
+      "experience": "gfg",
+      "appliedAt": "2025-08-03T09:54:39.012Z",
+      "status": "en_attente"
+    },
+    {
+      "id": 1754216667325,
+      "userId": "2",
+      "consultationId": 1,
+      "proposal": "hg",
+      "portfolio": "gf",
+      "experience": "g",
+      "appliedAt": "2025-08-03T10:24:27.325Z",
+      "status": "en_attente"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "1",
+      "userId": 1,
+      "type": "application_status",
+      "title": "Candidature mise à jour",
+      "message": "Votre candidature pour 'Développeur Full Stack' a été examinée",
+      "isRead": false,
+      "createdAt": "2024-01-16T15:00:00Z"
+    }
+  ],
+  "financements": [
+    {
+      "id": "1",
+      "title": "Prêt pour entrepreneurs",
+      "type": "Prêt bancaire",
+      "sector": "Technologie",
+      "minAmount": "5000000",
+      "maxAmount": "50000000",
+      "interestRate": "8.5",
+      "repaymentPeriod": "60",
+      "targetAudience": "Entrepreneurs",
+      "minAge": "25",
+      "geographicZone": "Cotonou, Bénin",
+      "description": "Prêt spécialement conçu pour les entrepreneurs du secteur technologique. Taux d'intérêt compétitif et conditions flexibles.",
+      "eligibilityRequirements": "Business plan solide, garanties, expérience minimum 2 ans",
+      "applicationProcess": "Soumission du business plan, entretien, analyse financière",
+      "applicationDeadline": "2024-12-31",
+      "maxApplications": 50,
+      "contactInfo": "contact@banque-entrepreneur.bj",
+      "noCollateral": false,
+      "gracePeriod": true,
+      "businessPlanRequired": true,
+      "financialStatementsRequired": true,
+      "urgentFunding": false,
+      "isActive": true,
+      "recruiterId": 3,
+      "applications": 8,
+      "createdAt": "2024-01-10T09:00:00Z"
+    },
+    {
+      "id": "2",
+      "title": "Financement startup innovante",
+      "type": "Capital-risque",
+      "sector": "Innovation",
+      "minAmount": "10000000",
+      "maxAmount": "100000000",
+      "interestRate": "12.0",
+      "repaymentPeriod": "84",
+      "targetAudience": "Startups",
+      "minAge": "21",
+      "geographicZone": "Afrique de l'Ouest",
+      "description": "Financement pour startups innovantes avec un potentiel de croissance élevé. Accompagnement et mentorat inclus.",
+      "eligibilityRequirements": "Innovation technologique, équipe solide, marché potentiel",
+      "applicationProcess": "Pitch deck, démonstration produit, entretien équipe",
+      "applicationDeadline": "2024-06-30",
+      "maxApplications": 30,
+      "contactInfo": "invest@venture-capital.africa",
+      "noCollateral": true,
+      "gracePeriod": true,
+      "businessPlanRequired": true,
+      "financialStatementsRequired": false,
+      "urgentFunding": true,
+      "isActive": true,
+      "recruiterId": 3,
+      "applications": 15,
+      "createdAt": "2024-01-12T14:30:00Z"
+    },
+    {
+      "id": "3",
+      "title": "Microcrédit agricole",
+      "type": "Microcrédit",
+      "sector": "Agriculture",
+      "minAmount": "500000",
+      "maxAmount": "5000000",
+      "interestRate": "6.0",
+      "repaymentPeriod": "36",
+      "targetAudience": "Agriculteurs",
+      "minAge": "18",
+      "geographicZone": "Rural, Bénin",
+      "description": "Microcrédit spécialement conçu pour les agriculteurs. Taux préférentiel et accompagnement technique.",
+      "eligibilityRequirements": "Terrain agricole, projet viable, engagement",
+      "applicationProcess": "Visite terrain, évaluation projet, formation",
+      "applicationDeadline": "2024-08-31",
+      "maxApplications": 100,
+      "contactInfo": "agriculture@microcredit.bj",
+      "noCollateral": false,
+      "gracePeriod": true,
+      "businessPlanRequired": false,
+      "financialStatementsRequired": false,
+      "urgentFunding": false,
+      "isActive": true,
+      "recruiterId": 3,
+      "applications": 45,
+      "createdAt": "2024-01-08T11:00:00Z"
+    }
+  ],
+  "blog": [
+    {
+      "id": "1",
+      "title": "Les meilleures pratiques de recrutement en 2024",
+      "author": "TechCorp Solutions",
+      "category": "Recrutement",
+      "content": "Découvrez comment optimiser votre processus de recrutement...",
+      "excerpt": "Découvrez comment optimiser votre processus de recrutement et attirer les meilleurs talents dans un marché compétitif...",
+      "image": "https://via.placeholder.com/800x400",
+      "tags": [
+        "recrutement",
+        "talent",
+        "2024"
+      ],
+      "likes": 124,
+      "publishedAt": "2024-01-15T10:00:00Z",
+      "isPublished": true
+    }
+  ]
+}
