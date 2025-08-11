@@ -1,0 +1,317 @@
+# BACKEND DJANGO API - DESTINYJOBS
+
+## 1. AUTHENTIFICATION ET GESTION DES COMPTES
+
+### 1.1 Modèles d'utilisateurs
+- **User** (compte de base)
+  - email, password, nom, prénom, téléphone
+  - type_compte (candidat, recruteur, prestataire, admin)
+  - statut_verification (en_attente, verifie, refuse)
+  - date_creation, date_modification
+  - is_active, is_staff, is_superuser
+
+- **Candidat** (extends User)
+  - cv, lettre_motivation, competences
+  - experience, formation, localisation
+  - disponibilite, salaire_souhaite
+  - score_compatibilite
+
+- **Recruteur** (extends User)
+  - entreprise, secteur_activite
+  - taille_entreprise, site_web
+  - statut_verification_admin (en_attente, verifie, refuse)
+  - documents_verification (Kbis, etc.)
+  - quota_publications_mensuel
+
+- **Prestataire** (extends User)
+  - specialite, services_offerts
+  - tarifs, disponibilite
+  - portfolio, references
+  - statut_verification_admin
+
+- **Admin** (extends User)
+  - permissions_speciales
+  - acces_panel_admin
+
+### 1.2 API Authentification
+- POST /api/auth/register/ (inscription)
+- POST /api/auth/login/ (connexion)
+- POST /api/auth/logout/ (déconnexion)
+- POST /api/auth/refresh/ (renouvellement token)
+- POST /api/auth/reset-password/ (réinitialisation mot de passe)
+- GET /api/auth/profile/ (profil utilisateur)
+- PUT /api/auth/profile/ (modification profil)
+
+## 2. GESTION ADMIN - VALIDATION
+
+### 2.1 Validation des comptes recruteurs
+- GET /api/admin/recruteurs-en-attente/ (liste recruteurs à valider)
+- PUT /api/admin/recruteurs/{id}/valider/ (valider un recruteur)
+- PUT /api/admin/recruteurs/{id}/refuser/ (refuser un recruteur)
+- GET /api/admin/recruteurs/statistiques/ (stats validation)
+
+### 2.2 Validation des publications
+- GET /api/admin/publications-en-attente/ (liste publications à valider)
+- PUT /api/admin/publications/{id}/valider/ (valider une publication)
+- PUT /api/admin/publications/{id}/refuser/ (refuser une publication)
+- GET /api/admin/publications/statistiques/ (stats publications)
+
+### 2.3 Panel admin général
+- GET /api/admin/dashboard/ (tableau de bord admin)
+- GET /api/admin/utilisateurs/ (gestion utilisateurs)
+- GET /api/admin/statistiques/ (statistiques générales)
+- GET /api/admin/logs/ (logs système)
+
+## 3. GESTION DES OFFRES D'EMPLOI
+
+### 3.1 Modèle Offre
+- titre, description, entreprise
+- type_contrat, salaire, localisation
+- competences_requises, experience_requise
+- statut_validation (en_attente, validee, refuse)
+- recruteur (ForeignKey)
+- date_creation, date_publication
+- nombre_candidatures, statut (active, fermee)
+
+### 3.2 API Offres
+- GET /api/offres/ (liste offres publiques)
+- GET /api/offres/{id}/ (détail offre)
+- POST /api/recruteur/offres/ (créer offre - recruteur)
+- PUT /api/recruteur/offres/{id}/ (modifier offre)
+- DELETE /api/recruteur/offres/{id}/ (supprimer offre)
+- GET /api/recruteur/offres/ (mes offres - recruteur)
+- POST /api/offres/{id}/postuler/ (postuler - candidat)
+- GET /api/offres/recherche/ (recherche offres)
+
+## 4. GESTION DES CANDIDATURES
+
+### 4.1 Modèle Candidature
+- candidat, offre (ForeignKey)
+- statut (nouvelle, en_cours, acceptee, refusee)
+- date_candidature, date_modification
+- lettre_motivation, cv
+- score_compatibilite
+- notes_recruteur
+
+### 4.2 API Candidatures
+- GET /api/recruteur/candidatures/ (candidatures reçues)
+- GET /api/recruteur/candidatures/{id}/ (détail candidature)
+- PUT /api/recruteur/candidatures/{id}/statut/ (changer statut)
+- GET /api/candidat/candidatures/ (mes candidatures)
+- POST /api/candidat/candidatures/ (créer candidature)
+- DELETE /api/candidat/candidatures/{id}/ (retirer candidature)
+
+## 5. GESTION DES FINANCEMENTS
+
+### 5.1 Modèle Financement
+- titre, description, montant
+- type_financement, secteur
+- conditions, documents_requis
+- statut_validation (en_attente, validee, refuse)
+- recruteur (ForeignKey)
+- date_creation, date_publication
+
+### 5.2 API Financements
+- GET /api/financements/ (liste financements publics)
+- GET /api/financements/{id}/ (détail financement)
+- POST /api/recruteur/financements/ (créer financement)
+- PUT /api/recruteur/financements/{id}/ (modifier)
+- DELETE /api/recruteur/financements/{id}/ (supprimer)
+- POST /api/financements/{id}/postuler/ (postuler)
+- GET /api/recruteur/financements/postulations/ (postulations reçues)
+
+## 6. GESTION DES BOURSES
+
+### 6.1 Modèle Bourse
+- titre, description, montant
+- type_bourse, domaine_etude
+- conditions, documents_requis
+- statut_validation (en_attente, validee, refuse)
+- recruteur (ForeignKey)
+- date_creation, date_publication
+
+### 6.2 API Bourses
+- GET /api/bourses/ (liste bourses publiques)
+- GET /api/bourses/{id}/ (détail bourse)
+- POST /api/recruteur/bourses/ (créer bourse)
+- PUT /api/recruteur/bourses/{id}/ (modifier)
+- DELETE /api/recruteur/bourses/{id}/ (supprimer)
+- POST /api/bourses/{id}/postuler/ (postuler)
+- GET /api/recruteur/bourses/postulations/ (postulations reçues)
+
+## 7. GESTION DES CONSULTATIONS
+
+### 7.1 Modèle Consultation
+- titre, description, type_consultation
+- budget, duree, competences_requises
+- statut_validation (en_attente, validee, refuse)
+- recruteur (ForeignKey)
+- date_creation, date_publication
+
+### 7.2 API Consultations
+- GET /api/consultations/ (liste consultations publiques)
+- GET /api/consultations/{id}/ (détail consultation)
+- POST /api/recruteur/consultations/ (créer consultation)
+- PUT /api/recruteur/consultations/{id}/ (modifier)
+- DELETE /api/recruteur/consultations/{id}/ (supprimer)
+- POST /api/consultations/{id}/postuler/ (postuler)
+- GET /api/recruteur/consultations/postulations/ (postulations reçues)
+
+## 8. MESSAGERIE ET NOTIFICATIONS
+
+### 8.1 Modèle Message
+- expediteur, destinataire (ForeignKey)
+- sujet, contenu, type_message
+- date_envoi, lu
+- offre_liee (ForeignKey, optional)
+
+### 8.2 API Messagerie
+- GET /api/messages/ (messages reçus)
+- POST /api/messages/ (envoyer message)
+- PUT /api/messages/{id}/lu/ (marquer comme lu)
+- DELETE /api/messages/{id}/ (supprimer message)
+- POST /api/recruteur/messages/envoi-masse/ (envoi masse candidats)
+
+### 8.3 Notifications
+- GET /api/notifications/ (notifications utilisateur)
+- PUT /api/notifications/{id}/lu/ (marquer comme lue)
+- POST /api/notifications/ (créer notification)
+
+## 9. RECHERCHE ET FILTRES
+
+### 9.1 API Recherche
+- GET /api/recherche/offres/ (recherche offres)
+- GET /api/recherche/financements/ (recherche financements)
+- GET /api/recherche/bourses/ (recherche bourses)
+- GET /api/recherche/consultations/ (recherche consultations)
+- GET /api/recherche/candidats/ (recherche candidats - recruteur)
+
+### 9.2 Filtres disponibles
+- localisation, secteur, type_contrat
+- salaire_min, salaire_max
+- experience_requise, competences
+- date_creation, statut
+- entreprise, type_publication
+
+## 10. STATISTIQUES ET ANALYTICS
+
+### 10.1 API Statistiques
+- GET /api/recruteur/statistiques/ (stats recruteur)
+- GET /api/candidat/statistiques/ (stats candidat)
+- GET /api/admin/statistiques-globales/ (stats admin)
+- GET /api/analytics/offres/ (analytics offres)
+- GET /api/analytics/candidatures/ (analytics candidatures)
+
+## 11. GESTION DES FICHIERS
+
+### 11.1 Upload fichiers
+- POST /api/upload/cv/ (upload CV)
+- POST /api/upload/lettre/ (upload lettre motivation)
+- POST /api/upload/document/ (upload documents)
+- DELETE /api/upload/{id}/ (supprimer fichier)
+
+## 12. SÉCURITÉ ET PERMISSIONS
+
+### 12.1 Permissions par type de compte
+- **Candidat** : voir offres, postuler, gérer profil
+- **Recruteur** : créer/modifier offres, voir candidatures, envoyer messages
+- **Prestataire** : voir consultations, postuler, gérer profil
+- **Admin** : validation, gestion utilisateurs, statistiques
+
+### 12.2 Sécurité
+- JWT Authentication
+- Rate limiting
+- CORS configuration
+- Validation des données
+- Sanitization des inputs
+
+## 13. CONFIGURATION DJANGO
+
+### 13.1 Settings
+- DEBUG, SECRET_KEY
+- DATABASES (PostgreSQL recommandé)
+- STATIC_URL, MEDIA_URL
+- CORS_ALLOWED_ORIGINS
+- REST_FRAMEWORK configuration
+- JWT settings
+
+### 13.2 Dépendances principales
+- Django 4.x
+- Django REST Framework
+- Django CORS Headers
+- djangorestframework-simplejwt
+- Pillow (images)
+- psycopg2-binary (PostgreSQL)
+- python-decouple (variables d'environnement)
+
+## 14. WORKFLOW VALIDATION
+
+### 14.1 Workflow Recruteur
+1. Inscription recruteur
+2. Upload documents (Kbis, etc.)
+3. Validation admin (statut_verification_admin)
+4. Si validé → peut publier des offres
+5. Chaque publication → validation admin
+6. Si publication validée → visible au public
+
+### 14.2 Workflow Publication
+1. Recruteur crée publication
+2. Statut : en_attente
+3. Admin reçoit notification
+4. Admin valide/refuse
+5. Si validé → statut : validee → visible au public
+6. Si refusé → statut : refuse → notification au recruteur
+
+## 15. NOTIFICATIONS AUTOMATIQUES
+
+### 15.1 Types de notifications
+- Nouvelle candidature reçue
+- Statut candidature modifié
+- Publication validée/refusée
+- Compte validé/refusé
+- Message reçu
+- Rappel entretien
+
+### 15.2 Canaux de notification
+- Email (obligatoire)
+- Push notifications (optionnel)
+- SMS (optionnel)
+- In-app notifications
+
+## 16. MONITORING ET LOGS
+
+### 16.1 Logs système
+- Connexions utilisateurs
+- Actions admin
+- Erreurs système
+- Performance API
+
+### 16.2 Monitoring
+- Temps de réponse API
+- Utilisation base de données
+- Erreurs 4xx/5xx
+- Trafic utilisateurs
+
+## 17. DÉPLOIEMENT
+
+### 17.1 Production
+- Gunicorn (serveur WSGI)
+- Nginx (reverse proxy)
+- PostgreSQL (base de données)
+- Redis (cache/sessions)
+- Celery (tâches asynchrones)
+
+### 17.2 Environnements
+- Development
+- Staging
+- Production
+
+## 18. DOCUMENTATION API
+
+### 18.1 Documentation
+- Swagger/OpenAPI
+- Postman collections
+- Guide d'intégration
+- Exemples d'utilisation
+
+Cette structure backend couvre toutes les fonctionnalités de votre application DestinyJobs avec la validation admin et la gestion des différents types de comptes.
