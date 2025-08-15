@@ -1,87 +1,105 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import ShareModal from '../../components/ShareModal';
+import jobService from '../../services/jobService';
+import { useAuth } from '../../contexts/AuthContext';
 
 const DetailOffre = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, isAuthenticated } = useAuth();
   const [showShareModal, setShowShareModal] = useState(false);
+  const [offre, setOffre] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Données simulées de l'offre
-  const offre = {
-    id: id || 1,
-    title: "Développeur Full Stack React/Node.js",
-    company: "TechCorp Solutions",
-    location: "Cotonou, Bénin",
-    type: "CDI",
-    salary: "800,000 - 1,200,000 FCFA",
-    experience: "3-5 ans",
-    education: "Bac+4/5",
-    postedDate: "15 Janvier 2024",
-    deadline: "15 Février 2024",
-    description: `
-      <p>Nous recherchons un développeur Full Stack passionné pour rejoindre notre équipe dynamique. Vous travaillerez sur des projets innovants et participerez au développement de solutions web modernes.</p>
-      
-      <h3>Missions principales :</h3>
-      <ul>
-        <li>Développer des applications web avec React.js et Node.js</li>
-        <li>Concevoir et implémenter des APIs RESTful</li>
-        <li>Optimiser les performances des applications</li>
-        <li>Collaborer avec l'équipe design et produit</li>
-        <li>Participer aux revues de code et à la documentation</li>
-      </ul>
-      
-      <h3>Profil recherché :</h3>
-      <ul>
-        <li>3-5 ans d'expérience en développement web</li>
-        <li>Maîtrise de React.js, Node.js, et JavaScript/TypeScript</li>
-        <li>Connaissance des bases de données (MongoDB, PostgreSQL)</li>
-        <li>Expérience avec les outils de versioning (Git)</li>
-        <li>Capacité à travailler en équipe et à communiquer efficacement</li>
-      </ul>
-      
-      <h3>Avantages :</h3>
-      <ul>
-        <li>Environnement de travail flexible (remote possible)</li>
-        <li>Formation continue et développement des compétences</li>
-        <li>Mutuelle santé et prévoyance</li>
-        <li>Équipement de travail fourni</li>
-        <li>Événements d'entreprise et team building</li>
-      </ul>
-    `,
-    requirements: [
-      "Maîtrise de React.js et Node.js",
-      "Connaissance des bases de données",
-      "Expérience avec Git et les méthodologies agiles",
-      "Capacité d'apprentissage et d'adaptation",
-      "Excellentes compétences en communication"
-    ],
-    benefits: [
-      "Salaire attractif avec bonus de performance",
-      "Télétravail possible",
-      "Formation continue",
-      "Mutuelle santé",
-      "Équipement fourni"
-    ],
-    companyInfo: {
-      name: "TechCorp Solutions",
-      description: "Entreprise leader dans le développement de solutions digitales innovantes au Bénin. Nous créons des applications web et mobiles qui transforment les entreprises.",
-      logo: "https://via.placeholder.com/100x100",
-      website: "https://techcorp.bj",
-      employees: "50-100 employés",
-      founded: "2018",
-      industry: "Technologie"
-    },
-    contact: {
-      email: "recrutement@techcorp.bj",
-      phone: "+229 21 30 45 67",
-      address: "Zone 4, Cotonou, Bénin"
+  // Vérifier si l'utilisateur connecté est le recruteur de cette offre
+  const isRecruiterOfThisOffer = isAuthenticated && user && offre?.recruiter?.user?.id === user.id;
+
+  // Vérifier si l'offre est accessible publiquement (seulement si offre existe)
+  const isPubliclyAccessible = offre ? (offre.status === 'APPROVED' || offre.status === 'PUBLISHED') : false;
+
+  // Vérifier si l'offre est en attente d'approbation (seulement si offre existe)
+  const isPendingApproval = offre ? offre.status === 'PENDING_APPROVAL' : false;
+
+  // Vérifier si l'offre est un brouillon (seulement si offre existe)
+  const isDraft = offre ? offre.status === 'DRAFT' : false;
+
+  // Vérifier si l'offre est rejetée (seulement si offre existe)
+  const isRejected = offre ? offre.status === 'REJECTED' : false;
+
+  // Logs de débogage pour l'authentification
+  useEffect(() => {
+    console.log('🔐 État d\'authentification:', {
+      isAuthenticated,
+      user: user ? { id: user.id, username: user.username } : null,
+      offreId: offre?.id,
+      recruiterUserId: offre?.recruiter?.user?.id,
+      recruiterId: offre?.recruiter?.id
+    });
+  }, [isAuthenticated, user, offre]);
+
+  // Charger les détails de l'offre depuis l'API
+  useEffect(() => {
+    const loadOffre = async () => {
+      try {
+        console.log('🔄 Début du chargement de l\'offre:', id);
+        setLoading(true);
+        setError(null);
+        
+        // Utiliser l'endpoint public pour récupérer les détails de l'offre
+        const response = await jobService.getPublicJobOfferDetail(id);
+        console.log('✅ Données reçues de l\'API:', response);
+        setOffre(response);
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement de l\'offre:', error);
+        console.error('📊 Détails de l\'erreur:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          message: error.message
+        });
+        
+        // Gérer spécifiquement l'erreur 403 (Forbidden) - Accès refusé
+        if (error.response && error.response.status === 403) {
+          console.log('🚫 Accès interdit (403) - Redirection vers 404');
+          // Rediriger vers la page 404 en cas d'accès interdit
+          // L'offre existe mais l'utilisateur n'a pas les permissions
+          navigate('/404', { replace: true });
+          return;
+        }
+        
+        // Gérer le cas spécifique de l'API qui retourne un message d'erreur dans le corps
+        if (error.response?.data?.error === "Cette offre n'est pas disponible") {
+          console.log('🚫 Offre non disponible - Redirection vers 404');
+          // C'est un cas d'accès interdit, rediriger vers 404
+          navigate('/404', { replace: true });
+          return;
+        }
+        
+        // Gérer l'erreur 404 (Not Found) - Offre inexistante
+        if (error.response && error.response.status === 404) {
+          console.log('🔍 Offre non trouvée (404) - Redirection vers 404');
+          // Rediriger vers la page 404 en cas d'offre inexistante
+          navigate('/404', { replace: true });
+          return;
+        }
+        
+        // Gérer les autres erreurs
+        setError(error.message || 'Erreur lors du chargement de l\'offre');
+      } finally {
+        setLoading(false);
+        console.log('🏁 Chargement terminé');
+      }
+    };
+
+    if (id) {
+      loadOffre();
     }
-  };
+  }, [id, navigate]);
 
   const handleApply = () => {
-    if (!isLoggedIn) {
+    if (!isAuthenticated) {
       setShowShareModal(true);
       return;
     }
@@ -90,7 +108,7 @@ const DetailOffre = () => {
   };
 
   const handleSave = () => {
-    if (!isLoggedIn) {
+    if (!isAuthenticated) {
       alert('Vous devez être connecté pour sauvegarder une offre.');
       return;
     }
@@ -101,75 +119,197 @@ const DetailOffre = () => {
     setShowShareModal(true);
   };
 
+  // Fonction pour formater le salaire
+  const formatSalary = (salaryType, salaryMin, salaryMax) => {
+    if (!salaryType || salaryType === 'NON_PRECISE') return 'À négocier';
+    if (salaryType === 'FIXE') return `${salaryMin ? salaryMin.toLocaleString() : '0'} FCFA`;
+    if (salaryType === 'FOURCHETTE') {
+      if (salaryMin && salaryMax) {
+        return `${salaryMin.toLocaleString()} - ${salaryMax.toLocaleString()} FCFA`;
+      }
+      return salaryMin ? `${salaryMin.toLocaleString()}+ FCFA` : 'À négocier';
+    }
+    return 'À négocier';
+  };
+
+  // Fonction pour formater l'expérience
+  const formatExperience = (experience) => {
+    switch (experience) {
+      case 'JUNIOR': return '0-2 ans';
+      case 'INTERMEDIATE': return '3-5 ans';
+      case 'SENIOR': return '6-10 ans';
+      case 'EXPERT': return '10+ ans';
+      default: return experience || 'Non précisé';
+    }
+  };
+
+  // Fonction pour formater le mode de travail
+  const formatWorkMode = (workMode) => {
+    switch (workMode) {
+      case 'PRESENTIEL': return 'Présentiel';
+      case 'REMOTE': return 'Télétravail';
+      case 'HYBRIDE': return 'Hybride';
+      default: return workMode || 'Non précisé';
+    }
+  };
+
+  // Fonction pour formater le type de contrat
+  const formatContractType = (contractType) => {
+    switch (contractType) {
+      case 'CDI': return 'CDI';
+      case 'CDD': return 'CDD';
+      case 'STAGE': return 'Stage';
+      case 'FREELANCE': return 'Freelance';
+      case 'TEMPS_PARTIEL': return 'Temps partiel';
+      default: return contractType || 'Non précisé';
+    }
+  };
+
+  // Fonction pour formater la taille de l'entreprise
+  const formatCompanySize = (size) => {
+    switch (size) {
+      case 'STARTUP': return 'Startup (1-10 employés)';
+      case 'SME': return 'PME (11-250 employés)';
+      case 'LARGE': return 'Grande entreprise (250+ employés)';
+      case 'MULTINATIONAL': return 'Multinationale';
+      default: return size || 'Non précisé';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement de l'offre...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
   return (
-    <div className="space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex mb-4" aria-label="Breadcrumb">
-        <ol className="inline-flex items-center space-x-1 md:space-x-3">
-          <li className="inline-flex items-center">
-            <Link to="/" className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-fuchsia-600">
-              <i className="fas fa-home mr-2"></i>
-              Accueil
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+          <i className="fas fa-exclamation-triangle text-red-500 text-3xl mb-4"></i>
+          <h3 className="text-lg font-medium text-red-800 mb-2">Erreur de chargement</h3>
+          <p className="text-red-600 mb-4">{error}</p>
+          <Link 
+            to="/jobs"
+            className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-200"
+          >
+            Retour aux offres
             </Link>
-          </li>
-          <li>
-            <div className="flex items-center">
-              <i className="fas fa-chevron-right text-gray-400 mx-2"></i>
-              <Link to="/jobs" className="text-sm font-medium text-gray-700 hover:text-fuchsia-600">
-                Offres d'emploi
+        </div>
+      </div>
+    );
+  }
+
+  // Vérification supplémentaire pour éviter le rendu prématuré
+  if (!offre || !offre.id) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement des données de l'offre...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!offre) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Offre non trouvée</h3>
+          <p className="text-gray-600 mb-4">L'offre que vous recherchez n'existe pas ou n'est plus disponible.</p>
+          <Link 
+            to="/jobs"
+            className="bg-fuchsia-600 text-white px-4 py-2 rounded-md hover:bg-fuchsia-700 transition duration-200"
+          >
+            Retour aux offres
               </Link>
             </div>
-          </li>
-          <li>
-            <div className="flex items-center">
-              <i className="fas fa-chevron-right text-gray-400 mx-2"></i>
-              <span className="text-sm font-medium text-gray-500">Détail de l'offre</span>
             </div>
-          </li>
-        </ol>
-      </nav>
+    );
+  }
 
+  return (
+    <div className="min-h-screen bg-gray-50">
       {/* Header de l'offre */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
+      <div className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col lg:flex-row justify-between">
           <div className="flex-1">
-            <div className="flex items-start space-x-4">
-              <img src={offre.companyInfo.logo} alt={offre.company} className="w-16 h-16 rounded-lg object-cover" />
-              <div className="flex-1">
-                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">{offre.title}</h1>
-                <div className="flex items-center space-x-4 text-gray-600 mb-4">
-                  <span className="flex items-center">
-                    <i className="fas fa-building mr-2"></i>
-                    {offre.company}
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{offre.title}</h1>
+              
+              {/* Informations de l'entreprise en header */}
+              {offre.recruiter && (
+                <div className="flex items-center mb-4">
+                  {offre.recruiter.logo && (
+                    <div className="mr-3">
+                      <img 
+                        src={`http://localhost:8000${offre.recruiter.logo}`}
+                        alt={offre.recruiter.company_name}
+                        className="w-16 h-16 rounded-lg object-cover border-2 border-gray-200"
+                        onError={(e) => {
+                          console.error('Erreur de chargement du logo:', e.target.src);
+                          e.target.style.display = 'none';
+                        }}
+                        onLoad={() => {
+                          console.log('Logo chargé avec succès:', offre.recruiter.logo);
+                        }}
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-800">{offre.recruiter.company_name}</h2>
+                    {offre.recruiter.region && offre.recruiter.country && (
+                      <p className="text-sm text-gray-600">
+                        <i className="fas fa-map-marker-alt mr-1"></i>
+                        {offre.recruiter.region.name}, {offre.recruiter.country.name}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+                
+                <div className="flex flex-wrap gap-2 mb-4">
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                  {formatContractType(offre.contract_type)}
+                </span>
+                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                  {formatExperience(offre.experience_required)}
                   </span>
-                  <span className="flex items-center">
-                    <i className="fas fa-map-marker-alt mr-2"></i>
+                <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                  {formatWorkMode(offre.work_mode)}
+                  </span>
+                {offre.location && (
+                  <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">
                     {offre.location}
                   </span>
-                  <span className="flex items-center">
-                    <i className="fas fa-clock mr-2"></i>
-                    {offre.type}
-                  </span>
-                </div>
-                
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="bg-fuchsia-100 text-fuchsia-800 px-3 py-1 rounded-full text-sm font-medium">
-                    {offre.salary}
-                  </span>
-                  <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                    {offre.experience}
-                  </span>
-                  <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                    {offre.education}
-                  </span>
-                </div>
+                )}
               </div>
+              
+              <div className="text-lg text-gray-600 mb-4">
+                Salaire : {formatSalary(offre.salary_type, offre.salary_min, offre.salary_max)}
+                </div>
+              
+              <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                {offre.post_date && (
+                  <span><i className="fas fa-calendar-plus mr-1"></i>Publiée le {new Date(offre.post_date).toLocaleDateString('fr-FR')}</span>
+                )}
+                {offre.closing_date && (
+                  <span><i className="fas fa-calendar-times mr-1"></i>Expire le {new Date(offre.closing_date).toLocaleDateString('fr-FR')}</span>
+                )}
+
             </div>
           </div>
           
-          {/* Actions */}
-          <div className="flex flex-col space-y-3 mt-4 lg:mt-0 lg:ml-6">
+            {/* Boutons d'action */}
+            <div className="flex flex-col gap-3 mt-6 lg:mt-0 lg:ml-6">
+              {/* Bouton Postuler - visible uniquement pour les offres publiques et non créateur */}
+              {!isRecruiterOfThisOffer && isPubliclyAccessible && (
             <button
               onClick={handleApply}
               className="bg-fuchsia-600 text-white px-6 py-3 rounded-lg hover:bg-fuchsia-700 transition duration-200 font-medium"
@@ -177,184 +317,381 @@ const DetailOffre = () => {
               <i className="fas fa-paper-plane mr-2"></i>
               Postuler maintenant
             </button>
-            <div className="flex space-x-2">
+              )}
+              
+              {/* Bouton Éditer - visible uniquement pour l'auteur de l'offre */}
+              {isRecruiterOfThisOffer && (
+                <button
+                  onClick={() => navigate(`/recruteur/creer-offre?edit=${id}`)}
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-200 font-medium"
+                >
+                  <i className="fas fa-edit mr-2"></i>
+                  Éditer l'offre
+                </button>
+              )}
+              
+              {/* Bouton Sauvegarder - visible uniquement pour les offres publiques et non créateur */}
+              {!isRecruiterOfThisOffer && isPubliclyAccessible && (
               <button
                 onClick={handleSave}
-                className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition duration-200"
+                  className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition duration-200 font-medium"
               >
-                <i className="fas fa-heart mr-2"></i>
+                  <i className="fas fa-bookmark mr-2"></i>
                 Sauvegarder
               </button>
+              )}
+              
+              {/* Bouton Partager - toujours visible */}
               <button
                 onClick={handleShare}
-                className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition duration-200"
+                className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition duration-200 font-medium"
               >
                 <i className="fas fa-share mr-2"></i>
                 Partager
               </button>
+              
+              {/* Messages informatifs selon le statut et les permissions */}
+              {isRecruiterOfThisOffer && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+                  <p className="text-sm text-blue-700">
+                    <i className="fas fa-info-circle mr-1"></i>
+                    Vous consultez votre propre offre
+                  </p>
+                </div>
+              )}
+              
+              {/* Message pour offres en attente d'approbation (visiteurs) */}
+              {!isRecruiterOfThisOffer && isPendingApproval && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-center">
+                  <p className="text-sm text-yellow-700">
+                    <i className="fas fa-clock mr-1"></i>
+                    Cette offre est en attente d'approbation
+                  </p>
+                </div>
+              )}
+              
+              {/* Message pour offres brouillon (visiteurs) */}
+              {!isRecruiterOfThisOffer && isDraft && (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
+                  <p className="text-sm text-gray-700">
+                    <i className="fas fa-file-alt mr-1"></i>
+                    Cette offre est en cours de rédaction
+                  </p>
+                </div>
+              )}
+              
+              {/* Message pour offres rejetées (visiteurs) */}
+              {!isRecruiterOfThisOffer && isRejected && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                  <p className="text-sm text-red-700">
+                    <i className="fas fa-times-circle mr-1"></i>
+                    Cette offre a été rejetée
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Informations principales */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Contenu principal */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Description */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Colonne principale */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Statut de l'offre - visible pour tous */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-              <i className="fas fa-file-alt text-fuchsia-600 mr-2"></i>
-              Description du poste
-            </h2>
-            <div 
-              className="prose max-w-none text-gray-700"
-              dangerouslySetInnerHTML={{ __html: offre.description }}
-            />
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Statut de l'offre</h2>
+              <div className="space-y-4">
+                {/* Badge de statut */}
+                <div className="flex items-center">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                    offre.status === 'APPROVED' 
+                      ? 'bg-green-100 text-green-800' 
+                      : offre.status === 'PENDING_APPROVAL'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : offre.status === 'PUBLISHED'
+                      ? 'bg-blue-100 text-blue-800'
+                      : offre.status === 'DRAFT'
+                      ? 'bg-gray-100 text-gray-800'
+                      : offre.status === 'REJECTED'
+                      ? 'bg-red-100 text-red-800'
+                      : offre.status === 'EXPIRED'
+                      ? 'bg-orange-100 text-orange-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    <i className={`fas mr-2 ${
+                      offre.status === 'APPROVED' ? 'fa-check-circle' :
+                      offre.status === 'PENDING_APPROVAL' ? 'fa-clock' :
+                      offre.status === 'PUBLISHED' ? 'fa-eye' :
+                      offre.status === 'DRAFT' ? 'fa-file-alt' :
+                      offre.status === 'REJECTED' ? 'fa-times-circle' :
+                      offre.status === 'EXPIRED' ? 'fa-calendar-times' :
+                      'fa-info-circle'
+                    }`}></i>
+                    {offre.status === 'APPROVED' ? 'Approuvée' :
+                     offre.status === 'PENDING_APPROVAL' ? 'En attente d\'approbation' :
+                     offre.status === 'PUBLISHED' ? 'Publiée' :
+                     offre.status === 'DRAFT' ? 'Brouillon' :
+                     offre.status === 'REJECTED' ? 'Rejetée' :
+                     offre.status === 'EXPIRED' ? 'Expirée' :
+                     offre.status || 'Statut inconnu'}
+                  </span>
           </div>
 
-          {/* Exigences */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-              <i className="fas fa-list-check text-fuchsia-600 mr-2"></i>
-              Exigences
-            </h2>
-            <ul className="space-y-2">
-              {offre.requirements.map((req, index) => (
-                <li key={index} className="flex items-start">
-                  <i className="fas fa-check-circle text-green-500 mt-1 mr-3 flex-shrink-0"></i>
-                  <span className="text-gray-700">{req}</span>
-                </li>
-              ))}
-            </ul>
+                {/* Informations supplémentaires selon le statut */}
+                {isPendingApproval && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <p className="text-sm text-yellow-700">
+                      <i className="fas fa-info-circle mr-2"></i>
+                      <strong>En attente d'approbation :</strong> Cette offre est en cours de validation par notre équipe. 
+                      {isRecruiterOfThisOffer ? ' Vous recevrez une notification dès qu\'elle sera approuvée.' : ' Elle sera visible publiquement une fois approuvée.'}
+                    </p>
+                  </div>
+                )}
+                
+                {isDraft && (
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                    <p className="text-sm text-gray-700">
+                      <i className="fas fa-info-circle mr-2"></i>
+                      <strong>Brouillon :</strong> Cette offre est en cours de rédaction et n'est pas encore soumise pour approbation.
+                      {isRecruiterOfThisOffer ? ' Vous pouvez continuer à l\'éditer avant de la soumettre.' : ''}
+                    </p>
+                  </div>
+                )}
+                
+                {isRejected && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p className="text-sm text-red-700">
+                      <i className="fas fa-info-circle mr-2"></i>
+                      <strong>Rejetée :</strong> Cette offre n'a pas été approuvée par notre équipe.
+                      {isRecruiterOfThisOffer ? ' Vous pouvez la modifier et la soumettre à nouveau.' : ''}
+                    </p>
           </div>
-
-          {/* Avantages */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-              <i className="fas fa-gift text-fuchsia-600 mr-2"></i>
-              Avantages
-            </h2>
-            <ul className="space-y-2">
-              {offre.benefits.map((benefit, index) => (
-                <li key={index} className="flex items-start">
-                  <i className="fas fa-star text-yellow-500 mt-1 mr-3 flex-shrink-0"></i>
-                  <span className="text-gray-700">{benefit}</span>
-                </li>
-              ))}
-            </ul>
+                )}
+                
+                {isPubliclyAccessible && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <p className="text-sm text-green-700">
+                      <i className="fas fa-check-circle mr-2"></i>
+                      <strong>Offre active :</strong> Cette offre est visible publiquement et les candidats peuvent postuler.
+                    </p>
+                  </div>
+                )}
           </div>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Informations rapides */}
+            {/* Description du poste */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">
-              <i className="fas fa-info-circle text-fuchsia-600 mr-2"></i>
-              Informations rapides
-            </h3>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Type de contrat</span>
-                <span className="font-medium">{offre.type}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Salaire</span>
-                <span className="font-medium">{offre.salary}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Expérience</span>
-                <span className="font-medium">{offre.experience}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Formation</span>
-                <span className="font-medium">{offre.education}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Date limite</span>
-                <span className="font-medium text-red-600">{offre.deadline}</span>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Description du poste</h2>
+              <div className="prose max-w-none text-gray-600">
+                {offre.description ? (
+                  <div dangerouslySetInnerHTML={{ __html: offre.description }} />
+                ) : (
+                  <p>Aucune description disponible pour cette offre.</p>
+                )}
               </div>
             </div>
-          </div>
 
-          {/* Entreprise */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">
-              <i className="fas fa-building text-fuchsia-600 mr-2"></i>
-              À propos de l'entreprise
-            </h3>
-            <div className="space-y-3">
-              <img src={offre.companyInfo.logo} alt={offre.companyInfo.name} className="w-16 h-16 rounded-lg object-cover" />
-              <h4 className="font-semibold text-gray-900">{offre.companyInfo.name}</h4>
-              <p className="text-sm text-gray-600">{offre.companyInfo.description}</p>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Secteur</span>
-                  <span>{offre.companyInfo.industry}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Effectifs</span>
-                  <span>{offre.companyInfo.employees}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Créée en</span>
-                  <span>{offre.companyInfo.founded}</span>
+            {/* Profil recherché */}
+            {offre.profile_sought && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Profil recherché</h2>
+                <div className="prose max-w-none text-gray-600">
+                  <p>{offre.profile_sought}</p>
                 </div>
               </div>
+            )}
+
+            {/* Informations complémentaires */}
+            {offre.additional_info && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Informations complémentaires</h2>
+                <div className="prose max-w-none text-gray-600">
+                  <p>{offre.additional_info}</p>
+              </div>
+              </div>
+            )}
+
+            {/* Exigences */}
+            {offre.cv_required || offre.motivation_letter_required ? (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Documents requis</h2>
+                <ul className="space-y-2 text-gray-600">
+                  {offre.cv_required && (
+                    <li className="flex items-center">
+                      <i className="fas fa-check text-green-500 mr-2"></i>
+                      CV obligatoire
+                    </li>
+                  )}
+                  {offre.motivation_letter_required && (
+                    <li className="flex items-center">
+                      <i className="fas fa-check text-green-500 mr-2"></i>
+                      Lettre de motivation obligatoire
+                    </li>
+                  )}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* À propos de l'entreprise */}
+            {offre.recruiter && (
+          <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">À propos de l'entreprise</h3>
+                <div className="space-y-4">
+                  {/* Logo et nom */}
+                  <div className="flex items-center">
+                    {offre.recruiter.logo ? (
+                      <div className="mr-3">
+                        <img 
+                          src={`http://localhost:8000${offre.recruiter.logo}`}
+                          alt={offre.recruiter.company_name}
+                          className="w-20 h-20 rounded-lg object-cover border-2 border-gray-200 shadow-sm"
+                          onError={(e) => {
+                            console.error('Erreur de chargement du logo sidebar:', e.target.src);
+                            e.target.style.display = 'none';
+                          }}
+                          onLoad={() => {
+                            console.log('Logo sidebar chargé avec succès:', offre.recruiter.logo);
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-20 h-20 rounded-lg bg-gray-100 border-2 border-gray-200 flex items-center justify-center mr-3">
+                        <i className="fas fa-building text-gray-400 text-2xl"></i>
+                      </div>
+                    )}
+                    <div>
+                      <h4 className="font-semibold text-gray-900">{offre.recruiter.company_name}</h4>
+                      {offre.recruiter.sector && (
+                        <p className="text-sm text-gray-600">{offre.recruiter.sector}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Description de l'entreprise */}
+                  {offre.recruiter.description && (
+                    <div>
+                      <p className="text-sm text-gray-600">{offre.recruiter.description}</p>
+                    </div>
+                  )}
+
+                  {/* Informations détaillées */}
+                  <div className="space-y-3 text-sm">
+                    {offre.recruiter.company_size && (
+                <div className="flex justify-between">
+                        <span className="text-gray-600">Taille :</span>
+                        <span className="font-medium text-gray-900">{formatCompanySize(offre.recruiter.company_size)}</span>
+                </div>
+                    )}
+                    {offre.recruiter.country && (
+                <div className="flex justify-between">
+                        <span className="text-gray-600">Pays :</span>
+                        <span className="font-medium text-gray-900">{offre.recruiter.country.name}</span>
+                </div>
+                    )}
+                    {offre.recruiter.region && (
+                <div className="flex justify-between">
+                        <span className="text-gray-600">Région :</span>
+                        <span className="font-medium text-gray-900">{offre.recruiter.region.name}</span>
+                </div>
+                    )}
+                    {offre.recruiter.website && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Site web :</span>
               <a 
-                href={offre.companyInfo.website} 
+                          href={offre.recruiter.website} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center text-fuchsia-600 hover:text-fuchsia-800 text-sm"
-              >
-                <i className="fas fa-external-link-alt mr-2"></i>
-                Visiter le site web
-              </a>
+                          className="text-fuchsia-600 hover:text-fuchsia-800 font-medium"
+                        >
+                          Visiter
+                        </a>
+                      </div>
+                    )}
+                    
+                    {/* Lien vers le profil public du recruteur */}
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Profil :</span>
+                      <Link 
+                        to={`/recruteur/profil-public/${offre.recruiter.user.id}`}
+                        className="text-blue-600 hover:text-blue-800 font-medium flex items-center"
+                      >
+                        <i className="fas fa-user mr-1"></i>
+                        Voir le profil du recruteur
+                      </Link>
             </div>
           </div>
 
-          {/* Contact */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">
-              <i className="fas fa-envelope text-fuchsia-600 mr-2"></i>
-              Contact
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-center">
-                <i className="fas fa-envelope text-gray-400 mr-3"></i>
-                <span className="text-sm">{offre.contact.email}</span>
+                  {/* Informations du recruteur */}
+                  {offre.recruiter.user && (
+                    <div className="pt-3 border-t border-gray-200">
+                      <h5 className="font-medium text-gray-900 mb-2">Recruteur</h5>
+                      <div className="text-sm text-gray-600">
+                        <p>{offre.recruiter.user.first_name} {offre.recruiter.user.last_name}</p>
+                        <p className="text-xs text-gray-500">
+                          Membre depuis {new Date(offre.recruiter.user.created_at).toLocaleDateString('fr-FR')}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center">
-                <i className="fas fa-phone text-gray-400 mr-3"></i>
-                <span className="text-sm">{offre.contact.phone}</span>
+            )}
+
+            {/* Informations de l'offre */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Détails de l'offre</h3>
+              <div className="space-y-3 text-sm text-gray-600">
+                {offre.department && (
+                  <div>
+                    <span className="font-medium text-gray-900">Département :</span>
+                    <p>{offre.department.name}</p>
+                  </div>
+                )}
+                {offre.category && (
+                  <div>
+                    <span className="font-medium text-gray-900">Catégorie :</span>
+                    <p>{offre.category.name}</p>
+                  </div>
+                )}
+                <div>
+                  <span className="font-medium text-gray-900">Type de contrat :</span>
+                  <p>{formatContractType(offre.contract_type)}</p>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-900">Expérience :</span>
+                  <p>{formatExperience(offre.experience_required)}</p>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-900">Mode de travail :</span>
+                  <p>{formatWorkMode(offre.work_mode)}</p>
               </div>
-              <div className="flex items-center">
-                <i className="fas fa-map-marker-alt text-gray-400 mr-3"></i>
-                <span className="text-sm">{offre.contact.address}</span>
+                {offre.location && (
+                  <div>
+                    <span className="font-medium text-gray-900">Localisation :</span>
+                    <p>{offre.location}</p>
               </div>
-            </div>
-          </div>
+                )}
         </div>
       </div>
 
-      {/* Offres similaires */}
+            {/* Date limite */}
+            {offre.application_deadline && (
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">
-          <i className="fas fa-briefcase text-fuchsia-600 mr-2"></i>
-          Offres similaires
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((item) => (
-            <div key={item} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-              <h3 className="font-semibold text-gray-900 mb-2">Développeur Frontend React</h3>
-              <p className="text-sm text-gray-600 mb-2">Digital Solutions</p>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Cotonou</span>
-                <span className="text-fuchsia-600 font-medium">600,000 FCFA</span>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Date limite</h3>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-red-600">
+                    {new Date(offre.application_deadline).toLocaleDateString('fr-FR')}
+                  </div>
+                  <div className="text-sm text-gray-500">Date limite de candidature</div>
+                </div>
               </div>
+            )}
             </div>
-          ))}
         </div>
       </div>
 
@@ -362,8 +699,8 @@ const DetailOffre = () => {
       <ShareModal
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
-        isLoggedIn={isLoggedIn}
-        title={`Postuler à ${offre.title}`}
+        title={offre?.title}
+        url={window.location.href}
       />
     </div>
   );

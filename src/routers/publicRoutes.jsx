@@ -14,6 +14,7 @@ import Home from '../pages/public/Home';
 import About from '../pages/public/About';
 import Contact from '../pages/public/Contact';
 import Blog from '../pages/public/Blog';
+import BlogDetail from '../pages/public/BlogDetail';
 import DetailOffre from '../pages/public/DetailOffre';
 import DetailConsultation from '../pages/public/DetailConsultation';
 import BlogArticle from '../pages/public/BlogArticle';
@@ -24,7 +25,8 @@ import Bourses from '../pages/public/Bourses';
 import PlanAbonnement from '../pages/public/PlanAbonnement';
 import Paiement from '../pages/public/Paiement';
 import IACompatibilityCheck from '../pages/public/IACompatibilityCheck';
-
+import NotFound from '../pages/public/NotFound';
+import ProfilPublic from '../pages/recruteur/ProfilPublic';
 
 
 const Formations = () => (
@@ -72,6 +74,10 @@ const publicRoutes = [
   {
     path: '/blog',
     element: <Blog />
+  },
+  {
+    path: '/blog/:slug',
+    element: <BlogDetail />
   },
   {
     path: '/blog/article/:id',
@@ -137,6 +143,22 @@ const publicRoutes = [
   {
     path: '/ia-compatibility/:offerId/:offerType',
     element: <IACompatibilityCheck />
+  },
+  {
+    path: '/entreprise/:id',
+    element: <ProfilPublic />
+  },
+  {
+    path: '/recruteur/profil-public/:id',
+    element: <ProfilPublic />
+  },
+  {
+    path: '/404',
+    element: <NotFound />
+  },
+  {
+    path: '*',
+    element: <NotFound />
   },
 
 ];

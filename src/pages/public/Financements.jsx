@@ -1,94 +1,191 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import SidebarFilter from '../../components/SidebarFilter';
+import FinancementPagination from '../../components/FinancementPagination';
+import financementService from '../../services/financementService';
+import Loader from '../../components/Loader';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Financements = () => {
+  // États existants conservés
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [activeFilters, setActiveFilters] = useState({});
 
-  // Données simulées des financements
-  const financements = [
-    {
-      id: 1,
-      title: "Fonds d'investissement pour startups innovantes",
-      institution: "Fonds National de Développement",
-      location: "Bénin",
-      type: "Subvention",
-      amount: "5,000,000 - 50,000,000 FCFA",
-      duration: "12-24 mois",
-      postedDate: "12 Jan 2024",
-      deadline: "28 Jan 2024",
-      description: "Fonds destiné aux startups innovantes dans les secteurs technologiques, agricoles et de l'énergie renouvelable...",
-      logo: "https://via.placeholder.com/60x60"
-    },
-    {
-      id: 2,
-      title: "Prêt PME à taux préférentiel",
-      institution: "Banque de l'Habitat du Bénin",
-      location: "Bénin",
-      type: "Prêt",
-      amount: "10,000,000 - 100,000,000 FCFA",
-      duration: "60 mois",
-      postedDate: "10 Jan 2024",
-      deadline: "25 Jan 2024",
-      description: "Prêt à taux préférentiel pour les PME du secteur manufacturier et des services...",
-      logo: "https://via.placeholder.com/60x60"
-    },
-    {
-      id: 3,
-      title: "Microcrédit pour entrepreneurs ruraux",
-      institution: "FECECAM",
-      location: "Bénin",
-      type: "Microcrédit",
-      amount: "500,000 - 5,000,000 FCFA",
-      duration: "12-36 mois",
-      postedDate: "8 Jan 2024",
-      deadline: "22 Jan 2024",
-      description: "Microcrédit spécialement conçu pour les entrepreneurs ruraux et les agriculteurs...",
-      logo: "https://via.placeholder.com/60x60"
-    },
-    {
-      id: 4,
-      title: "Fonds de garantie pour exportateurs",
-      institution: "Fonds de Garantie des PME",
-      location: "Bénin",
-      type: "Garantie",
-      amount: "20,000,000 - 200,000,000 FCFA",
-      duration: "24-48 mois",
-      postedDate: "5 Jan 2024",
-      deadline: "20 Jan 2024",
-      description: "Fonds de garantie pour faciliter l'accès au crédit des PME exportatrices...",
-      logo: "https://via.placeholder.com/60x60"
-    },
-    {
-      id: 5,
-      title: "Subvention pour projets environnementaux",
-      institution: "Ministère de l'Environnement",
-      location: "Bénin",
-      type: "Subvention",
-      amount: "2,000,000 - 20,000,000 FCFA",
-      duration: "12-18 mois",
-      postedDate: "3 Jan 2024",
-      deadline: "18 Jan 2024",
-      description: "Subvention pour projets de protection de l'environnement et de développement durable...",
-      logo: "https://via.placeholder.com/60x60"
-    },
-    {
-      id: 6,
-      title: "Fonds d'innovation technologique",
-      institution: "Agence Nationale de l'Innovation",
-      location: "Bénin",
-      type: "Subvention",
-      amount: "1,000,000 - 10,000,000 FCFA",
-      duration: "6-12 mois",
-      postedDate: "1 Jan 2024",
-      deadline: "15 Jan 2024",
-      description: "Fonds pour soutenir l'innovation technologique et la transformation digitale...",
-      logo: "https://via.placeholder.com/60x60"
+  // Nouveaux états pour l'API
+  const [financements, setFinancements] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    pageSize: 20
+  });
+
+  // États pour les filtres API
+  const [apiFilters, setApiFilters] = useState({
+    query: '',
+    sector: '',
+    target: '',
+    min_amount: '',
+    max_amount: '',
+    no_guarantee: null,
+    grace_period_available: null,
+    country: '',
+    region: '',
+    geographic_zone: '',
+    sort_by: 'post_date',
+    sort_order: 'desc'
+  });
+
+  // Contexte d'authentification
+  const { isAuthenticated, user } = useAuth();
+
+  // Charger les offres de financement depuis l'API
+  const loadFinancements = async (page = 1, filters = {}) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await financementService.getPublicFundingOffers(filters, page, pagination.pageSize);
+      
+      // Formater les données de l'API
+      const formattedFinancements = (response.results || []).map(formatFinancementData);
+      setFinancements(formattedFinancements);
+      
+      setPagination(prev => ({
+        ...prev,
+        currentPage: page,
+        totalPages: Math.ceil(response.count / pagination.pageSize),
+        totalCount: response.count
+      }));
+    } catch (err) {
+      console.error('Erreur lors du chargement des financements:', err);
+      setError('Erreur lors du chargement des offres de financement');
+      setFinancements([]);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  // Formater les données de l'API
+  const formatFinancementData = (apiFinancement) => {
+    return {
+      id: apiFinancement.id,
+      title: apiFinancement.title || 'Titre non disponible',
+      institution: apiFinancement.recruiter?.company_name || 'Institution non spécifiée',
+      location: apiFinancement.geographic_zone || apiFinancement.recruiter?.region?.name || 'Localisation non spécifiée',
+      type: apiFinancement.target?.name || 'Type non spécifié',
+      amount: apiFinancement.min_amount && apiFinancement.max_amount 
+        ? `${apiFinancement.min_amount.toLocaleString()} - ${apiFinancement.max_amount.toLocaleString()} FCFA`
+        : apiFinancement.min_amount 
+          ? `À partir de ${apiFinancement.min_amount.toLocaleString()} FCFA`
+          : apiFinancement.max_amount
+            ? `Jusqu'à ${apiFinancement.max_amount.toLocaleString()} FCFA`
+            : 'Montant non spécifié',
+      duration: apiFinancement.repayment_duration ? `${apiFinancement.repayment_duration} mois` : 'Durée non spécifiée',
+      postedDate: apiFinancement.post_date ? new Date(apiFinancement.post_date).toLocaleDateString('fr-FR') : null,
+      deadline: apiFinancement.application_deadline 
+        ? new Date(apiFinancement.application_deadline).toLocaleDateString('fr-FR') 
+        : null,
+      description: apiFinancement.description || 'Description non disponible',
+      logo: apiFinancement.recruiter?.logo 
+        ? (apiFinancement.recruiter.logo.startsWith('http') 
+            ? apiFinancement.recruiter.logo 
+            : `http://localhost:8000${apiFinancement.recruiter.logo}`)
+        : "https://via.placeholder.com/60x60",
+      
+      // Attributs supplémentaires de l'API
+      sector: apiFinancement.sector?.name || null,
+      target: apiFinancement.target?.name || null,
+      conditions: apiFinancement.conditions || null,
+      requirements: apiFinancement.requirements || null,
+      documents_required: apiFinancement.documents_required || null,
+      interest_rate: apiFinancement.interest_rate || null,
+      grace_period: apiFinancement.grace_period || null,
+      guarantee_required: apiFinancement.guarantee_required || null,
+      is_urgent: apiFinancement.is_urgent || false,
+      status: apiFinancement.status || null,
+      views_count: apiFinancement.views_count || 0,
+      applications_count: apiFinancement.applications_count || 0,
+      
+      // Informations du recruteur
+      recruiter_info: {
+        company_name: apiFinancement.recruiter?.company_name || null,
+        company_description: apiFinancement.recruiter?.description || null,
+        company_sector: apiFinancement.recruiter?.sector || null,
+        company_size: apiFinancement.recruiter?.company_size || null,
+        website: apiFinancement.recruiter?.website || null,
+        country: apiFinancement.recruiter?.country?.name || null,
+        region: apiFinancement.recruiter?.region?.name || null
+      }
+    };
+  };
+
+  // Charger les financements au montage du composant
+  useEffect(() => {
+    loadFinancements(1, apiFilters);
+  }, []);
+
+  // Mettre à jour les filtres API quand les filtres locaux changent
+  useEffect(() => {
+    const newApiFilters = {
+      ...apiFilters,
+      query: searchTerm,
+      sector: selectedType,
+      geographic_zone: selectedLocation
+    };
+    
+    setApiFilters(newApiFilters);
+    
+    // Recharger avec les nouveaux filtres (sans recherche automatique)
+    if (selectedType || selectedLocation) {
+      loadFinancements(1, newApiFilters);
+    }
+  }, [selectedType, selectedLocation]);
+
+  // Détecter quand la zone de recherche est vidée
+  useEffect(() => {
+    // Si la zone de recherche est vide et qu'il y avait une recherche active
+    if (searchTerm === '' && apiFilters.query) {
+      const newApiFilters = {
+        ...apiFilters,
+        query: '',
+        sector: selectedType,
+        geographic_zone: selectedLocation
+      };
+      
+      setApiFilters(newApiFilters);
+      // Recharger toutes les données sans recherche
+      loadFinancements(1, newApiFilters);
+    }
+  }, [searchTerm]);
+
+  // Gestion du changement de page
+  const handlePageChange = (page) => {
+    loadFinancements(page, apiFilters);
+  };
+
+  // Gestion du changement de taille de page
+  const handlePageSizeChange = (newPageSize) => {
+    setPagination(prev => ({ ...prev, pageSize: newPageSize }));
+    loadFinancements(1, apiFilters);
+  };
+
+  // Fonction de recherche manuelle
+  const handleSearch = () => {
+    const newApiFilters = {
+      ...apiFilters,
+      query: searchTerm,
+      sector: selectedType,
+      geographic_zone: selectedLocation
+    };
+    
+    setApiFilters(newApiFilters);
+    loadFinancements(1, newApiFilters);
+  };
 
   const types = [
     { value: '', label: 'Tous les types' },
@@ -123,155 +220,261 @@ const Financements = () => {
   });
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            <i className="fas fa-money-bill-wave text-fuchsia-600 mr-3"></i>
-            Financements
-          </h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Découvrez des opportunités de financement pour vos projets. 
-            Trouvez des subventions, prêts et investissements adaptés à vos besoins.
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Mobile-First */}
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="px-4 py-6 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
+              <i className="fas fa-money-bill-wave text-fuchsia-600 mr-2 sm:mr-3"></i>
+              Financements
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto px-2">
+              Découvrez des opportunités de financement pour vos projets. 
+              Trouvez des subventions, prêts et investissements adaptés à vos besoins.
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Main Content with Sidebar */}
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Sidebar Filter */}
-        <div className="lg:w-1/4">
-          <SidebarFilter 
-            onFilterChange={handleFilterChange}
-            activeFilters={activeFilters}
-          />
+      {/* Search Bar Mobile-First */}
+      <div className="bg-white border-b border-gray-200 px-4 py-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Search Input */}
+            <div className="flex-1">
+              <div className="relative">
+                <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input
+                  type="text"
+                  placeholder="Rechercher un financement, une institution..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 text-sm sm:text-base"
+                />
+              </div>
+            </div>
+            
+            {/* Search Button */}
+            <button
+              onClick={handleSearch}
+              className="bg-fuchsia-600 text-white px-6 py-3 rounded-xl hover:bg-fuchsia-700 transition duration-200 font-medium flex items-center justify-center text-sm sm:text-base"
+            >
+              <i className="fas fa-search mr-2"></i>
+              Rechercher
+            </button>
+          </div>
         </div>
+      </div>
 
-        {/* Main Content */}
-        <div className="lg:w-3/4 space-y-6">
-          {/* Filters */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Search */}
-              <div className="md:col-span-2">
-                <div className="relative">
-                  <i className="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                  <input
-                    type="text"
-                    placeholder="Rechercher un financement..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-              
-              {/* Type Filter */}
-              <div>
-                <select
-                  value={selectedType}
-                  onChange={(e) => setSelectedType(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent"
-                >
-                  {types.map(type => (
-                    <option key={type.value} value={type.value}>{type.label}</option>
-                  ))}
-                </select>
-              </div>
-              
-              {/* Location Filter */}
-              <div>
-                <select
-                  value={selectedLocation}
-                  onChange={(e) => setSelectedLocation(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent"
-                >
-                  {locations.map(location => (
-                    <option key={location.value} value={location.value}>{location.label}</option>
-                  ))}
-                </select>
-              </div>
+      {/* Mobile Filters Bar */}
+      <div className="bg-white border-b border-gray-200 px-4 py-3 sm:px-6 lg:px-8 lg:hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {/* Type Filter */}
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 text-sm whitespace-nowrap bg-white"
+            >
+              <option value="">Tous types</option>
+              <option value="Subvention">Subvention</option>
+              <option value="Prêt">Prêt</option>
+              <option value="Microcrédit">Microcrédit</option>
+              <option value="Garantie">Garantie</option>
+              <option value="Investissement">Investissement</option>
+            </select>
+            
+            {/* Location Filter */}
+            <select
+              value={selectedLocation}
+              onChange={(e) => setSelectedLocation(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 text-sm whitespace-nowrap bg-white"
+            >
+              <option value="">Tous lieux</option>
+              <option value="Bénin">Bénin</option>
+              <option value="Cotonou">Cotonou</option>
+              <option value="Porto-Novo">Porto-Novo</option>
+              <option value="Parakou">Parakou</option>
+            </select>
+
+            {/* Sort Filter */}
+            <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 text-sm whitespace-nowrap bg-white">
+              <option>Plus récents</option>
+              <option>Montant élevé</option>
+              <option>Durée courte</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Desktop Sidebar - Hidden on Mobile */}
+          <div className="hidden lg:block lg:w-1/4">
+            <div className="sticky top-6">
+              <SidebarFilter 
+                onFilterChange={handleFilterChange}
+                activeFilters={activeFilters}
+              />
             </div>
           </div>
 
-          {/* Results */}
-          <div className="bg-white rounded-lg shadow-sm">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">
-                  Financements disponibles ({filteredFinancements.length})
+          {/* Main Content Area */}
+          <div className="lg:w-3/4">
+            {/* Results Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+              <div className="mb-4 sm:mb-0">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+                  Financements disponibles
                 </h2>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-500">Trier par :</span>
-                  <select className="text-sm border border-gray-300 rounded-md px-2 py-1">
-                    <option>Plus récents</option>
-                    <option>Montant élevé</option>
-                    <option>Durée courte</option>
-                  </select>
-                </div>
+                <p className="text-sm text-gray-600 mt-1">
+                  {pagination.totalCount} financement{pagination.totalCount !== 1 ? 's' : ''} trouvé{pagination.totalCount !== 1 ? 's' : ''}
+                </p>
               </div>
+              
+              {/* Desktop Sort - Hidden on Mobile */}
+              <div className="hidden sm:flex items-center space-x-2">
+                <span className="text-sm text-gray-500">Trier par :</span>
+                <select className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500">
+                  <option>Plus récents</option>
+                  <option>Montant élevé</option>
+                  <option>Durée courte</option>
+                </select>
+              </div>
+            </div>
 
-              {filteredFinancements.length === 0 ? (
-                <div className="text-center py-12">
-                  <i className="fas fa-search text-gray-400 text-4xl mb-4"></i>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucun financement trouvé</h3>
-                  <p className="text-gray-600">Essayez de modifier vos critères de recherche</p>
+            {/* Financements List */}
+            {loading ? (
+              <div className="flex justify-center items-center py-20">
+                <Loader />
+              </div>
+            ) : error ? (
+              <div className="text-center py-12 bg-white rounded-xl shadow-sm">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i className="fas fa-exclamation-triangle text-red-500 text-xl"></i>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  {filteredFinancements.map((financement) => (
-                    <div key={financement.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200">
-                      <div className="flex items-start space-x-4">
-                        <img src={financement.logo} alt={financement.institution} className="w-16 h-16 rounded-lg object-cover" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Erreur de chargement</h3>
+                <p className="text-gray-600 text-sm mb-4">{error}</p>
+                <button 
+                  onClick={() => loadFinancements(1, apiFilters)}
+                  className="bg-fuchsia-600 text-white px-4 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200 text-sm"
+                >
+                  Réessayer
+                </button>
+              </div>
+            ) : financements.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-xl shadow-sm">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i className="fas fa-search text-gray-400 text-xl"></i>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucun financement trouvé</h3>
+                <p className="text-gray-600 text-sm">Essayez de modifier vos critères de recherche</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {financements.map((financement) => (
+                  <div key={financement.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 group">
+                    {/* Financement Card Header */}
+                    <div className="p-4 sm:p-6">
+                      <div className="flex items-start space-x-3 sm:space-x-4">
+                        {/* Institution Logo */}
+                        <div className="flex-shrink-0">
+                          {financement.logo ? (
+                            <img 
+                              src={financement.logo} 
+                              alt={financement.institution} 
+                              className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-cover border border-gray-200 bg-white" 
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          {/* Fallback logo si pas d'image ou erreur */}
+                          <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-lg bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center shadow-md ${financement.logo ? 'hidden' : 'flex'}`}>
+                            <i className="fas fa-building text-white text-lg sm:text-xl"></i>
+                          </div>
+                        </div>
                         
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                <Link to={`/financements/${financement.id}`} className="hover:text-fuchsia-600 transition duration-200">
-                                  {financement.title}
-                                </Link>
-                              </h3>
-                              
-                              <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
+                        {/* Financement Content */}
+                        <div className="flex-1 min-w-0">
+                          {/* Financement Title */}
+                          <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 group-hover:text-fuchsia-600 transition-colors duration-200">
+                            <Link to={`/financements/${financement.id}`} className="hover:text-fuchsia-600">
+                              {financement.title}
+                            </Link>
+                          </h3>
+                          
+                          {/* Institution & Location */}
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0 mb-3">
+                            <span className="flex items-center text-sm text-gray-600">
+                              <i className="fas fa-building mr-2 text-fuchsia-500"></i>
+                              {financement.institution}
+                            </span>
+                            {financement.location && (
+                              <span className="flex items-center text-sm text-gray-600">
+                                <i className="fas fa-map-marker-alt mr-2 text-blue-500"></i>
+                                {financement.location}
+                              </span>
+                            )}
+                          </div>
+                          
+                          {/* Financement Description - Une seule ligne */}
+                          <p className="text-gray-700 text-sm sm:text-base mb-4 line-clamp-1">
+                            {financement.description}
+                          </p>
+                          
+                          {/* Tags Row */}
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            <span className="bg-purple-50 text-purple-700 px-2 py-1 rounded-lg text-xs font-medium border border-purple-200">
+                              {financement.amount}
+                            </span>
+                            <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-lg text-xs font-medium border border-blue-200">
+                              {financement.duration}
+                            </span>
+                            <span className="bg-green-50 text-green-700 px-2 py-1 rounded-lg text-xs font-medium border border-green-200">
+                              {financement.type}
+                            </span>
+                            {financement.is_urgent && (
+                              <span className="bg-red-50 text-red-700 px-2 py-1 rounded-lg text-xs font-medium border border-red-200">
+                                <i className="fas fa-exclamation-triangle mr-1"></i>
+                                Urgent
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Meta Information */}
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                            {/* Left Side - Date & Applications */}
+                            <div className="flex items-center space-x-4 text-xs text-gray-500">
+                              {financement.postedDate && (
                                 <span className="flex items-center">
-                                  <i className="fas fa-building mr-2"></i>
-                                  {financement.institution}
-                                </span>
-                                <span className="flex items-center">
-                                  <i className="fas fa-map-marker-alt mr-2"></i>
-                                  {financement.location}
-                                </span>
-                                <span className="flex items-center">
-                                  <i className="fas fa-calendar mr-2"></i>
+                                  <i className="fas fa-calendar mr-1"></i>
                                   {financement.postedDate}
                                 </span>
-                              </div>
-                              
-                              <p className="text-gray-700 mb-4">{financement.description}</p>
-                              
-                              <div className="flex flex-wrap gap-2 mb-4">
-                                <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-                                  {financement.amount}
+                              )}
+                              {financement.applications_count > 0 && (
+                                <span className="flex items-center">
+                                  <i className="fas fa-users mr-1"></i>
+                                  {financement.applications_count} demande{financement.applications_count !== 1 ? 's' : ''}
                                 </span>
-                                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                                  {financement.duration}
-                                </span>
-                                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                                  {financement.type}
-                                </span>
-                              </div>
+                              )}
                             </div>
-                            
-                            <div className="flex flex-col items-end space-y-2">
-                              <span className="text-sm text-red-600 font-medium">
-                                <i className="fas fa-clock mr-1"></i>
-                                Limite : {financement.deadline}
-                              </span>
+
+                            {/* Right Side - Deadline & Action */}
+                            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                              {financement.deadline && (
+                                <span className="text-xs text-red-600 font-medium flex items-center">
+                                  <i className="fas fa-clock mr-1"></i>
+                                  Limite : {financement.deadline}
+                                </span>
+                              )}
                               <Link 
                                 to={`/financements/${financement.id}`}
-                                className="bg-fuchsia-600 text-white px-4 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200 text-sm font-medium"
+                                className="bg-fuchsia-600 text-white px-4 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200 text-sm font-medium text-center"
                               >
                                 Voir les détails
                               </Link>
@@ -280,33 +483,86 @@ const Financements = () => {
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {pagination.totalPages > 1 && (
+              <div className="mt-8 bg-white rounded-xl shadow-sm p-4 sm:p-6">
+                <FinancementPagination
+                  currentPage={pagination.currentPage}
+                  totalPages={pagination.totalPages}
+                  totalCount={pagination.totalCount}
+                  pageSize={pagination.pageSize}
+                  onPageChange={handlePageChange}
+                  onPageSizeChange={handlePageSizeChange}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* CTA Section */}
-      <div className="bg-gradient-to-r from-fuchsia-600 to-purple-600 rounded-lg p-8 text-white text-center">
-        <h2 className="text-2xl font-bold mb-4">Vous avez un projet ?</h2>
-        <p className="text-lg mb-6 opacity-90">
-          Rejoignez notre plateforme et trouvez le financement idéal pour votre projet
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link 
-            to="/signup" 
-            className="bg-white text-fuchsia-600 px-6 py-3 rounded-lg hover:bg-gray-100 transition duration-200 font-medium"
-          >
-            Créer un compte
-          </Link>
-          <Link 
-            to="/contact" 
-            className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-fuchsia-600 transition duration-200 font-medium"
-          >
-            Nous contacter
-          </Link>
+      {/* CTA Section Mobile-First */}
+      <div className="bg-gradient-to-r from-fuchsia-600 to-purple-600 mt-8">
+        <div className="px-4 py-8 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            {isAuthenticated ? (
+              // Utilisateur connecté
+              <>
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-3 sm:mb-4">
+                  Bienvenue sur Destiny Jobs !
+                </h2>
+                <p className="text-sm sm:text-base lg:text-lg text-fuchsia-100 mb-6 opacity-90 px-2">
+                  Parcourez nos offres de financement et trouvez le soutien financier idéal pour votre projet
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+                  <Link 
+                    to="/candidat" 
+                    className="bg-white text-fuchsia-600 px-4 sm:px-6 py-3 rounded-lg hover:bg-gray-100 transition duration-200 font-medium text-sm sm:text-base flex items-center justify-center"
+                  >
+                    <i className="fas fa-user mr-2"></i>
+                    Mon espace candidat
+                  </Link>
+                  <Link 
+                    to="/contact" 
+                    className="border border-white text-white px-4 sm:px-6 py-3 rounded-lg hover:bg-white hover:text-fuchsia-600 transition duration-200 font-medium text-sm sm:text-base flex items-center justify-center"
+                  >
+                    <i className="fas fa-envelope mr-2"></i>
+                    Nous contacter
+                  </Link>
+                </div>
+              </>
+            ) : (
+              // Utilisateur non connecté
+              <>
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-3 sm:mb-4">
+                  Vous avez un projet ?
+                </h2>
+                <p className="text-sm sm:text-base lg:text-lg text-fuchsia-100 mb-6 opacity-90 px-2">
+                  Rejoignez notre plateforme et trouvez le financement idéal pour votre projet
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+                  <Link 
+                    to="/signup" 
+                    className="bg-white text-fuchsia-600 px-4 sm:px-6 py-3 rounded-lg hover:bg-gray-100 transition duration-200 font-medium text-sm sm:text-base flex items-center justify-center"
+                  >
+                    <i className="fas fa-user-plus mr-2"></i>
+                    Créer un compte candidat
+                  </Link>
+                  <Link 
+                    to="/contact" 
+                    className="border border-white text-white px-4 sm:px-6 py-3 rounded-lg hover:bg-white hover:text-fuchsia-600 transition duration-200 font-medium text-sm sm:text-base flex items-center justify-center"
+                  >
+                    <i className="fas fa-envelope mr-2"></i>
+                    Nous contacter
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

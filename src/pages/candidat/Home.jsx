@@ -293,11 +293,11 @@ const Home = () => {
                     <div className="animate-pulse bg-gray-200 h-4 w-4 rounded mr-2"></div>
                     <div className="animate-pulse bg-gray-200 h-4 w-32 rounded"></div>
                   </div>
-                  <div className="flex items-center text-sm">
+              <div className="flex items-center text-sm">
                     <div className="animate-pulse bg-gray-200 h-4 w-4 rounded mr-2"></div>
                     <div className="animate-pulse bg-gray-200 h-4 w-32 rounded"></div>
-                  </div>
-                  <div className="flex items-center text-sm">
+              </div>
+              <div className="flex items-center text-sm">
                     <div className="animate-pulse bg-gray-200 h-4 w-4 rounded mr-2"></div>
                     <div className="animate-pulse bg-gray-200 h-4 w-32 rounded"></div>
                   </div>
@@ -308,14 +308,14 @@ const Home = () => {
                   <div className="flex items-center text-sm">
                     <i className={`fas ${profileData?.cv ? 'fa-check-circle text-green-500' : 'fa-exclamation-circle text-orange-500'} mr-2`}></i>
                     <span className="text-gray-700">CV</span>
-                  </div>
-                  <div className="flex items-center text-sm">
+              </div>
+              <div className="flex items-center text-sm">
                     <i className={`fas ${profileData?.image ? 'fa-check-circle text-green-500' : 'fa-exclamation-circle text-orange-500'} mr-2`}></i>
-                    <span className="text-gray-700">Photo de profil</span>
-                  </div>
-                  <div className="flex items-center text-sm">
+                <span className="text-gray-700">Photo de profil</span>
+              </div>
+              <div className="flex items-center text-sm">
                     <i className={`fas ${profileData?.skills && profileData.skills.trim() !== '' ? 'fa-check-circle text-green-500' : 'fa-exclamation-circle text-orange-500'} mr-2`}></i>
-                    <span className="text-gray-700">Compétences</span>
+                <span className="text-gray-700">Compétences</span>
                   </div>
                   <div className="flex items-center text-sm">
                     <i className={`fas ${profileData?.technologies && profileData.technologies.trim() !== '' ? 'fa-check-circle text-green-500' : 'fa-exclamation-circle text-orange-500'} mr-2`}></i>
@@ -391,10 +391,10 @@ const Home = () => {
               <i className="fas fa-edit"></i>
             </Link>
           </div>
-        </div>
-      </div>
+            </div>
+          </div>
 
-      {/* Recent Applications */}
+          {/* Recent Applications */}
           <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm mb-4 sm:mb-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base sm:text-lg font-semibold text-gray-900">

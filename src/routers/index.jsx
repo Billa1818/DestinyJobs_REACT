@@ -18,6 +18,9 @@ import prestataireRoutes from './prestataireRoutes';
 import publicRoutes from './publicRoutes';
 import publicProfileRoutes from './publicProfileRoutes';
 
+// Composants
+import NotFound from '../pages/public/NotFound';
+
 const AppRouter = () => {
   return (
     <Router>
@@ -73,6 +76,13 @@ const AppRouter = () => {
           />
         ))}
         
+        {/* Route catch-all pour les routes d'authentification et utilisateur inexistantes */}
+        <Route path="/login/*" element={<NotFound />} />
+        <Route path="/signup/*" element={<NotFound />} />
+        <Route path="/reset-password/*" element={<NotFound />} />
+        <Route path="/verify-email/*" element={<NotFound />} />
+        <Route path="/settings/*" element={<NotFound />} />
+        
         {/* Routes candidat avec CandidatLayout - PROTÉGÉES */}
         <Route 
           path="/candidat/*" 
@@ -89,6 +99,8 @@ const AppRouter = () => {
               element={route.element}
             />
           ))}
+          {/* Route catch-all pour les sous-routes candidat inexistantes */}
+          <Route path="*" element={<NotFound />} />
         </Route>
         
         {/* Routes recruteur avec RecruteurLayout - PROTÉGÉES */}
@@ -107,6 +119,8 @@ const AppRouter = () => {
               element={route.element}
             />
           ))}
+          {/* Route catch-all pour les sous-routes recruteur inexistantes */}
+          <Route path="*" element={<NotFound />} />
         </Route>
         
         {/* Routes prestataire avec PrestataireLayout - PROTÉGÉES */}
@@ -125,23 +139,12 @@ const AppRouter = () => {
               element={route.element}
             />
           ))}
+          {/* Route catch-all pour les sous-routes prestataire inexistantes */}
+          <Route path="*" element={<NotFound />} />
         </Route>
         
         {/* Route 404 */}
-        <Route path="*" element={
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="text-center">
-              <h1 className="text-6xl font-bold text-fuchsia-600 mb-4">404</h1>
-              <p className="text-xl text-gray-600 mb-8">Page non trouvée</p>
-              <a 
-                href="/home" 
-                className="bg-fuchsia-600 text-white px-6 py-3 rounded-md hover:bg-fuchsia-700 transition duration-200"
-              >
-                Retour à l'accueil
-              </a>
-            </div>
-          </div>
-        } />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );

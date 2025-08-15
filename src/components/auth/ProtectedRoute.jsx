@@ -42,13 +42,13 @@ const ProtectedRoute = ({
     const userType = user?.user_type?.toLowerCase();
     switch (userType) {
       case 'candidat':
-        return <Navigate to="/candidat/dashboard" replace />;
+        return <Navigate to="/candidat" replace />;
       case 'recruteur':
         return <Navigate to="/recruteur/dashboard" replace />;
       case 'prestataire':
-        return <Navigate to="/prestataire/dashboard" replace />;
+        return <Navigate to="/prestataire/home" replace />;
       default:
-        return <Navigate to="/" replace />;
+        return <Navigate to="/home" replace />;
     }
   }
 

@@ -434,6 +434,21 @@ class ProfileService {
   }
 
   /**
+   * Récupérer le profil public d'un recruteur
+   * @param {string} userId - ID de l'utilisateur recruteur
+   * @returns {Promise} - Promesse contenant le profil public
+   */
+  async getPublicRecruiterProfile(userId) {
+    try {
+      const response = await api.get(`/api/auth/public/recruiters/${userId}/`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération du profil public du recruteur:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Rechercher des profils publics
    * @param {Object} searchParams - Paramètres de recherche
    * @returns {Promise} - Promesse contenant les résultats

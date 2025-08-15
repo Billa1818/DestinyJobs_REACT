@@ -9,9 +9,9 @@ function App() {
     <AuthProvider>
       <MessageProvider>
         <AuthErrorHandler>
-          <div className="App">
-            <AppRouter />
-          </div>
+        <div className="App">
+          <AppRouter />
+        </div>
         </AuthErrorHandler>
       </MessageProvider>
     </AuthProvider>

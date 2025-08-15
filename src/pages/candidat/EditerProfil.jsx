@@ -63,7 +63,7 @@ const EditerProfil = () => {
           achievements: candidateData.achievements || '',
           cv: candidateData.cv || null,
           image: candidateData.image || null
-        });
+  });
       } catch (err) {
         console.error('Erreur lors de la récupération du profil:', err);
         setError('Erreur lors de la récupération du profil');
@@ -266,10 +266,10 @@ const EditerProfil = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
                   <div className="relative">
-                    <input
-                      type="email"
-                      value={profileData.email}
-                      onChange={(e) => handleProfileChange('email', e.target.value)}
+                  <input
+                    type="email"
+                    value={profileData.email}
+                    onChange={(e) => handleProfileChange('email', e.target.value)}
                       disabled={!emailVerificationStatus.isVerified}
                       className={`w-full px-3 py-2 pr-12 border rounded-lg transition duration-200 ${
                         !emailVerificationStatus.isVerified 
@@ -277,8 +277,8 @@ const EditerProfil = () => {
                           : 'border-gray-300 focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent'
                       }`}
                       title={!emailVerificationStatus.isVerified ? "L'email ne peut pas être modifié tant qu'il n'est pas vérifié" : ""}
-                      required
-                    />
+                    required
+                  />
                     {!emailVerificationStatus.isVerified && (
                       <button
                         type="button"
@@ -522,7 +522,7 @@ const EditerProfil = () => {
                 <p>
                   {candidateProfile.cv ? 'CV téléchargé' : 'Téléchargez votre CV pour être visible'}
                 </p>
-              </div>
+                </div>
               <div className="flex items-start space-x-2">
                 <i className={`${candidateProfile.image ? 'fas fa-check-circle text-green-500' : 'fas fa-exclamation-circle text-orange-500'} mt-1`}></i>
                 <p>

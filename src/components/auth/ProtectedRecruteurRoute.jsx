@@ -10,13 +10,13 @@ const ProtectedRecruteurRoute = ({ children }) => {
     if (!loading) {
       // Si l'utilisateur n'est pas connecté, rediriger vers la page d'accueil
       if (!isAuthenticated || !user) {
-        navigate('/?redirected=true&reason=not_authenticated', { replace: true });
+        navigate('/home?redirected=true&reason=not_authenticated', { replace: true });
         return;
       }
 
       // Si l'utilisateur n'est pas un recruteur, rediriger vers la page d'accueil
       if (user.user_type?.toLowerCase() !== 'recruteur') {
-        navigate('/?redirected=true&reason=wrong_user_type', { replace: true });
+        navigate('/home?redirected=true&reason=wrong_user_type', { replace: true });
         return;
       }
     }

@@ -1,0 +1,466 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import blogService from '../../services/blogService';
+
+const Blog = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [sortBy, setSortBy] = useState('recent');
+  const [likedArticles, setLikedArticles] = useState(new Set());
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // États pour les données de l'API
+  const [articles, setArticles] = useState([]);
+  const [popularArticles, setPopularArticles] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [featuredArticle, setFeaturedArticle] = useState(null);
+
+  // Charger les données au montage du composant
+  useEffect(() => {
+    loadBlogData();
+  }, []);
+
+  // Charger toutes les données du blog
+  const loadBlogData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Charger les articles publics
+      const postsResponse = await blogService.getPublicPosts({
+        ordering: '-publish_date',
+        page_size: 20
+      });
+
+      // Charger les articles en vedette
+      const featuredResponse = await blogService.getPublicFeaturedPosts();
+
+      // Charger les catégories
+      const categoriesResponse = await blogService.getPublicCategories();
+
+      // Charger les articles récents pour la section populaire
+      const recentResponse = await blogService.getPublicRecentPosts();
+
+      setArticles(postsResponse.results || []);
+      setFeaturedArticle(featuredResponse.results?.[0] || null);
+      setCategories(categoriesResponse || []);
+      setPopularArticles(recentResponse.results?.slice(0, 3) || []);
+
+    } catch (error) {
+      console.error('Erreur lors du chargement du blog:', error);
+      setError('Erreur lors du chargement des articles. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Gérer le like d'un article
+  const handleLike = async (articleId) => {
+    if (!isLoggedIn) {
+      alert('Vous devez être connecté pour liker un article. Veuillez vous connecter.');
+      return;
+    }
+
+    try {
+      // Trouver l'article par son ID
+      const article = articles.find(a => a.id === articleId);
+      if (!article) return;
+
+      // Appeler l'API pour liker/unliker
+      const response = await blogService.toggleLike(article.slug);
+      
+      // Mettre à jour l'état local
+      setLikedArticles(prev => {
+        const newLiked = new Set(prev);
+        if (response.liked) {
+          newLiked.add(articleId);
+        } else {
+          newLiked.delete(articleId);
+        }
+        return newLiked;
+      });
+
+      // Mettre à jour le compteur de likes dans la liste
+      setArticles(prev => prev.map(a => 
+        a.id === articleId 
+          ? { ...a, likes_count: response.likes_count }
+          : a
+      ));
+
+    } catch (error) {
+      console.error('Erreur lors du like:', error);
+      alert('Erreur lors du like. Veuillez réessayer.');
+    }
+  };
+
+  // Gérer le partage d'un article
+  const handleShare = async (articleId) => {
+    if (!isLoggedIn) {
+      alert('Vous devez être connecté pour partager un article. Veuillez vous connecter.');
+      return;
+    }
+    
+    try {
+      const article = articles.find(a => a.id === articleId);
+      if (!article) return;
+
+      if (navigator.share) {
+        await navigator.share({
+          title: article.title,
+          text: article.excerpt,
+          url: `${window.location.origin}/blog/${article.slug}`
+        });
+      } else {
+        // Fallback pour les navigateurs qui ne supportent pas l'API Web Share
+        await navigator.clipboard.writeText(`${window.location.origin}/blog/${article.slug}`);
+        alert('Lien copié dans le presse-papiers !');
+      }
+    } catch (error) {
+      console.error('Erreur lors du partage:', error);
+    }
+  };
+
+  // Gérer l'abonnement à la newsletter
+  const handleNewsletterSubscribe = async (e) => {
+    e.preventDefault();
+    const email = e.target.email.value;
+    if (email) {
+      try {
+        // Ici vous pouvez ajouter l'appel API pour l'abonnement à la newsletter
+        alert(`Merci ! Vous êtes maintenant abonné à notre newsletter avec l'email : ${email}`);
+        e.target.email.value = '';
+      } catch (error) {
+        console.error('Erreur lors de l\'abonnement:', error);
+        alert('Erreur lors de l\'abonnement. Veuillez réessayer.');
+      }
+    }
+  };
+
+  // Filtrer les articles selon les critères
+  const filteredArticles = articles.filter(article => {
+    const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         article.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !selectedCategory || article.category?.id?.toString() === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  // Trier les articles
+  const sortedArticles = [...filteredArticles].sort((a, b) => {
+    switch (sortBy) {
+      case 'popular':
+        return (b.views_count || 0) - (a.views_count || 0);
+      case 'trending':
+        return (b.likes_count || 0) - (a.likes_count || 0);
+      case 'recent':
+      default:
+        return new Date(b.publish_date || b.created_at) - new Date(a.publish_date || a.created_at);
+    }
+  });
+
+  // Afficher un loader pendant le chargement
+  if (loading) {
+    return (
+      <div className="flex-1 p-4 lg:p-6 max-w-7xl mx-auto w-full">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <i className="fas fa-spinner fa-spin text-4xl text-fuchsia-600 mb-4"></i>
+            <p className="text-gray-600">Chargement des articles...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Afficher une erreur si le chargement a échoué
+  if (error) {
+    return (
+      <div className="flex-1 p-4 lg:p-6 max-w-7xl mx-auto w-full">
+        <div className="text-center py-8">
+          <i className="fas fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
+          <p className="text-red-600 mb-4">{error}</p>
+          <button 
+            onClick={loadBlogData}
+            className="bg-fuchsia-600 text-white px-6 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200"
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 p-4 lg:p-6 max-w-7xl mx-auto w-full">
+      {/* Page Header */}
+      <div className="mb-6 lg:mb-8">
+        <div className="text-center">
+          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Blog Destiny Jobs</h1>
+          <p className="text-gray-600 text-lg">Découvrez les dernières actualités et conseils carrière</p>
+        </div>
+      </div>
+
+      {/* Featured Article */}
+      {featuredArticle && (
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
+          <div className="relative">
+            <img 
+              src={featuredArticle.featured_image || "https://via.placeholder.com/800x400"} 
+              alt="Article vedette" 
+              className="w-full h-64 lg:h-80 object-cover" 
+            />
+            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end">
+              <div className="p-6 text-white">
+                <span className="bg-fuchsia-600 text-white px-3 py-1 rounded-full text-sm font-medium mb-3 inline-block">
+                  À la Une
+                </span>
+                <h2 className="text-2xl lg:text-3xl font-bold mb-2">{featuredArticle.title}</h2>
+                <p className="text-gray-200 mb-4">{featuredArticle.excerpt}</p>
+                <div className="flex items-center space-x-4 text-sm">
+                  <span className="flex items-center">
+                    <i className="fas fa-calendar mr-1"></i>
+                    {new Date(featuredArticle.publish_date || featuredArticle.created_at).toLocaleDateString('fr-FR', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric'
+                    })}
+                  </span>
+                  <span className="flex items-center">
+                    <i className="fas fa-user mr-1"></i>
+                    {featuredArticle.author?.username || 'Auteur inconnu'}
+                  </span>
+                  <span className="flex items-center">
+                    <i className="fas fa-heart mr-1"></i>
+                    {featuredArticle.likes_count || 0} likes
+                  </span>
+                </div>
+                <Link 
+                  to={`/blog/${featuredArticle.slug}`}
+                  className="inline-block mt-4 bg-fuchsia-600 text-white px-6 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200"
+                >
+                  Lire l'article
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Filters and Search */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div className="p-4 lg:p-6">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1">
+              <div className="relative">
+                <i className="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                <input 
+                  type="text" 
+                  placeholder="Rechercher des articles..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500"
+                />
+              </div>
+            </div>
+            
+            {/* Category Filter */}
+            <div className="lg:w-48">
+              <select 
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500"
+              >
+                <option value="">Toutes catégories</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Sort */}
+            <div className="lg:w-48">
+              <select 
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500"
+              >
+                <option value="recent">Plus récents</option>
+                <option value="popular">Plus populaires</option>
+                <option value="trending">Tendances</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Blog Articles Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Main Articles Column */}
+        <div className="lg:col-span-2 space-y-6">
+          {sortedArticles.length > 0 ? (
+            sortedArticles.map((article) => (
+              <article key={article.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-300">
+                <div className="flex flex-col sm:flex-row">
+                  <div className="sm:w-1/3">
+                    <img 
+                      src={article.featured_image || "https://via.placeholder.com/300x200"} 
+                      alt="Article" 
+                      className="w-full h-48 sm:h-full object-cover" 
+                    />
+                  </div>
+                  <div className="flex-1 p-6">
+                    <div className="flex items-center mb-3">
+                      <span className="bg-fuchsia-100 text-fuchsia-800 px-2 py-1 rounded-full text-xs font-medium">
+                        {article.category?.name || 'Sans catégorie'}
+                      </span>
+                      <span className="text-gray-500 text-sm ml-3">
+                        <i className="fas fa-calendar mr-1"></i>
+                        {new Date(article.publish_date || article.created_at).toLocaleDateString('fr-FR', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 hover:text-fuchsia-600 cursor-pointer">
+                      <Link to={`/blog/${article.slug}`}>
+                        {article.title}
+                      </Link>
+                    </h3>
+                    <p className="text-gray-600 mb-4 line-clamp-3">
+                      {article.excerpt}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2 text-sm text-gray-500">
+                        <span>{article.author?.username || 'Auteur inconnu'}</span>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <button 
+                          onClick={() => handleLike(article.id)} 
+                          className={`flex items-center space-x-1 transition-colors duration-200 ${
+                            likedArticles.has(article.id) ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
+                          }`}
+                        >
+                          <i className={likedArticles.has(article.id) ? 'fas fa-heart' : 'far fa-heart'}></i>
+                          <span className="like-count">{article.likes_count || 0}</span>
+                        </button>
+                        <button 
+                          onClick={() => handleShare(article.id)}
+                          className="flex items-center space-x-1 text-gray-500 hover:text-blue-500 transition-colors duration-200"
+                        >
+                          <i className="fas fa-share"></i>
+                          <span>Partager</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))
+          ) : (
+            <div className="text-center py-8">
+              <i className="fas fa-search text-gray-400 text-4xl mb-4"></i>
+              <p className="text-gray-500">Aucun article trouvé avec ces critères.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Popular Articles */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+              <i className="fas fa-fire text-orange-500 mr-2"></i>
+              Articles populaires
+            </h3>
+            <div className="space-y-4">
+              {popularArticles.map((article) => (
+                <div key={article.id} className="flex items-start space-x-3">
+                  <img 
+                    src={article.featured_image || "https://via.placeholder.com/60x60"} 
+                    alt="Article" 
+                    className="w-15 h-15 rounded object-cover" 
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-gray-900 text-sm mb-1 hover:text-fuchsia-600 cursor-pointer">
+                      <Link to={`/blog/${article.slug}`}>
+                        {article.title}
+                      </Link>
+                    </h4>
+                    <div className="flex items-center text-xs text-gray-500">
+                      <i className="fas fa-heart text-red-400 mr-1"></i>
+                      <span>{article.likes_count || 0} likes</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Categories */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Catégories</h3>
+            <div className="space-y-2">
+              {categories.map((category) => (
+                <button 
+                  key={category.id}
+                  onClick={() => setSelectedCategory(selectedCategory === category.id.toString() ? '' : category.id.toString())}
+                  className={`w-full flex items-center justify-between text-left p-2 rounded-lg transition-colors duration-200 ${
+                    selectedCategory === category.id.toString() 
+                      ? 'bg-fuchsia-100 text-fuchsia-700' 
+                      : 'text-gray-700 hover:text-fuchsia-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <span>{category.name}</span>
+                  <span className="text-sm text-gray-500">{articles.filter(a => a.category?.id === category.id).length}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Newsletter */}
+          <div className="bg-gradient-to-r from-fuchsia-600 to-purple-600 rounded-lg p-6 text-white">
+            <h3 className="text-lg font-bold mb-2">Newsletter</h3>
+            <p className="text-sm mb-4 text-fuchsia-100">Recevez les derniers articles directement dans votre boîte mail</p>
+            <form onSubmit={handleNewsletterSubscribe} className="space-y-3">
+              <input 
+                type="email" 
+                name="email"
+                placeholder="Votre email" 
+                className="w-full px-3 py-2 rounded-lg text-gray-900 placeholder-gray-500"
+                required
+              />
+              <button 
+                type="submit"
+                className="w-full bg-white text-fuchsia-600 py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 font-medium"
+              >
+                S'abonner
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      {/* Pagination - À implémenter avec l'API */}
+      {articles.length > 0 && (
+        <div className="flex items-center justify-center space-x-2 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <button className="px-3 py-1 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 disabled:opacity-50" disabled>
+            <i className="fas fa-chevron-left mr-1"></i>
+            Précédent
+          </button>
+          <button className="px-3 py-1 bg-fuchsia-600 text-white rounded-md text-sm">1</button>
+          <button className="px-3 py-1 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50">
+            Suivant
+            <i className="fas fa-chevron-right ml-1"></i>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Blog;

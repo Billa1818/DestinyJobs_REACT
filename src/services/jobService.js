@@ -132,6 +132,295 @@ class JobService {
     }
   }
 
+  // ===== NOUVELLES MÉTHODES POUR RECRUTEURS =====
+
+  /**
+   * Création d'une offre d'emploi par un recruteur
+   * @param {Object} jobData - Données de l'offre
+   * @returns {Promise} - Promesse contenant l'offre créée
+   */
+  async createJobOffer(jobData) {
+    try {
+      const response = await api.post('/api/jobs/job-offers/', jobData);
+      return response.data;
+    } catch (error) {
+      throw this.handleJobError(error, 'Erreur lors de la création de l\'offre');
+    }
+  }
+
+  /**
+   * Récupération des offres d'emploi d'un recruteur
+   * @param {Object} filters - Filtres de recherche
+   * @returns {Promise} - Promesse contenant les offres
+   */
+  async getMyJobOffers(filters = {}) {
+    try {
+      const response = await api.get('/api/jobs/my-job-offers/', { params: filters });
+      return response.data;
+    } catch (error) {
+      throw this.handleJobError(error, 'Erreur lors de la récupération de vos offres');
+    }
+  }
+
+  /**
+   * Récupération du détail complet d'une offre d'emploi (recruteur)
+   * @param {string} offerId - ID de l'offre
+   * @returns {Promise} - Promesse contenant l'offre
+   */
+  async getJobOfferDetail(offerId) {
+    try {
+      const response = await api.get(`/api/jobs/job-offers/${offerId}/`);
+      return response.data;
+    } catch (error) {
+      throw this.handleJobError(error, 'Erreur lors de la récupération du détail de l\'offre');
+    }
+  }
+
+  /**
+   * Récupération du détail public d'une offre d'emploi (pour visiteurs)
+   * @param {string} offerId - ID de l'offre
+   * @returns {Promise} - Promesse contenant l'offre
+   */
+  async getPublicJobOfferDetail(offerId) {
+    try {
+      // Utiliser uniquement l'endpoint public correct
+      const response = await api.get(`/api/jobs/job-offers/${offerId}/`);
+      return response.data;
+    } catch (error) {
+      // Pour cette méthode, on préserve l'erreur originale pour permettre la gestion des codes de statut
+      // On ne passe pas par handleJobError qui perd les informations de réponse
+      console.error('Erreur API getPublicJobOfferDetail:', error);
+      
+      // Si l'erreur a une réponse avec un statut, on la laisse remonter
+      if (error.response) {
+        throw error;
+      }
+      
+      // Sinon, on utilise handleJobError pour les autres types d'erreurs
+      throw this.handleJobError(error, 'Erreur lors de la récupération du détail de l\'offre');
+    }
+  }
+
+  /**
+   * Mise à jour d'une offre d'emploi par un recruteur
+   * @param {string} offerId - ID de l'offre
+   * @param {Object} updateData - Nouvelles données
+   * @returns {Promise} - Promesse contenant l'offre mise à jour
+   */
+  async updateJobOffer(offerId, updateData) {
+    try {
+      const response = await api.patch(`/api/jobs/job-offers/${offerId}/`, updateData);
+      return response.data;
+    } catch (error) {
+      throw this.handleJobError(error, 'Erreur lors de la mise à jour de l\'offre');
+    }
+  }
+
+  /**
+   * Suppression d'une offre d'emploi par un recruteur
+   * @param {string} offerId - ID de l'offre
+   * @returns {Promise} - Promesse contenant la réponse
+   */
+  async deleteJobOffer(offerId) {
+    try {
+      const response = await api.delete(`/api/jobs/job-offers/${offerId}/`);
+      return response.data;
+    } catch (error) {
+      throw this.handleJobError(error, 'Erreur lors de la suppression de l\'offre');
+    }
+  }
+
+  /**
+   * Recherche avancée d'offres d'emploi
+   * @param {Object} searchParams - Paramètres de recherche
+   * @returns {Promise} - Promesse contenant les résultats
+   */
+  async searchJobOffers(searchParams) {
+    try {
+      const response = await api.post('/api/jobs/search/', searchParams);
+      return response.data;
+    } catch (error) {
+      throw this.handleJobError(error, 'Erreur lors de la recherche d\'offres');
+    }
+  }
+
+  // ===== NOUVELLES MÉTHODES POUR L'API PUBLIQUE DES OFFRES D'EMPLOI =====
+
+  /**
+   * Récupération des offres d'emploi publiques avec filtres et pagination
+   * @param {Object} filters - Filtres de recherche
+   * @param {number} page - Numéro de page
+   * @param {number} pageSize - Taille de page
+   * @returns {Promise} - Promesse contenant les offres avec pagination
+   */
+  async getPublicJobOffers(filters = {}, page = 1, pageSize = 20) {
+    try {
+      const params = {
+        page: page.toString(),
+        page_size: pageSize.toString(),
+        ...filters
+      };
+      
+      const response = await api.get('/api/jobs/job-offers/', { params });
+      return response.data;
+    } catch (error) {
+      throw this.handleJobError(error, 'Erreur lors de la récupération des offres d\'emploi');
+    }
+  }
+
+  /**
+   * Recherche d'offres par mot-clé
+   * @param {string} query - Terme de recherche
+   * @param {number} page - Numéro de page
+   * @param {number} pageSize - Taille de page
+   * @returns {Promise} - Promesse contenant les résultats
+   */
+  async searchPublicJobOffers(query, page = 1, pageSize = 20) {
+    return this.getPublicJobOffers({ query }, page, pageSize);
+  }
+
+  /**
+   * Filtrage par département
+   * @param {number} departmentId - ID du département
+   * @param {number} page - Numéro de page
+   * @param {number} pageSize - Taille de page
+   * @returns {Promise} - Promesse contenant les résultats
+   */
+  async filterByDepartment(departmentId, page = 1, pageSize = 20) {
+    return this.getPublicJobOffers({ department: departmentId }, page, pageSize);
+  }
+
+  /**
+   * Filtrage par catégorie
+   * @param {number} categoryId - ID de la catégorie
+   * @param {number} page - Numéro de page
+   * @param {number} pageSize - Taille de page
+   * @returns {Promise} - Promesse contenant les résultats
+   */
+  async filterByCategory(categoryId, page = 1, pageSize = 20) {
+    return this.getPublicJobOffers({ category: categoryId }, page, pageSize);
+  }
+
+  /**
+   * Filtrage par type de contrat
+   * @param {string} contractType - Type de contrat
+   * @param {number} page - Numéro de page
+   * @param {number} pageSize - Taille de page
+   * @returns {Promise} - Promesse contenant les résultats
+   */
+  async filterByContractType(contractType, page = 1, pageSize = 20) {
+    return this.getPublicJobOffers({ contract_type: contractType }, page, pageSize);
+  }
+
+  /**
+   * Filtrage par expérience requise
+   * @param {string} experience - Niveau d'expérience
+   * @param {number} page - Numéro de page
+   * @param {number} pageSize - Taille de page
+   * @returns {Promise} - Promesse contenant les résultats
+   */
+  async filterByExperience(experience, page = 1, pageSize = 20) {
+    return this.getPublicJobOffers({ experience_required: experience }, page, pageSize);
+  }
+
+  /**
+   * Filtrage par mode de travail
+   * @param {string} workMode - Mode de travail
+   * @param {number} page - Numéro de page
+   * @param {number} pageSize - Taille de page
+   * @returns {Promise} - Promesse contenant les résultats
+   */
+  async filterByWorkMode(workMode, page = 1, pageSize = 20) {
+    return this.getPublicJobOffers({ work_mode: workMode }, page, pageSize);
+  }
+
+  /**
+   * Filtrage par salaire
+   * @param {number} minSalary - Salaire minimum
+   * @param {number} maxSalary - Salaire maximum (optionnel)
+   * @param {number} page - Numéro de page
+   * @param {number} pageSize - Taille de page
+   * @returns {Promise} - Promesse contenant les résultats
+   */
+  async filterBySalary(minSalary, maxSalary = null, page = 1, pageSize = 20) {
+    const filters = { salary_min: minSalary };
+    if (maxSalary) filters.salary_max = maxSalary;
+    return this.getPublicJobOffers(filters, page, pageSize);
+  }
+
+  /**
+   * Filtrage par localisation
+   * @param {number} countryId - ID du pays
+   * @param {number} regionId - ID de la région (optionnel)
+   * @param {number} page - Numéro de page
+   * @param {number} pageSize - Taille de page
+   * @returns {Promise} - Promesse contenant les résultats
+   */
+  async filterByLocation(countryId, regionId = null, page = 1, pageSize = 20) {
+    const filters = { country: countryId };
+    if (regionId) filters.region = regionId;
+    return this.getPublicJobOffers(filters, page, pageSize);
+  }
+
+  /**
+   * Filtrage par localisation textuelle
+   * @param {string} location - Texte de localisation
+   * @param {number} page - Numéro de page
+   * @param {number} pageSize - Taille de page
+   * @returns {Promise} - Promesse contenant les résultats
+   */
+  async filterByLocationText(location, page = 1, pageSize = 20) {
+    return this.getPublicJobOffers({ location }, page, pageSize);
+  }
+
+  /**
+   * Filtrage des offres urgentes
+   * @param {number} page - Numéro de page
+   * @param {number} pageSize - Taille de page
+   * @returns {Promise} - Promesse contenant les résultats
+   */
+  async getUrgentJobOffers(page = 1, pageSize = 20) {
+    return this.getPublicJobOffers({ is_urgent: true }, page, pageSize);
+  }
+
+  /**
+   * Filtrage des offres sponsorisées
+   * @param {number} page - Numéro de page
+   * @param {number} pageSize - Taille de page
+   * @returns {Promise} - Promesse contenant les résultats
+   */
+  async getSponsoredJobOffers(page = 1, pageSize = 20) {
+    return this.getPublicJobOffers({ is_sponsored: true }, page, pageSize);
+  }
+
+  /**
+   * Tri des offres
+   * @param {string} sortBy - Champ de tri
+   * @param {string} sortOrder - Ordre de tri (asc/desc)
+   * @param {number} page - Numéro de page
+   * @param {number} pageSize - Taille de page
+   * @returns {Promise} - Promesse contenant les résultats
+   */
+  async sortJobOffers(sortBy, sortOrder = 'desc', page = 1, pageSize = 20) {
+    return this.getPublicJobOffers({ 
+      sort_by: sortBy, 
+      sort_order: sortOrder 
+    }, page, pageSize);
+  }
+
+  /**
+   * Combinaison de filtres avancés
+   * @param {Object} filters - Objet contenant tous les filtres
+   * @param {number} page - Numéro de page
+   * @param {number} pageSize - Taille de page
+   * @returns {Promise} - Promesse contenant les résultats
+   */
+  async getFilteredJobOffers(filters = {}, page = 1, pageSize = 20) {
+    return this.getPublicJobOffers(filters, page, pageSize);
+  }
+
+  // ===== MÉTHODES EXISTANTES POUR BOURSES =====
+
   /**
    * Récupération des bourses
    * @param {Object} filters - Filtres de recherche
@@ -242,20 +531,6 @@ class JobService {
       return response.data;
     } catch (error) {
       throw this.handleJobError(error, 'Erreur lors de la récupération des candidatures à la bourse');
-    }
-  }
-
-  /**
-   * Recherche avancée d'offres
-   * @param {Object} searchParams - Paramètres de recherche
-   * @returns {Promise} - Promesse contenant les résultats
-   */
-  async searchJobs(searchParams) {
-    try {
-      const response = await api.post('/api/jobs/search/', searchParams);
-      return response.data;
-    } catch (error) {
-      throw this.handleJobError(error, 'Erreur lors de la recherche');
     }
   }
 

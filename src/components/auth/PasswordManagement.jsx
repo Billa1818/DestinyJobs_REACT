@@ -9,9 +9,6 @@ const PasswordManagement = () => {
     confirmPassword: ''
   });
   const [resetEmail, setResetEmail] = useState('');
-  const [resetToken, setResetToken] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
@@ -69,43 +66,7 @@ const PasswordManagement = () => {
     }
   };
 
-  const handleResetConfirm = async (e) => {
-    e.preventDefault();
-    
-    if (!resetToken || !newPassword || !confirmNewPassword) {
-      setMessage({ type: 'error', text: 'Tous les champs sont obligatoires' });
-      return;
-    }
 
-    if (newPassword !== confirmNewPassword) {
-      setMessage({ type: 'error', text: 'Les mots de passe ne correspondent pas' });
-      return;
-    }
-
-    if (newPassword.length < 8) {
-      setMessage({ type: 'error', text: 'Le nouveau mot de passe doit contenir au moins 8 caractères' });
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setMessage({ type: '', text: '' });
-      
-      await authService.resetPasswordConfirm({
-        token: resetToken,
-        newPassword: newPassword
-      });
-      
-      setMessage({ type: 'success', text: 'Mot de passe réinitialisé avec succès' });
-      setResetToken('');
-      setNewPassword('');
-      setConfirmNewPassword('');
-    } catch (error) {
-      setMessage({ type: 'error', text: error.message || 'Erreur lors de la réinitialisation' });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm">
@@ -259,67 +220,7 @@ const PasswordManagement = () => {
               </form>
             </div>
 
-            {/* Confirm Reset */}
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                <i className="fas fa-check-circle mr-2 text-green-600"></i>
-                Confirmer la réinitialisation
-              </h3>
-              <form onSubmit={handleResetConfirm} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Token de réinitialisation
-                  </label>
-                  <input
-                    type="text"
-                    value={resetToken}
-                    onChange={(e) => setResetToken(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent"
-                    placeholder="Token reçu par email"
-                    required
-                  />
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nouveau mot de passe
-                  </label>
-                  <input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent"
-                    required
-                    minLength={8}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Confirmer le nouveau mot de passe
-                  </label>
-                  <input
-                    type="password"
-                    value={confirmNewPassword}
-                    onChange={(e) => setConfirmNewPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition duration-200 disabled:opacity-50"
-                >
-                  {loading ? (
-                    <span><i className="fas fa-spinner fa-spin mr-2"></i>Réinitialisation...</span>
-                  ) : (
-                    <span><i className="fas fa-check mr-2"></i>Réinitialiser le mot de passe</span>
-                  )}
-                </button>
-              </form>
-            </div>
           </div>
         )}
       </div>

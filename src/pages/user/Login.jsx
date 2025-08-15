@@ -27,21 +27,8 @@ const Login = () => {
     }
   }, [location, navigate, success]);
 
-  // Rediriger si l'utilisateur est déjà connecté
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      // Rediriger selon le type d'utilisateur
-      if (user.user_type === 'recruteur') {
-        navigate('/recruteur/dashboard');
-      } else if (user.user_type === 'prestataire') {
-        navigate('/prestataire/home');
-      } else if (user.user_type === 'candidat') {
-        navigate('/candidat');
-      } else {
-        navigate('/');
-      }
-    }
-  }, [isAuthenticated, user, navigate]);
+  // Supprimer le useEffect de redirection automatique pour éviter la double redirection
+  // La redirection sera gérée par le composant ProtectedRoute
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -99,9 +86,20 @@ const Login = () => {
       console.log('Login: Envoi des credentials:', credentials);
       console.log('Login: Type des credentials:', typeof credentials.login, typeof credentials.password);
       
-      await login(credentials);
-      // La redirection est gérée par le contexte d'authentification
+      const response = await login(credentials);
+      // Redirection manuelle après connexion réussie
       success('Connexion réussie', 'Bienvenue sur Destiny Jobs !');
+      
+      // Rediriger selon le type d'utilisateur
+      if (response.user.user_type === 'recruteur') {
+        navigate('/recruteur/dashboard');
+      } else if (response.user.user_type === 'prestataire') {
+        navigate('/prestataire/home');
+      } else if (response.user.user_type === 'candidat') {
+        navigate('/candidat');
+      } else {
+        navigate('/home');
+      }
     } catch (error) {
       console.error('Login: Erreur complète:', error);
       console.error('Login: Response data:', error.response?.data);

@@ -144,7 +144,7 @@ const CandidateProfileSection = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <div className="flex items-center space-x-2">
-              <p className="text-gray-900">{profileData?.email}</p>
+            <p className="text-gray-900">{profileData?.email}</p>
               {!emailVerificationStatus.isVerified && (
                 <button
                   type="button"
@@ -191,11 +191,11 @@ const CandidateProfileSection = () => {
       </div>
 
       {/* Photo de profil */}
-      <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
           <i className="fas fa-camera mr-2 text-fuchsia-600"></i>
           Photo de profil
-        </h2>
+          </h2>
         
         {/* Composant d'upload pour la photo */}
         <FileUpload
@@ -222,8 +222,8 @@ const CandidateProfileSection = () => {
             }, 1000);
           }}
           maxSize={2} // 2MB max pour les images
-        />
-      </div>
+                />
+              </div>
 
       {/* CV */}
       <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
@@ -233,19 +233,19 @@ const CandidateProfileSection = () => {
         </h2>
         
         {/* Affichage du CV actuel */}
-        {candidateProfile?.cv && (
+            {candidateProfile?.cv && (
           <div className="mb-4">
-            <a 
+                <a 
               href={getCorrectImageUrl(candidateProfile.cv)} 
-              target="_blank" 
-              rel="noopener noreferrer"
+                  target="_blank" 
+                  rel="noopener noreferrer"
               className="inline-flex items-center px-4 py-2 bg-fuchsia-100 text-fuchsia-700 rounded-lg hover:bg-fuchsia-200 transition duration-200"
-            >
-              <i className="fas fa-download mr-2"></i>
+                >
+                  <i className="fas fa-download mr-2"></i>
               Télécharger le CV actuel
-            </a>
-          </div>
-        )}
+                </a>
+              </div>
+            )}
         
         {/* Composant d'upload pour le CV */}
         <FileUpload
@@ -273,34 +273,34 @@ const CandidateProfileSection = () => {
           }}
           maxSize={5} // 5MB max pour les CV
         />
-      </div>
+        </div>
 
       {/* À propos */}
-      <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          <i className="fas fa-info-circle mr-2 text-fuchsia-600"></i>
-          À propos
-        </h2>
+        <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            <i className="fas fa-info-circle mr-2 text-fuchsia-600"></i>
+            À propos
+          </h2>
         <p className="text-gray-700 leading-relaxed">
           {candidateProfile?.about || 'Aucune description renseignée'}
         </p>
-      </div>
+        </div>
 
       {/* Expérience */}
-      <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          <i className="fas fa-briefcase mr-2 text-fuchsia-600"></i>
-          Expérience professionnelle
-        </h2>
-        <div className="space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Années d'expérience</label>
+        <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            <i className="fas fa-briefcase mr-2 text-fuchsia-600"></i>
+            Expérience professionnelle
+          </h2>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Années d'expérience</label>
             <p className="text-gray-900">
               {candidateProfile?.years_experience ? `${candidateProfile.years_experience} an(s)` : 'Non renseigné'}
             </p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Détails de l'expérience</label>
+            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Détails de l'expérience</label>
             <p className="text-gray-700">
               {candidateProfile?.professional_experience || 'Non renseigné'}
             </p>
@@ -309,23 +309,23 @@ const CandidateProfileSection = () => {
       </div>
 
       {/* Formation */}
-      <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          <i className="fas fa-graduation-cap mr-2 text-fuchsia-600"></i>
-          Formation
-        </h2>
+        <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            <i className="fas fa-graduation-cap mr-2 text-fuchsia-600"></i>
+            Formation
+          </h2>
         <p className="text-gray-700">
           {candidateProfile?.education || 'Non renseigné'}
         </p>
-      </div>
+        </div>
 
       {/* Technologies */}
-      <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          <i className="fas fa-code mr-2 text-fuchsia-600"></i>
-          Technologies
-        </h2>
-        <div className="flex flex-wrap gap-2">
+        <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            <i className="fas fa-code mr-2 text-fuchsia-600"></i>
+            Technologies
+          </h2>
+          <div className="flex flex-wrap gap-2">
           {candidateProfile?.technologies ? (
             candidateProfile.technologies.split(',').map((tech, index) => (
               <span 
@@ -342,42 +342,42 @@ const CandidateProfileSection = () => {
       </div>
 
       {/* Compétences */}
-      <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          <i className="fas fa-star mr-2 text-fuchsia-600"></i>
-          Compétences
-        </h2>
+        <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            <i className="fas fa-star mr-2 text-fuchsia-600"></i>
+            Compétences
+          </h2>
         <p className="text-gray-700">
           {candidateProfile?.skills || 'Aucune compétence renseignée'}
         </p>
-      </div>
+        </div>
 
       {/* Réalisations */}
-      <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          <i className="fas fa-trophy mr-2 text-fuchsia-600"></i>
-          Réalisations
-        </h2>
+        <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            <i className="fas fa-trophy mr-2 text-fuchsia-600"></i>
+            Réalisations
+          </h2>
         <p className="text-gray-700">
           {candidateProfile?.achievements || 'Aucune réalisation renseignée'}
         </p>
-      </div>
+        </div>
 
       {/* Localisation */}
-      <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          <i className="fas fa-map-marker-alt mr-2 text-fuchsia-600"></i>
-          Localisation
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Pays</label>
+        <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            <i className="fas fa-map-marker-alt mr-2 text-fuchsia-600"></i>
+            Localisation
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Pays</label>
             <p className="text-gray-900">
               {locationData?.country?.name || 'Non renseigné'}
             </p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Région</label>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Région</label>
             <p className="text-gray-900">
               {locationData?.region?.name || 'Non renseigné'}
             </p>
@@ -393,7 +393,7 @@ const CandidateProfileSection = () => {
             <p className="text-gray-900">
               {locationData?.postal_code || 'Non renseigné'}
             </p>
-          </div>
+              </div>
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
             <p className="text-gray-900">
@@ -404,28 +404,28 @@ const CandidateProfileSection = () => {
       </div>
 
       {/* Score de visibilité */}
-      <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          <i className="fas fa-chart-line mr-2 text-fuchsia-600"></i>
-          Score de visibilité
-        </h2>
-        <div className="flex items-center space-x-4">
-          <div className="flex-1">
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
-              <div 
-                className="bg-fuchsia-600 h-2.5 rounded-full transition-all duration-300" 
+        <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            <i className="fas fa-chart-line mr-2 text-fuchsia-600"></i>
+            Score de visibilité
+          </h2>
+          <div className="flex items-center space-x-4">
+            <div className="flex-1">
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div 
+                  className="bg-fuchsia-600 h-2.5 rounded-full transition-all duration-300" 
                 style={{ width: `${candidateProfile?.visibility_score || 0}%` }}
-              ></div>
+                ></div>
+              </div>
             </div>
-          </div>
-          <span className="text-lg font-semibold text-fuchsia-600">
+            <span className="text-lg font-semibold text-fuchsia-600">
             {candidateProfile?.visibility_score || 0}%
-          </span>
+            </span>
+          </div>
+          <p className="text-sm text-gray-600 mt-2">
+            Ce score indique la qualité et la complétude de votre profil
+          </p>
         </div>
-        <p className="text-sm text-gray-600 mt-2">
-          Ce score indique la qualité et la complétude de votre profil
-        </p>
-      </div>
 
       {/* Message si profil incomplet */}
       {(!candidateProfile?.about || !candidateProfile?.skills || !candidateProfile?.technologies) && (

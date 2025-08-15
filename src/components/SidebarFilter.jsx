@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 
 const SidebarFilter = ({ onFilterChange, activeFilters = {} }) => {
   const [expandedSections, setExpandedSections] = useState({
-    localisations: true,
-    contrats: true,
-    fonctions: true,
-    secteurs: true
+    localisations: false,
+    contrats: false,
+    fonctions: false,
+    secteurs: false
   });
 
   const filterData = {
@@ -119,9 +119,6 @@ const SidebarFilter = ({ onFilterChange, activeFilters = {} }) => {
                   className="rounded border-gray-300 text-fuchsia-600 focus:ring-fuchsia-500"
                 />
                 <span className="flex-1 text-sm text-gray-700">{item.label}</span>
-                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                  {item.count}
-                </span>
               </label>
             ))}
           </div>

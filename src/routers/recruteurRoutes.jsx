@@ -26,8 +26,7 @@ import Settings from '../pages/recruteur/Settings';
 import Notifications from '../pages/recruteur/Notifications';
 import Messagerie from '../pages/recruteur/Messagerie';
 import BlogPublier from '../pages/recruteur/BlogPublier';
-import BlogGerer from '../pages/recruteur/BlogGerer';
-import BlogCategories from '../pages/recruteur/BlogCategories';
+import CreeArticle from '../pages/recruteur/CreeArticle';
 
 const recruteurRoutes = [
   // Dashboard principal
@@ -77,9 +76,8 @@ const recruteurRoutes = [
   { path: 'messagerie', element: <Messagerie /> },
   
   // Gestion du blog
-  { path: 'blog/publier', element: <BlogPublier /> },
-  { path: 'blog/gerer', element: <BlogGerer /> },
-  { path: 'blog/categories', element: <BlogCategories /> }
+  { path: 'creer-article', element: <CreeArticle /> },
+  { path: 'blog-publier', element: <BlogPublier /> }
 ];
 
 export default recruteurRoutes;
