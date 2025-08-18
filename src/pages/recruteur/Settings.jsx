@@ -56,6 +56,36 @@ const Settings = () => {
   const [countries, setCountries] = useState([]);
   const [regions, setRegions] = useState([]);
 
+  // Préférences de notifications
+  const [notificationPreferences, setNotificationPreferences] = useState({
+    email_notifications: true,
+    email_new_offers: true,
+    email_application_updates: true,
+    email_blog_updates: false,
+    email_subscription_updates: true,
+    email_daily_digest: false,
+    email_weekly_report: false,
+    email_account_validation: true,
+    email_ai_services: true,
+    email_recruiter_updates: true,
+    
+    push_notifications: true,
+    push_new_offers: true,
+    push_application_updates: true,
+    push_messages: true,
+    push_subscription_reminders: true,
+    push_account_validation: true,
+    push_ai_services: true,
+    
+    sms_notifications: false,
+    sms_urgent_updates: false,
+    sms_account_validation: false,
+    
+    notification_frequency: "IMMEDIATE",
+    quiet_hours_start: "22:00:00",
+    quiet_hours_end: "08:00:00"
+  });
+
   // Statut de vérification email
   const [emailVerificationStatus, setEmailVerificationStatus] = useState({
     isVerified: false,
@@ -158,6 +188,14 @@ const Settings = () => {
       const countriesData = await profileService.getCountries();
       setCountries(countriesData);
 
+      // Récupérer les préférences de notifications
+      try {
+        const notificationPrefs = await profileService.getNotificationPreferences();
+        setNotificationPreferences(notificationPrefs);
+      } catch (err) {
+        console.log('Préférences de notifications non configurées, utilisation des valeurs par défaut');
+      }
+
     } catch (err) {
       console.error('Erreur lors de la récupération du profil:', err);
       setError('Erreur lors de la récupération du profil');
@@ -238,6 +276,107 @@ const Settings = () => {
       setTimeout(() => setError(null), 5000);
     } finally {
       setEmailVerificationStatus(prev => ({ ...prev, isRequesting: false }));
+    }
+  };
+
+  // Fonction pour sauvegarder les préférences de notifications
+  const handleSaveNotificationPreferences = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      setSuccessMessage(null);
+
+      // Validation des heures de silence
+      const startTime = notificationPreferences.quiet_hours_start;
+      const endTime = notificationPreferences.quiet_hours_end;
+      
+      // Convertir les heures en minutes pour la comparaison
+      const startMinutes = parseInt(startTime.split(':')[0]) * 60 + parseInt(startTime.split(':')[1]);
+      const endMinutes = parseInt(endTime.split(':')[0]) * 60 + parseInt(endTime.split(':')[1]);
+      
+      // Si l'heure de fin est inférieure à l'heure de début, c'est une période qui traverse la nuit (valide)
+      // Mais on doit s'assurer que la différence n'est pas trop grande (max 23h59)
+      if (endMinutes < startMinutes) {
+        // Période qui traverse la nuit (ex: 22h00 à 08h00)
+        const nightDuration = (24 * 60 - startMinutes) + endMinutes;
+        if (nightDuration > 23 * 60) { // Plus de 23h
+          setError('La période de silence ne peut pas dépasser 23h59');
+          setTimeout(() => setError(null), 5000);
+          return;
+        }
+      } else {
+        // Période dans la même journée
+        const dayDuration = endMinutes - startMinutes;
+        if (dayDuration > 23 * 60) { // Plus de 23h
+          setError('La période de silence ne peut pas dépasser 23h59');
+          setTimeout(() => setError(null), 5000);
+          return;
+        }
+      }
+
+      await profileService.updateNotificationPreferences(notificationPreferences);
+      
+      setSuccessMessage('Préférences de notifications mises à jour avec succès');
+      setTimeout(() => setSuccessMessage(null), 5000);
+
+    } catch (err) {
+      console.error('Erreur lors de la sauvegarde des préférences:', err);
+      
+      // Gestion spécifique des erreurs de validation
+      if (err.response?.data?.non_field_errors) {
+        setError(err.response.data.non_field_errors.join(', '));
+      } else if (err.response?.status === 400) {
+        setError('Données invalides. Vérifiez vos informations.');
+      } else {
+        setError('Erreur lors de la sauvegarde des préférences de notifications');
+      }
+      
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Fonction pour réinitialiser les préférences aux valeurs par défaut
+  const handleResetNotificationPreferences = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      setSuccessMessage(null);
+
+      const defaultPrefs = await profileService.resetNotificationPreferencesToDefaults();
+      setNotificationPreferences(defaultPrefs);
+      
+      setSuccessMessage('Préférences réinitialisées aux valeurs par défaut');
+      setTimeout(() => setSuccessMessage(null), 5000);
+
+    } catch (err) {
+      console.error('Erreur lors de la réinitialisation des préférences:', err);
+      setError('Erreur lors de la réinitialisation des préférences');
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Fonction pour valider les heures de silence
+  const validateQuietHours = () => {
+    const startTime = notificationPreferences.quiet_hours_start;
+    const endTime = notificationPreferences.quiet_hours_end;
+    
+    if (!startTime || !endTime) return false;
+    
+    // Convertir les heures en minutes pour la comparaison
+    const startMinutes = parseInt(startTime.split(':')[0]) * 60 + parseInt(startTime.split(':')[1]);
+    const endMinutes = parseInt(endTime.split(':')[0]) * 60 + parseInt(endTime.split(':')[1]);
+    
+    // Si l'heure de fin est inférieure à l'heure de début, c'est une période qui traverse la nuit
+    if (endMinutes < startMinutes) {
+      const nightDuration = (24 * 60 - startMinutes) + endMinutes;
+      return nightDuration <= 23 * 60; // Max 23h
+    } else {
+      const dayDuration = endMinutes - startMinutes;
+      return dayDuration <= 23 * 60; // Max 23h
     }
   };
 
@@ -385,6 +524,18 @@ const Settings = () => {
               >
                     <i className="fas fa-building mr-2"></i>
                     Profil Entreprise
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('notifications')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'notifications'
+                    ? 'border-fuchsia-500 text-fuchsia-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <i className="fas fa-bell mr-2"></i>
+                Notifications
               </button>
               
               <button
@@ -682,6 +833,398 @@ const Settings = () => {
                         {saving ? 'Sauvegarde...' : 'Sauvegarder'}
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* Notifications Tab */}
+            {activeTab === 'notifications' && (
+              <div className="space-y-8">
+                {/* Notifications par Email */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    <i className="fas fa-envelope mr-2 text-fuchsia-600"></i>
+                    Notifications par Email
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">Notifications par email</label>
+                        <p className="text-xs text-gray-500">Activer/désactiver toutes les notifications par email</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences.email_notifications}
+                          onChange={(e) => setNotificationPreferences(prev => ({
+                            ...prev,
+                            email_notifications: e.target.checked
+                          }))}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-fuchsia-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-fuchsia-600"></div>
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Nouvelles offres</label>
+                          <p className="text-xs text-gray-500">Recevoir des notifications pour de nouvelles offres</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences.email_new_offers}
+                          onChange={(e) => setNotificationPreferences(prev => ({
+                            ...prev,
+                            email_new_offers: e.target.checked
+                          }))}
+                          disabled={!notificationPreferences.email_notifications}
+                          className="h-4 w-4 text-fuchsia-600 focus:ring-fuchsia-500 border-gray-300 rounded disabled:opacity-50"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Mises à jour candidatures</label>
+                          <p className="text-xs text-gray-500">Statuts, acceptation, refus</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences.email_application_updates}
+                          onChange={(e) => setNotificationPreferences(prev => ({
+                            ...prev,
+                            email_application_updates: e.target.checked
+                          }))}
+                          disabled={!notificationPreferences.email_notifications}
+                          className="h-4 w-4 text-fuchsia-600 focus:ring-fuchsia-500 border-gray-300 rounded disabled:opacity-50"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Services IA</label>
+                          <p className="text-xs text-gray-500">Analyse de compatibilité, amélioration CV</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences.email_ai_services}
+                          onChange={(e) => setNotificationPreferences(prev => ({
+                            ...prev,
+                            email_ai_services: e.target.checked
+                          }))}
+                          disabled={!notificationPreferences.email_notifications}
+                          className="h-4 w-4 text-fuchsia-600 focus:ring-fuchsia-500 border-gray-300 rounded disabled:opacity-50"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Validation compte</label>
+                          <p className="text-xs text-gray-500">Approbation, rejet du compte recruteur</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences.email_account_validation}
+                          onChange={(e) => setNotificationPreferences(prev => ({
+                            ...prev,
+                            email_account_validation: e.target.checked
+                          }))}
+                          disabled={!notificationPreferences.email_notifications}
+                          className="h-4 w-4 text-fuchsia-600 focus:ring-fuchsia-500 border-gray-300 rounded disabled:opacity-50"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Rapport quotidien</label>
+                          <p className="text-xs text-gray-500">Résumé quotidien des activités</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences.email_daily_digest}
+                          onChange={(e) => setNotificationPreferences(prev => ({
+                            ...prev,
+                            email_daily_digest: e.target.checked
+                          }))}
+                          disabled={!notificationPreferences.email_notifications}
+                          className="h-4 w-4 text-fuchsia-600 focus:ring-fuchsia-500 border-gray-300 rounded disabled:opacity-50"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Rapport hebdomadaire</label>
+                          <p className="text-xs text-gray-500">Résumé hebdomadaire des performances</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences.email_weekly_report}
+                          onChange={(e) => setNotificationPreferences(prev => ({
+                            ...prev,
+                            email_weekly_report: e.target.checked
+                          }))}
+                          disabled={!notificationPreferences.email_notifications}
+                          className="h-4 w-4 text-fuchsia-600 focus:ring-fuchsia-500 border-gray-300 rounded disabled:opacity-50"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notifications Push */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    <i className="fas fa-mobile-alt mr-2 text-fuchsia-600"></i>
+                    Notifications Push
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">Notifications push</label>
+                        <p className="text-xs text-gray-500">Activer/désactiver toutes les notifications push</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences.push_notifications}
+                          onChange={(e) => setNotificationPreferences(prev => ({
+                            ...prev,
+                            push_notifications: e.target.checked
+                          }))}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-fuchsia-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-fuchsia-600"></div>
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Nouvelles offres</label>
+                          <p className="text-xs text-gray-500">Notifications push pour nouvelles offres</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences.push_new_offers}
+                          onChange={(e) => setNotificationPreferences(prev => ({
+                            ...prev,
+                            push_new_offers: e.target.checked
+                          }))}
+                          disabled={!notificationPreferences.push_notifications}
+                          className="h-4 w-4 text-fuchsia-600 focus:ring-fuchsia-500 border-gray-300 rounded disabled:opacity-50"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Mises à jour candidatures</label>
+                          <p className="text-xs text-gray-500">Statuts, acceptation, refus</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences.push_application_updates}
+                          onChange={(e) => setNotificationPreferences(prev => ({
+                            ...prev,
+                            push_application_updates: e.target.checked
+                          }))}
+                          disabled={!notificationPreferences.push_notifications}
+                          className="h-4 w-4 text-fuchsia-600 focus:ring-fuchsia-500 border-gray-300 rounded disabled:opacity-50"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Messages</label>
+                          <p className="text-xs text-gray-500">Communication avec les candidats</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences.push_messages}
+                          onChange={(e) => setNotificationPreferences(prev => ({
+                            ...prev,
+                            push_messages: e.target.checked
+                          }))}
+                          disabled={!notificationPreferences.push_notifications}
+                          className="h-4 w-4 text-fuchsia-600 focus:ring-fuchsia-500 border-gray-300 rounded disabled:opacity-50"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Services IA</label>
+                          <p className="text-xs text-gray-500">Analyse de compatibilité terminée</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={notificationPreferences.push_ai_services}
+                          onChange={(e) => setNotificationPreferences(prev => ({
+                            ...prev,
+                            push_ai_services: e.target.checked
+                          }))}
+                          disabled={!notificationPreferences.push_notifications}
+                          className="h-4 w-4 text-fuchsia-600 focus:ring-fuchsia-500 border-gray-300 rounded disabled:opacity-50"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fréquence et Heures de Silence */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    <i className="fas fa-clock mr-2 text-fuchsia-600"></i>
+                    Fréquence et Heures de Silence
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Fréquence des notifications
+                      </label>
+                      <select
+                        value={notificationPreferences.notification_frequency}
+                        onChange={(e) => setNotificationPreferences(prev => ({
+                          ...prev,
+                          notification_frequency: e.target.value
+                        }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent"
+                      >
+                        <option value="IMMEDIATE">Immédiat</option>
+                        <option value="HOURLY">Toutes les heures</option>
+                        <option value="DAILY">Quotidien</option>
+                        <option value="WEEKLY">Hebdomadaire</option>
+                      </select>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Détermine quand les notifications sont envoyées
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Heures de silence
+                      </label>
+                      
+                      {/* Options prédéfinies */}
+                      <div className="mb-3">
+                        <p className="text-xs text-gray-600 mb-2">Options prédéfinies :</p>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setNotificationPreferences(prev => ({
+                              ...prev,
+                              quiet_hours_start: "22:00:00",
+                              quiet_hours_end: "08:00:00"
+                            }))}
+                            className="text-xs px-2 py-1 bg-fuchsia-100 text-fuchsia-700 rounded hover:bg-fuchsia-200 transition-colors"
+                          >
+                            Nuit (22h-08h)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setNotificationPreferences(prev => ({
+                              ...prev,
+                              quiet_hours_start: "23:00:00",
+                              quiet_hours_end: "07:00:00"
+                            }))}
+                            className="text-xs px-2 py-1 bg-fuchsia-100 text-fuchsia-700 rounded hover:bg-fuchsia-200 transition-colors"
+                          >
+                            Nuit complète (23h-07h)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setNotificationPreferences(prev => ({
+                              ...prev,
+                              quiet_hours_start: "00:00:00",
+                              quiet_hours_end: "06:00:00"
+                            }))}
+                            className="text-xs px-2 py-1 bg-fuchsia-100 text-fuchsia-700 rounded hover:bg-fuchsia-200 transition-colors"
+                          >
+                            Tôt matin (00h-06h)
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">Début</label>
+                          <input
+                            type="time"
+                            value={notificationPreferences.quiet_hours_start?.substring(0, 5)}
+                            onChange={(e) => setNotificationPreferences(prev => ({
+                              ...prev,
+                              quiet_hours_start: e.target.value + ":00"
+                            }))}
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-fuchsia-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">Fin</label>
+                          <input
+                            type="time"
+                            value={notificationPreferences.quiet_hours_end?.substring(0, 5)}
+                            onChange={(e) => setNotificationPreferences(prev => ({
+                              ...prev,
+                              quiet_hours_end: e.target.value + ":00"
+                            }))}
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-fuchsia-500"
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Aide visuelle */}
+                      <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+                        <i className="fas fa-info-circle mr-1"></i>
+                        <strong>Conseil :</strong> Pour une période qui traverse la nuit (ex: 22h à 08h), 
+                        l'heure de fin peut être inférieure à l'heure de début.
+                      </div>
+                      
+                      <p className="mt-1 text-xs text-gray-500">
+                        Aucune notification pendant cette période
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Boutons d'action */}
+                <div className="flex justify-between items-center pt-6 border-t">
+                  <button
+                    onClick={handleResetNotificationPreferences}
+                    disabled={saving}
+                    className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <i className="fas fa-undo mr-2"></i>
+                    Réinitialiser
+                  </button>
+                  
+                  <button
+                    onClick={handleSaveNotificationPreferences}
+                    disabled={saving || !validateQuietHours()}
+                    className="bg-fuchsia-600 text-white px-6 py-2 rounded-md hover:bg-fuchsia-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {saving ? (
+                      <i className="fas fa-spinner fa-spin mr-2"></i>
+                    ) : (
+                      <i className="fas fa-save mr-2"></i>
+                    )}
+                    {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+                  </button>
+                </div>
+                
+                {/* Message d'erreur pour heures invalides */}
+                {!validateQuietHours() && (
+                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <i className="fas fa-exclamation-triangle text-red-400"></i>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-red-800">
+                          <strong>Heures de silence invalides :</strong> La période ne peut pas dépasser 23h59. 
+                          Utilisez les options prédéfinies ou ajustez manuellement.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

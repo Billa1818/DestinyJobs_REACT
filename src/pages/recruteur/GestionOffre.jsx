@@ -426,7 +426,7 @@ const GestionOffre = () => {
       {/* Job Offers List */}
       <div className="space-y-4">
         {filteredOffres.map((offre) => (
-          <div key={offre.id} className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border-l-4 border-green-500">
+          <div key={offre.id} className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border-l-4 border-fuchsia-500">
             <div className="flex flex-col lg:flex-row justify-between">
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-3">
@@ -510,7 +510,7 @@ const GestionOffre = () => {
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 mt-6 pt-4 border-t border-gray-200">
               <Link 
-                to={`/recruteur/postulations-offres/${offre.id}`}
+                to={`/recruteur/postulations-offres?offre=${offre.id}`}
                 className="flex items-center px-4 py-2 bg-fuchsia-600 text-white rounded-md hover:bg-fuchsia-700 transition duration-200"
               >
                 <i className="fas fa-users mr-2"></i>Voir candidatures ({offre.applications_count || 0})

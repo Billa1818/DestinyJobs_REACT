@@ -291,19 +291,6 @@ const CandidatHeader = () => {
               <i className="fas fa-blog mr-1"></i>
               Blog
             </Link>
-
-            {/* À propos */}
-            <Link 
-              to="/a-propos" 
-              className={`px-2 py-2 rounded-md text-sm font-medium transition duration-200 ${
-                location.pathname.includes('/a-propos') 
-                  ? 'text-fuchsia-600 bg-fuchsia-50' 
-                  : 'text-gray-700 hover:text-fuchsia-600'
-              }`}
-            >
-              <i className="fas fa-info-circle mr-1"></i>
-              À propos
-            </Link>
           </nav>
 
           {/* User Menu - Desktop */}
@@ -520,16 +507,6 @@ const CandidatHeader = () => {
           }`}>
             <i className="fas fa-blog mr-2"></i>
             Blog
-          </Link>
-
-          {/* À propos */}
-          <Link to="/a-propos" className={`flex items-center px-3 py-2 text-sm rounded-md ${
-            location.pathname.includes('/a-propos') 
-              ? 'text-fuchsia-600 bg-fuchsia-50' 
-              : 'text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50'
-          }`}>
-            <i className="fas fa-info-circle mr-2"></i>
-            À propos
           </Link>
         </div>
       </div>

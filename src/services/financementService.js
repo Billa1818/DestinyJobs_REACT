@@ -218,6 +218,20 @@ class FinancementService {
   }
 
   /**
+   * Récupération du détail d'une offre de financement
+   * @param {string} offerId - ID de l'offre
+   * @returns {Promise} - Promesse contenant le détail de l'offre
+   */
+  async getFundingOfferDetail(offerId) {
+    try {
+      const response = await api.get(`/api/jobs/funding-offers/${offerId}/`);
+      return response.data;
+    } catch (error) {
+      throw this.handleFinancementError(error, 'Erreur lors de la récupération du détail de l\'offre de financement');
+    }
+  }
+
+  /**
    * Recherche avancée
    * @param {Object} searchParams - Paramètres de recherche avancée
    * @returns {Promise} - Promesse contenant les résultats

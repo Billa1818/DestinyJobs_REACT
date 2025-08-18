@@ -456,7 +456,7 @@ const CreeOffre = () => {
                         
                         <div>
               <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-2">
-                Département <span className="text-red-500">*</span>
+                Secteur <span className="text-red-500">*</span>
                             </label>
               <select 
                 id="department" 
@@ -466,7 +466,7 @@ const CreeOffre = () => {
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500"
               >
-                                <option value="">Sélectionner un département</option>
+                                <option value="">Sélectionner un secteur</option>
                 {departments.map(dept => (
                   <option key={dept.id} value={dept.id}>{dept.name}</option>
                 ))}
@@ -757,20 +757,6 @@ const CreeOffre = () => {
                 />
                 <label htmlFor="motivation_letter_required" className="ml-2 block text-sm text-gray-900">
                   Lettre de motivation requise
-                </label>
-              </div>
-
-              <div className="flex items-center">
-                <input 
-                  type="checkbox" 
-                  id="is_urgent" 
-                  name="is_urgent" 
-                  checked={formData.is_urgent}
-                  onChange={handleInputChange}
-                  className="h-4 w-4 text-fuchsia-600 focus:ring-fuchsia-500 border-gray-300 rounded"
-                />
-                <label htmlFor="is_urgent" className="ml-2 block text-sm text-gray-900">
-                  Offre urgente
                 </label>
               </div>
             </div>

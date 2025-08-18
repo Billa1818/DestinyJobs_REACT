@@ -10,6 +10,10 @@ export { default as ConsultationPagination } from './ConsultationPagination';
 export { default as FinancementPagination } from './FinancementPagination';
 export { default as BoursePagination } from './BoursePagination';
 export { default as BlogPagination } from './BlogPagination';
+export { default as CandidaturePagination } from './CandidaturePagination';
+export { default as CandidatureFilters } from './CandidatureFilters';
+export { default as CandidatureStats } from './CandidatureStats';
+export { default as CandidatureCard } from './CandidatureCard';
 
 // Composants de base
 export { default as NotFound } from './NotFound';

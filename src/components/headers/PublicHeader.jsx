@@ -76,9 +76,6 @@ const PublicHeader = () => {
             <Link to="/contact" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200">
               Contact
             </Link>
-            <Link to="/a-propos" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200">
-              À propos
-            </Link>
           </nav>
 
           {/* User Menu - Desktop */}
@@ -153,9 +150,6 @@ const PublicHeader = () => {
           </Link>
           <Link to="/contact" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
             Contact
-          </Link>
-          <Link to="/a-propos" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
-            À propos
           </Link>
         </div>
       </div>

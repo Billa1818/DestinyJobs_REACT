@@ -197,20 +197,7 @@ const CandidatePublicProfile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="text-fuchsia-600 hover:text-fuchsia-700">
-              <i className="fas fa-arrow-left mr-2"></i>
-              Retour à l'accueil
-            </Link>
-            <div className="text-sm text-gray-500">
-              Profil public
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       {/* Contenu principal */}
                 <div className="max-w-4xl mx-auto px-4 py-8">

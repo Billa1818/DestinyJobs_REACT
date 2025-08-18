@@ -99,16 +99,7 @@ const BlogDetail = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-8">
-      {/* Bouton retour */}
-      <div className="mb-6">
-        <button
-          onClick={handleBackToList}
-          className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
-        >
-          <i className="fas fa-arrow-left mr-2"></i>
-          Retour au blog
-        </button>
-      </div>
+
 
       {/* Article */}
       <article className="bg-white rounded-xl shadow-lg overflow-hidden">

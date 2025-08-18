@@ -5,6 +5,7 @@ export { default as profileService } from './profileService';
 export { default as jobService } from './jobService';
 export { default as consultationService } from './consultationService';
 export { default as notificationService } from './notificationService';
+export { default as candidatureService } from './candidatureService';
 
 // Export des types et constantes utiles
 export const USER_TYPES = {

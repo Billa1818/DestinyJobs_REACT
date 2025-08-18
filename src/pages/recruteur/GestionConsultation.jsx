@@ -518,7 +518,7 @@ const GestionConsultation = () => {
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 mt-6 pt-4 border-t border-gray-200">
               <Link 
-                to={`/recruteur/postulations-consultations/${consultation.id}`}
+                to={`/recruteur/postulations-consultations?consultation=${consultation.id}`}
                 className="flex items-center px-4 py-2 bg-fuchsia-600 text-white rounded-md hover:bg-fuchsia-700 transition duration-200"
               >
                 <i className="fas fa-users mr-2"></i>Voir candidatures ({consultation.applications_count || 0})

@@ -177,7 +177,7 @@ const Notifications = () => {
                 onClick={markAllAsRead}
                 className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors"
               >
-                <i className="fas fa-check-double mr-2"></i>Tout marquer comme lu
+                <i className="fas fa-check-double mr-2"></i>
               </button>
             </div>
           </div>

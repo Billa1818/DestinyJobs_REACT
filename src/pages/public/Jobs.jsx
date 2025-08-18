@@ -211,18 +211,18 @@ const Jobs = () => {
       {/* Header Mobile-First */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="px-4 py-6 sm:px-6 lg:px-8">
-          <div className="text-center">
+        <div className="text-center">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
               <i className="fas fa-briefcase text-fuchsia-600 mr-2 sm:mr-3"></i>
-              Offres d'emploi
-            </h1>
+            Offres d'emploi
+          </h1>
             <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto px-2">
-              Découvrez des opportunités d'emploi dans divers secteurs. 
-              Trouvez le poste qui correspond à vos compétences et aspirations.
-            </p>
-          </div>
+            Découvrez des opportunités d'emploi dans divers secteurs. 
+            Trouvez le poste qui correspond à vos compétences et aspirations.
+          </p>
         </div>
       </div>
+        </div>
 
       {/* Search Bar Mobile-First */}
       <div className="bg-white border-b border-gray-200 px-4 py-4 sm:px-6 lg:px-8">
@@ -230,19 +230,19 @@ const Jobs = () => {
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Search Input */}
             <div className="flex-1">
-              <div className="relative">
+                <div className="relative">
                 <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                <input
-                  type="text"
+                  <input
+                    type="text"
                   placeholder="Rechercher un emploi, une entreprise..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 text-sm sm:text-base"
-                />
+                  />
+                </div>
               </div>
-            </div>
-            
+              
             {/* Search Button */}
             <button
               onClick={handleSearch}
@@ -259,10 +259,10 @@ const Jobs = () => {
       <div className="bg-white border-b border-gray-200 px-4 py-3 sm:px-6 lg:px-8 lg:hidden">
         <div className="max-w-7xl mx-auto">
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {/* Contract Filter */}
-            <select
-              value={selectedContract}
-              onChange={(e) => setSelectedContract(e.target.value)}
+              {/* Contract Filter */}
+                <select
+                  value={selectedContract}
+                  onChange={(e) => setSelectedContract(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 text-sm whitespace-nowrap bg-white"
             >
               <option value="">Tous contrats</option>
@@ -272,12 +272,12 @@ const Jobs = () => {
               <option value="ALTERNANCE">Alternance</option>
               <option value="FREELANCE">Freelance</option>
               <option value="INTERIM">Intérim</option>
-            </select>
-            
-            {/* Location Filter */}
-            <select
-              value={selectedLocation}
-              onChange={(e) => setSelectedLocation(e.target.value)}
+                </select>
+              
+              {/* Location Filter */}
+                <select
+                  value={selectedLocation}
+                  onChange={(e) => setSelectedLocation(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 text-sm whitespace-nowrap bg-white"
             >
               <option value="">Tous lieux</option>
@@ -294,10 +294,10 @@ const Jobs = () => {
               <option>Plus récents</option>
               <option>Salaire élevé</option>
               <option>Expérience requise</option>
-            </select>
+                </select>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
@@ -327,14 +327,14 @@ const Jobs = () => {
               
               {/* Desktop Sort - Hidden on Mobile */}
               <div className="hidden sm:flex items-center space-x-2">
-                <span className="text-sm text-gray-500">Trier par :</span>
+                  <span className="text-sm text-gray-500">Trier par :</span>
                 <select className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500">
-                  <option>Plus récents</option>
-                  <option>Salaire élevé</option>
-                  <option>Expérience requise</option>
-                </select>
+                    <option>Plus récents</option>
+                    <option>Salaire élevé</option>
+                    <option>Expérience requise</option>
+                  </select>
+                </div>
               </div>
-            </div>
 
             {/* Jobs List */}
             {displayJobs.length === 0 ? (
@@ -344,9 +344,9 @@ const Jobs = () => {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucun emploi trouvé</h3>
                 <p className="text-gray-600 text-sm">Essayez de modifier vos critères de recherche</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
+                </div>
+              ) : (
+                <div className="space-y-4">
                 {displayJobs.map((job) => (
                   <div key={job.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 group">
                     {/* Job Card Header */}
@@ -376,20 +376,20 @@ const Jobs = () => {
                           {/* Job Title */}
                           <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 group-hover:text-fuchsia-600 transition-colors duration-200">
                             <Link to={`/jobs/${job.id}`} className="hover:text-fuchsia-600">
-                              {job.title}
-                            </Link>
-                          </h3>
-                          
+                                  {job.title}
+                                </Link>
+                              </h3>
+                              
                           {/* Company & Location */}
                           <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0 mb-3">
                             <span className="flex items-center text-sm text-gray-600">
                               <i className="fas fa-building mr-2 text-fuchsia-500"></i>
-                              {job.company}
-                            </span>
+                                  {job.company}
+                                </span>
                             <span className="flex items-center text-sm text-gray-600">
                               <i className="fas fa-map-marker-alt mr-2 text-blue-500"></i>
-                              {job.location}
-                            </span>
+                                  {job.location}
+                                </span>
                           </div>
                           
                           {/* Job Description - Une seule ligne */}
@@ -437,14 +437,14 @@ const Jobs = () => {
                                 </span>
                               )}
                             </div>
-
+                            
                             {/* Right Side - Deadline & Action */}
                             <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
                               {job.deadline && (
                                 <span className="text-xs text-red-600 font-medium flex items-center">
-                                  <i className="fas fa-clock mr-1"></i>
-                                  Limite : {job.deadline}
-                                </span>
+                                <i className="fas fa-clock mr-1"></i>
+                                Limite : {job.deadline}
+                              </span>
                               )}
                               <Link 
                                 to={`/jobs/${job.id}`}
@@ -453,14 +453,14 @@ const Jobs = () => {
                                 Voir les détails
                               </Link>
                             </div>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (
@@ -473,7 +473,7 @@ const Jobs = () => {
                   onPageChange={handlePageChange}
                   onPageSizeChange={handlePageSizeChange}
                 />
-              </div>
+            </div>
             )}
           </div>
         </div>
@@ -516,23 +516,23 @@ const Jobs = () => {
                   Vous cherchez un emploi ?
                 </h2>
                 <p className="text-sm sm:text-base lg:text-lg text-fuchsia-100 mb-6 opacity-90 px-2">
-                  Rejoignez notre plateforme et trouvez l'emploi idéal pour votre carrière
-                </p>
+          Rejoignez notre plateforme et trouvez l'emploi idéal pour votre carrière
+        </p>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-                  <Link 
-                    to="/signup" 
+          <Link 
+            to="/signup" 
                     className="bg-white text-fuchsia-600 px-4 sm:px-6 py-3 rounded-lg hover:bg-gray-100 transition duration-200 font-medium text-sm sm:text-base flex items-center justify-center"
-                  >
+          >
                     <i className="fas fa-user-plus mr-2"></i>
-                    Créer un compte candidat
-                  </Link>
-                  <Link 
-                    to="/contact" 
+            Créer un compte candidat
+          </Link>
+          <Link 
+            to="/contact" 
                     className="border border-white text-white px-4 sm:px-6 py-3 rounded-lg hover:bg-white hover:text-fuchsia-600 transition duration-200 font-medium text-sm sm:text-base flex items-center justify-center"
-                  >
+          >
                     <i className="fas fa-envelope mr-2"></i>
-                    Nous contacter
-                  </Link>
+            Nous contacter
+          </Link>
                 </div>
               </>
             )}

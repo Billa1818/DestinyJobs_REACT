@@ -27,6 +27,7 @@ import Paiement from '../pages/public/Paiement';
 import IACompatibilityCheck from '../pages/public/IACompatibilityCheck';
 import NotFound from '../pages/public/NotFound';
 import ProfilPublic from '../pages/recruteur/ProfilPublic';
+import CandidatePublicProfile from '../pages/public/CandidatePublicProfile';
 
 
 const Formations = () => (
@@ -151,6 +152,10 @@ const publicRoutes = [
   {
     path: '/recruteur/profil-public/:id',
     element: <ProfilPublic />
+  },
+  {
+    path: '/profile/candidat/:userId',
+    element: <CandidatePublicProfile />
   },
   {
     path: '/404',

@@ -533,6 +533,76 @@ class ProfileService {
       throw error;
     }
   }
+
+  /**
+   * Récupérer les préférences de notification de l'utilisateur
+   * GET /api/notifications/preferences/
+   */
+  async getNotificationPreferences() {
+    try {
+      const response = await api.get('/api/notifications/preferences/');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Erreur lors de la récupération des préférences de notification:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Mettre à jour les préférences de notification de l'utilisateur
+   * PUT /api/notifications/preferences/
+   */
+  async updateNotificationPreferences(preferences) {
+    try {
+      const response = await api.put('/api/notifications/preferences/', preferences);
+      return response.data;
+    } catch (error) {
+      console.error('❌ Erreur lors de la mise à jour des préférences de notification:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Réinitialiser les préférences de notification aux valeurs par défaut
+   */
+  async resetNotificationPreferencesToDefaults() {
+    try {
+      const defaultPreferences = {
+        email_notifications: true,
+        email_new_offers: true,
+        email_application_updates: true,
+        email_blog_updates: false,
+        email_subscription_updates: true,
+        email_daily_digest: false,
+        email_weekly_report: false,
+        email_account_validation: true,
+        email_ai_services: true,
+        email_recruiter_updates: true,
+        
+        push_notifications: true,
+        push_new_offers: true,
+        push_application_updates: true,
+        push_messages: true,
+        push_subscription_reminders: true,
+        push_account_validation: true,
+        push_ai_services: true,
+        
+        sms_notifications: false,
+        sms_urgent_updates: false,
+        sms_account_validation: false,
+        
+        notification_frequency: "IMMEDIATE",
+        quiet_hours_start: "22:00:00",
+        quiet_hours_end: "08:00:00"
+      };
+      
+      const response = await api.put('/api/notifications/preferences/', defaultPreferences);
+      return response.data;
+    } catch (error) {
+      console.error('❌ Erreur lors de la réinitialisation des préférences:', error);
+      throw error;
+    }
+  }
 }
 
 export default new ProfileService(); 
