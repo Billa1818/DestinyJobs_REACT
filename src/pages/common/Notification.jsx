@@ -277,7 +277,7 @@ const Notification = () => {
                 </div>
               </Link>
               
-              <Link to="/candidat/candidature-recente" className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-fuchsia-50 hover:border-fuchsia-300 transition duration-200">
+              <Link to="/candidat/emploi-candidature" className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-fuchsia-50 hover:border-fuchsia-300 transition duration-200">
                 <i className="fas fa-paper-plane text-green-600 mr-3"></i>
                 <div>
                   <h4 className="text-sm font-medium text-gray-900">Mes candidatures</h4>

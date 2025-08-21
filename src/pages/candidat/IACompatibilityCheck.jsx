@@ -1,86 +1,113 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import scoreService from '../../services/scoreService';
+import jobService from '../../services/jobService';
+import consultationService from '../../services/consultationService';
+import financementService from '../../services/financementService';
+import bourseService from '../../services/bourseService';
 
 const IACompatibilityCheck = () => {
   const { offerId, offerType } = useParams();
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [compatibilityScore, setCompatibilityScore] = useState(0);
   const [analysis, setAnalysis] = useState({});
   const [motivationLetter, setMotivationLetter] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showMotivationForm, setShowMotivationForm] = useState(false);
+  const [offer, setOffer] = useState(null);
+  const [error, setError] = useState(null);
 
-  // Données simulées de l'offre
-  const [offer, setOffer] = useState({
-    id: offerId,
-    title: 'Développeur Full Stack React/Node.js',
-    company: 'TechCorp Solutions',
-    location: 'Cotonou, Bénin',
-    salary: '800,000 - 1,200,000 FCFA',
-    description: 'Nous recherchons un développeur Full Stack expérimenté pour rejoindre notre équipe...',
-    requirements: [
-      'React.js, Node.js, MongoDB',
-      '3-5 ans d\'expérience',
-      'Maîtrise des bonnes pratiques',
-      'Anglais courant'
-    ],
-    responsibilities: [
-      'Développement d\'applications web',
-      'Collaboration avec l\'équipe',
-      'Optimisation des performances'
-    ]
-  });
-
-  // Données simulées du profil candidat
-  const [candidateProfile, setCandidateProfile] = useState({
-    name: 'Jean Dupont',
-    experience: '4 ans',
-    skills: ['React.js', 'Node.js', 'JavaScript', 'MongoDB', 'Git'],
-    education: 'Master en Informatique',
-    languages: ['Français', 'Anglais'],
-    projects: ['E-commerce platform', 'CRM system', 'Mobile app']
-  });
-
+  // Vérifier l'authentification
   useEffect(() => {
-    // Simulation de l'analyse IA
-    simulateIAnalysis();
-  }, []);
+    if (!isAuthenticated || !user) {
+      navigate('/login', { replace: true });
+      return;
+    }
+  }, [isAuthenticated, user, navigate]);
 
-  const simulateIAnalysis = () => {
-    setIsLoading(true);
-    
-    // Simulation d'un délai d'analyse
-    setTimeout(() => {
-      const score = Math.floor(Math.random() * 40) + 60; // Score entre 60-100
-      setCompatibilityScore(score);
-      
-      setAnalysis({
-        strengths: [
-          'Excellente maîtrise de React.js et Node.js',
-          'Expérience pertinente de 4 ans',
-          'Projets similaires réalisés',
-          'Formation adaptée au poste'
-        ],
-        weaknesses: [
-          'Manque d\'expérience avec certaines technologies spécifiques',
-          'Peut améliorer la connaissance des bonnes pratiques DevOps'
-        ],
-        recommendations: [
-          'Mettre en avant vos projets React/Node.js',
-          'Préparer des exemples concrets de votre travail',
-          'Améliorer vos compétences en CI/CD'
-        ],
-        matchPercentage: {
-          skills: 85,
-          experience: 80,
-          education: 90,
-          culture: 75
+  // Charger les détails de l'offre selon le type
+  useEffect(() => {
+    const loadOfferDetails = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        let offerData;
+        
+        switch (offerType) {
+          case 'emploi':
+            offerData = await jobService.getPublicJobOfferDetail(offerId);
+            break;
+          case 'consultation':
+            offerData = await consultationService.getConsultationOfferDetail(offerId);
+            break;
+          case 'financement':
+            offerData = await financementService.getFundingOfferDetail(offerId);
+            break;
+          case 'bourse':
+            offerData = await bourseService.getScholarshipOfferDetail(offerId);
+            break;
+          default:
+            throw new Error('Type d\'offre non reconnu');
         }
+        
+        setOffer(offerData);
+        console.log('✅ Détails de l\'offre chargés:', offerData);
+        
+        // Effectuer l'analyse de compatibilité IA
+        await performCompatibilityAnalysis();
+        
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement de l\'offre:', error);
+        setError(error.message || 'Erreur lors du chargement de l\'offre');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (offerId && offerType && isAuthenticated && user) {
+      loadOfferDetails();
+    }
+  }, [offerId, offerType, isAuthenticated, user]);
+
+  // Effectuer l'analyse de compatibilité IA
+  const performCompatibilityAnalysis = async () => {
+    try {
+      console.log('🔍 Début de l\'analyse de compatibilité IA...');
+      
+      // Utiliser la méthode unifiée avec conversion automatique du type
+      const analysisResult = await scoreService.calculateCompatibility(user.id, offerId, offerType);
+      
+      console.log('✅ Analyse de compatibilité terminée:', analysisResult);
+      
+      // Mettre à jour l'état avec les résultats de l'analyse
+      setCompatibilityScore(analysisResult.compatibility_score);
+      setAnalysis({
+        strengths: generateStrengths(analysisResult.detailed_scores, offerType),
+        weaknesses: generateWeaknesses(analysisResult.detailed_scores, offerType),
+        recommendations: generateRecommendations(analysisResult.detailed_scores, offerType),
+        matchPercentage: scoreService.formatDetailedScores(analysisResult.detailed_scores, offerType),
+        recommendation: analysisResult.recommendation,
+        weights: analysisResult.weights || {},
+        analysisDate: analysisResult.analysis_date,
+        scoreSaved: analysisResult.score_saved
       });
       
-      setIsLoading(false);
-    }, 2000);
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'analyse de compatibilité:', error);
+      
+      // Gestion spécifique des erreurs de timeout
+      if (error.message.includes('temps') || error.message.includes('timeout')) {
+        setError('⏱️ L\'analyse IA prend plus de temps que prévu. Veuillez réessayer dans quelques instants.');
+      } else if (error.message.includes('serveur') || error.message.includes('indisponible')) {
+        setError('🔧 L\'analyse IA est temporairement indisponible. Veuillez réessayer plus tard.');
+      } else {
+        setError(error.message || 'Erreur lors de l\'analyse de compatibilité IA');
+      }
+    }
   };
 
   const handleSubmitApplication = async () => {
@@ -94,7 +121,7 @@ const IACompatibilityCheck = () => {
     // Simulation de soumission
     setTimeout(() => {
       alert('Candidature envoyée avec succès !');
-      navigate('/candidat/candidature-recente');
+      navigate('/candidat/emploi-candidature');
       setIsSubmitting(false);
     }, 1500);
   };
@@ -114,10 +141,37 @@ const IACompatibilityCheck = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Analyse IA en cours...</h2>
-          <p className="text-gray-600">Vérification de votre compatibilité avec le poste</p>
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-fuchsia-600 mx-auto mb-6"></div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Analyse IA en cours...</h2>
+          <p className="text-gray-600 mb-4">
+            Vérification de votre compatibilité avec le poste
+          </p>
+          
+          {/* Informations sur le processus */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
+            <h3 className="font-medium text-blue-900 mb-2">
+              <i className="fas fa-info-circle mr-2"></i>
+              Ce que fait l'IA en ce moment :
+            </h3>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Analyse de votre profil et compétences</li>
+              <li>• Comparaison avec les exigences du poste</li>
+              <li>• Calcul des scores de compatibilité</li>
+              <li>• Génération des recommandations</li>
+            </ul>
+            <p className="text-xs text-blue-600 mt-3">
+              ⏱️ L'analyse peut prendre 30 secondes à 2 minutes selon la complexité
+            </p>
+          </div>
+          
+          {/* Barre de progression simulée */}
+          <div className="mt-6">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="bg-fuchsia-600 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Analyse en cours...</p>
+          </div>
         </div>
       </div>
     );
@@ -135,14 +189,20 @@ const IACompatibilityCheck = () => {
                 Analyse IA - Compatibilité
               </h1>
               <p className="text-gray-600 mt-2">
-                Analyse de votre profil pour le poste : <span className="font-semibold">{offer.title}</span>
+                Analyse de votre profil pour le poste : <span className="font-semibold">{offer?.title}</span>
               </p>
             </div>
-            <div className="text-right">
+            <div className="text-right space-y-2">
               <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${getScoreColor(compatibilityScore)}`}>
                 <i className="fas fa-chart-line mr-2"></i>
-                Score : {compatibilityScore}%
+                Score : {compatibilityScore.toFixed(1)}%
               </div>
+              {analysis.recommendation && (
+                <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getRecommendationColor(analysis.recommendation)}`}>
+                  <i className="fas fa-thumbs-up mr-1"></i>
+                  {getRecommendationText(analysis.recommendation)}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -200,15 +260,15 @@ const IACompatibilityCheck = () => {
                   <div className="text-sm text-gray-600">Compétences</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{analysis.matchPercentage?.experience || 80}%</div>
+                  <div className="text-2xl font-bold text-blue-600">{analysis.matchPercentage?.experience || 80}%</div>
                   <div className="text-sm text-gray-600">Expérience</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">{analysis.matchPercentage?.education || 90}%</div>
+                  <div className="text-2xl font-bold text-blue-600">{analysis.matchPercentage?.education || 90}%</div>
                   <div className="text-sm text-gray-600">Formation</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600">{analysis.matchPercentage?.culture || 75}%</div>
+                  <div className="text-2xl font-bold text-blue-600">{analysis.matchPercentage?.culture || 75}%</div>
                   <div className="text-sm text-gray-600">Culture</div>
                 </div>
               </div>
@@ -276,16 +336,16 @@ const IACompatibilityCheck = () => {
               </h3>
               <div className="space-y-3">
                 <div>
-                  <h4 className="font-medium text-gray-900">{offer.title}</h4>
-                  <p className="text-sm text-blue-600">{offer.company}</p>
+                  <h4 className="font-medium text-gray-900">{offer?.title}</h4>
+                  <p className="text-sm text-blue-600">{offer?.company}</p>
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <i className="fas fa-map-marker-alt mr-2"></i>
-                  <span>{offer.location}</span>
+                  <span>{offer?.location}</span>
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <i className="fas fa-money-bill mr-2"></i>
-                  <span>{offer.salary}</span>
+                  <span>{offer?.salary}</span>
                 </div>
               </div>
             </div>
@@ -346,13 +406,13 @@ const IACompatibilityCheck = () => {
               </h3>
               <div className="space-y-3">
                 <div>
-                  <h4 className="font-medium text-gray-900">{candidateProfile.name}</h4>
-                  <p className="text-sm text-gray-600">{candidateProfile.experience} d'expérience</p>
+                  <h4 className="font-medium text-gray-900">{user?.name}</h4>
+                  <p className="text-sm text-gray-600">{user?.experience} d'expérience</p>
                 </div>
                 <div>
                   <h5 className="text-sm font-medium text-gray-700 mb-1">Compétences</h5>
                   <div className="flex flex-wrap gap-1">
-                    {candidateProfile.skills.map((skill, index) => (
+                    {user?.skills.map((skill, index) => (
                       <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
                         {skill}
                       </span>

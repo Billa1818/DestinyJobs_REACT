@@ -109,7 +109,13 @@ const DetailConsultation = () => {
   };
 
   const handleApply = () => {
-    // Rediriger vers la page d'analyse IA publique
+    if (!isAuthenticated) {
+      // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
+      navigate('/login', { replace: true });
+      return;
+    }
+    
+    // Rediriger vers l'analyse de compatibilité IA
     navigate(`/ia-compatibility/${id}/consultation`);
   };
 

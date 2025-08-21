@@ -7,11 +7,19 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
 // Création de l'instance axios
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000, // Augmenté à 30 secondes par défaut
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// Configuration spécifique pour l'analyse IA (peut prendre plus de temps)
+export const aiAnalysisConfig = {
+  timeout: 120000, // 2 minutes pour l'analyse IA
+  headers: {
+    'Content-Type': 'application/json',
+  },
+};
 
 // Intercepteur pour ajouter automatiquement le token d'accès
 api.interceptors.request.use(

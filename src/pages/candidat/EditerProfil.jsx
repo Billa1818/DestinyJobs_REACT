@@ -113,13 +113,35 @@ const EditerProfil = () => {
       // Mettre à jour le profil utilisateur de base
       await authService.updateProfile(profileData);
       
-      // Mettre à jour le profil candidat
+      // Mettre à jour le profil candidat avec multipart/form-data
       const formData = new FormData();
+      
+      // Ajouter seulement les champs textuels non vides et non null
       Object.keys(candidateProfile).forEach(key => {
-        if (candidateProfile[key] !== '' && candidateProfile[key] !== null) {
-          formData.append(key, candidateProfile[key]);
-    }
+        // Exclure les champs de fichiers
+        if (key !== 'cv' && key !== 'image') {
+          const value = candidateProfile[key];
+          // Vérifier que la valeur n'est pas vide, null, ou undefined
+          if (value !== '' && value !== null && value !== undefined) {
+            formData.append(key, value);
+          }
+        }
       });
+      
+      // Ajouter les fichiers seulement s'ils existent et sont de vrais fichiers
+      if (candidateProfile.cv instanceof File) {
+        formData.append('cv', candidateProfile.cv);
+      }
+      
+      if (candidateProfile.image instanceof File) {
+        formData.append('image', candidateProfile.image);
+      }
+      
+      // Debug: afficher le contenu du FormData
+      console.log('📤 FormData contenu:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
       
       await profileService.updateCandidateProfile(formData);
       
@@ -359,16 +381,16 @@ const EditerProfil = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Technologies</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Compétences</label>
                   <input
                     type="text"
-                    value={candidateProfile.technologies}
-                    onChange={(e) => handleCandidateProfileChange('technologies', e.target.value)}
+                    value={candidateProfile.skills}
+                    onChange={(e) => handleCandidateProfileChange('skills', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent"
-                    placeholder="React, Node.js, Python, MongoDB, Docker..."
+                    placeholder="Développement web, APIs REST, Base de données, DevOps..."
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Séparez les technologies par des virgules
+                    Séparez les compétences par des virgules
                   </p>
                 </div>
 
@@ -387,7 +409,7 @@ const EditerProfil = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Formation</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Formation / Formation professionnelle</label>
                   <textarea
                     rows={3}
                     value={candidateProfile.education}
@@ -400,19 +422,27 @@ const EditerProfil = () => {
                   </p>
                 </div>
 
+                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Compétences</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Technologies</label>
                   <input
                     type="text"
-                    value={candidateProfile.skills}
-                    onChange={(e) => handleCandidateProfileChange('skills', e.target.value)}
+                    value={candidateProfile.technologies}
+                    onChange={(e) => handleCandidateProfileChange('technologies', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent"
-                    placeholder="Développement web, APIs REST, Base de données, DevOps..."
+                    placeholder="React, Node.js, Python, MongoDB, Docker..."
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Séparez les compétences par des virgules
+                    Séparez les technologies par des virgules
                   </p>
                 </div>
+
+
+
+
+
+                
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Réalisations</label>
@@ -431,7 +461,63 @@ const EditerProfil = () => {
             </div>
           )}
 
-
+          {/* Section CV et Photo */}
+          <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <i className="fas fa-file-upload mr-2 text-blue-600"></i>
+              Documents et Photos
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* CV Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  CV (PDF, DOC, DOCX)
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setCandidateProfile(prev => ({ ...prev, cv: file }));
+                    }
+                  }}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-fuchsia-50 file:text-fuchsia-700 hover:file:bg-fuchsia-100"
+                />
+                {candidateProfile.cv && (
+                  <p className="text-sm text-green-600 mt-1">
+                    <i className="fas fa-check mr-1"></i>
+                    {candidateProfile.cv instanceof File ? candidateProfile.cv.name : 'CV téléchargé'}
+                  </p>
+                )}
+              </div>
+              
+              {/* Photo Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Photo de profil (JPG, PNG)
+                </label>
+                <input
+                  type="file"
+                  accept=".jpg,.jpeg,.png"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setCandidateProfile(prev => ({ ...prev, image: file }));
+                    }
+                  }}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-fuchsia-50 file:text-fuchsia-700 hover:file:bg-fuchsia-100"
+                />
+                {candidateProfile.image && (
+                  <p className="text-sm text-green-600 mt-1">
+                    <i className="fas fa-check mr-1"></i>
+                    {candidateProfile.image instanceof File ? candidateProfile.image.name : 'Photo ajoutée'}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Sidebar */}

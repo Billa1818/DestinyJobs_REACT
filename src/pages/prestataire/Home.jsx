@@ -128,7 +128,7 @@ const PrestataireHome = () => {
         {/* Recent Applications */}
         <div className="bg-white rounded-lg shadow-sm">
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Candidatures récentes</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Mes candidatures emploi</h2>
           </div>
           <div className="p-6">
             <div className="space-y-4">

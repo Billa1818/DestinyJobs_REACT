@@ -111,8 +111,14 @@ const DetailFinancement = () => {
   };
 
   const handleApply = () => {
-    // Rediriger vers la page de postulation
-    navigate(`/financements/${id}/postuler`);
+    if (!isAuthenticated) {
+      // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
+      navigate('/login', { replace: true });
+      return;
+    }
+    
+    // Rediriger vers l'analyse de compatibilité IA
+    navigate(`/ia-compatibility/${id}/financement`);
   };
 
   const handleSave = () => {

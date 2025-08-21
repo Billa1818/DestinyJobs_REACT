@@ -3,7 +3,7 @@ import Home from '../pages/candidat/Home';
 import Profil from '../pages/candidat/Profil';
 import Jobs from '../pages/public/Jobs';
 import DetailOffre from '../pages/candidat/DetailOffre';
-import CandidatureRecente from '../pages/candidat/CandidatureRecente';
+import EmploiCandidature from '../pages/candidat/EmploiCandidature';
 import EditerProfil from '../pages/candidat/EditerProfil';
 import Postuler from '../pages/candidat/Postuler';
 import Parametre from '../pages/candidat/Parametre';
@@ -13,6 +13,7 @@ import DetailFinacement from '../pages/candidat/DetailFinacement';
 import Bourse from '../pages/candidat/Bourse';
 import DetailBourse from '../pages/candidat/DetailBourse';
 import IACompatibilityCheck from '../pages/candidat/IACompatibilityCheck';
+import FinancementCandidature from '../pages/candidat/FinancementCandidature';
 
 const candidatRoutes = [
   {
@@ -36,8 +37,12 @@ const candidatRoutes = [
     element: <DetailOffre />
   },
   {
-    path: 'candidature-recente',
-    element: <CandidatureRecente />
+    path: 'emploi-candidature',
+    element: <EmploiCandidature />
+  },
+  {
+    path: 'financement-candidature',
+    element: <FinancementCandidature />
   },
   {
     path: 'editer-profil',

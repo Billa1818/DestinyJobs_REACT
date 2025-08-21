@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import profileService from '../../services/profileService';
+import CandidatHomeService from '../../services/CandidatHomeService';
 
 const Home = () => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -20,6 +21,9 @@ const Home = () => {
     incompleteFields: []
   });
   const [personalStats, setPersonalStats] = useState(null);
+  // Nouvel état pour les statistiques des candidatures
+  const [applicationStats, setApplicationStats] = useState(null);
+  const [loadingApplicationStats, setLoadingApplicationStats] = useState(true);
 
   // Fonction pour récupérer les statistiques
   const fetchStats = async () => {
@@ -58,6 +62,23 @@ const Home = () => {
       } catch (error) {
         console.log('Données du profil non disponibles:', error);
         setProfileCompletion({ percentage: 0, completedFields: [], incompleteFields: [] });
+      }
+
+      // Récupérer les statistiques des candidatures
+      try {
+        setLoadingApplicationStats(true);
+        const applicationStatsData = await CandidatHomeService.getMyApplicationStats();
+        console.log('Statistiques des candidatures:', applicationStatsData);
+        
+        // Formater les données pour l'affichage
+        const formattedStats = CandidatHomeService.formatStatsForDisplay(applicationStatsData);
+        setApplicationStats(formattedStats);
+        
+      } catch (error) {
+        console.log('Statistiques des candidatures non disponibles:', error);
+        setApplicationStats(null);
+      } finally {
+        setLoadingApplicationStats(false);
       }
       
     } catch (error) {
@@ -143,9 +164,7 @@ const Home = () => {
                 <Link to="/candidat/editer-profil" className="bg-white text-fuchsia-600 px-3 sm:px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition duration-200">
                   <i className="fas fa-edit mr-1 sm:mr-2"></i>Modifier profil
                 </Link>
-                <Link to="/candidat/profil" className="bg-fuchsia-800 text-white px-3 sm:px-4 py-2 rounded-md text-sm font-medium hover:bg-fuchsia-900 transition duration-200">
-                  <i className="fas fa-upload mr-1 sm:mr-2"></i>Gérer CV & Photo
-                </Link>
+
                 <Link to={`/profile/candidat/${user?.id}`} className="bg-fuchsia-100 text-fuchsia-700 px-3 sm:px-4 py-2 rounded-md text-sm font-medium hover:bg-fuchsia-200 transition duration-200">
                   <i className="fas fa-external-link-alt mr-1 sm:mr-2"></i>Voir profil public
                 </Link>
@@ -182,83 +201,250 @@ const Home = () => {
               </div>
             </div>
           )}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-            <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
-              <div className="flex items-center">
-                <div className="p-2 bg-fuchsia-100 rounded-lg">
-                  <i className="fas fa-paper-plane text-fuchsia-600"></i>
+          {/* Statistiques des candidatures */}
+          <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm mb-4 sm:mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                <i className="fas fa-chart-bar mr-2 text-fuchsia-600"></i>
+                Mes Candidatures
+              </h3>
+              {applicationStats && (
+                <span className="text-sm text-gray-500">
+                  Dernière mise à jour: {new Date(applicationStats.generatedAt).toLocaleDateString('fr-FR')}
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              {/* Total des candidatures */}
+              <div className="bg-gradient-to-br from-fuchsia-50 to-fuchsia-100 rounded-lg p-4 border border-fuchsia-200">
+                <div className="flex items-center justify-between">
+                  <div className="p-2 bg-fuchsia-500 rounded-lg">
+                    <i className="fas fa-paper-plane text-white text-sm"></i>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-fuchsia-700 font-medium">Total</p>
+                    <div className="text-2xl font-bold text-fuchsia-800">
+                      {loadingApplicationStats ? (
+                        <div className="animate-pulse bg-fuchsia-200 h-8 w-12 rounded"></div>
+                      ) : applicationStats ? (
+                        applicationStats.total
+                      ) : (
+                        '0'
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="ml-3">
-                  <p className="text-xs sm:text-sm text-gray-500">Total</p>
-                  <div className="text-lg sm:text-xl font-semibold text-gray-900">
-                    {loadingStats ? (
-                      <div className="animate-pulse bg-gray-200 h-6 w-8 rounded"></div>
-                    ) : (
-                      '0'
-                    )}
+              </div>
+
+              {/* Candidatures en attente */}
+              <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-4 border border-yellow-200">
+                <div className="flex items-center justify-between">
+                  <div className="p-2 bg-yellow-500 rounded-lg">
+                    <i className="fas fa-clock text-white text-sm"></i>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-yellow-700 font-medium">En attente</p>
+                    <div className="text-2xl font-bold text-yellow-800">
+                      {loadingApplicationStats ? (
+                        <div className="animate-pulse bg-yellow-200 h-8 w-12 rounded"></div>
+                      ) : applicationStats ? (
+                        applicationStats.pending
+                      ) : (
+                        '0'
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Candidatures consultées */}
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                <div className="flex items-center justify-between">
+                  <div className="p-2 bg-blue-500 rounded-lg">
+                    <i className="fas fa-eye text-white text-sm"></i>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-blue-700 font-medium">Consultées</p>
+                    <div className="text-2xl font-bold text-blue-800">
+                      {loadingApplicationStats ? (
+                        <div className="animate-pulse bg-blue-200 h-8 w-12 rounded"></div>
+                      ) : applicationStats ? (
+                        applicationStats.viewed
+                      ) : (
+                        '0'
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Candidatures présélectionnées */}
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                <div className="flex items-center justify-between">
+                  <div className="p-2 bg-green-500 rounded-lg">
+                    <i className="fas fa-star text-white text-sm"></i>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-green-700 font-medium">Présélection</p>
+                    <div className="text-2xl font-bold text-green-800">
+                      {loadingApplicationStats ? (
+                        <div className="animate-pulse bg-green-200 h-8 w-12 rounded"></div>
+                      ) : applicationStats ? (
+                        applicationStats.shortlisted
+                      ) : (
+                        '0'
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            
-            <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
-              <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <i className="fas fa-eye text-green-600"></i>
+
+            {/* Statistiques détaillées */}
+            {applicationStats && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* Par type d'offre */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Par type d'offre</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Emploi</span>
+                      <span className="text-sm font-medium text-gray-900">{applicationStats.job}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Financement de projets</span>
+                      <span className="text-sm font-medium text-gray-900">{applicationStats.funding}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Bourses d'études</span>
+                      <span className="text-sm font-medium text-gray-900">{applicationStats.scholarship}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="ml-3">
-                  <p className="text-xs sm:text-sm text-gray-500">Consultées</p>
-                  <div className="text-lg sm:text-xl font-semibold text-gray-900">
-                    {loadingStats ? (
-                      <div className="animate-pulse bg-gray-200 h-6 w-8 rounded"></div>
-                    ) : (
-                      '0'
-                    )}
+
+                {/* Par priorité */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Par priorité</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Haute</span>
+                      <span className="text-sm font-medium text-red-600">{applicationStats.highPriority}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Normale</span>
+                      <span className="text-sm font-medium text-blue-600">{applicationStats.normalPriority}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Basse</span>
+                      <span className="text-sm font-medium text-gray-600">{applicationStats.lowPriority}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Taux de succès */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Performance</h4>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-fuchsia-600 mb-1">
+                      {applicationStats.successRate}%
+                    </div>
+                    <p className="text-xs text-gray-500">Taux de succès</p>
+                    <div className="mt-2 text-xs text-gray-600">
+                      {applicationStats.shortlisted + applicationStats.interview} sur {applicationStats.total} candidatures
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            
-            <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
-              <div className="flex items-center">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <i className="fas fa-comments text-orange-600"></i>
-                </div>
-                <div className="ml-3">
-                  <p className="text-xs sm:text-sm text-gray-500">Entretiens</p>
-                  <div className="text-lg sm:text-xl font-semibold text-gray-900">
-                    {loadingStats ? (
-                      <div className="animate-pulse bg-gray-200 h-6 w-8 rounded"></div>
-                    ) : (
-                      '0'
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
-              <div className="flex items-center">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <i className="fas fa-bookmark text-purple-600"></i>
-                </div>
-                <div className="ml-3">
-                  <p className="text-xs sm:text-sm text-gray-500">Présélection</p>
-                  <div className="text-lg sm:text-xl font-semibold text-gray-900">
-                    {loadingStats ? (
-                      <div className="animate-pulse bg-gray-200 h-6 w-8 rounded"></div>
-                    ) : (
-                      '0'
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
 
 
 
+
+          {/* Actions rapides */}
+          <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm mb-4 sm:mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <i className="fas fa-bolt mr-2 text-fuchsia-600"></i>
+              Actions rapides
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Mes candidatures emploi */}
+              <Link 
+                to="/candidat/emploi-candidature"
+                className="group bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-lg p-4 border border-blue-200 transition-all duration-200 hover:shadow-md"
+              >
+                <div className="text-center">
+                  <div className="p-3 bg-blue-500 rounded-lg inline-block mb-3 group-hover:scale-110 transition-transform duration-200">
+                    <i className="fas fa-briefcase text-white text-lg"></i>
+                  </div>
+                  <h4 className="font-semibold text-blue-800 mb-1">Mes candidatures</h4>
+                  <p className="text-sm text-blue-600">Emploi</p>
+                  {applicationStats && (
+                    <div className="mt-2 text-xs text-blue-700">
+                      {applicationStats.job} candidature{applicationStats.job > 1 ? 's' : ''}
+                    </div>
+                  )}
+                </div>
+              </Link>
+
+              {/* Mes candidatures consultation */}
+              <Link 
+                to="/candidat/consultation-candidature"
+                className="group bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 rounded-lg p-4 border border-green-200 transition-all duration-200 hover:shadow-md"
+              >
+                <div className="text-center">
+                  <div className="p-3 bg-green-500 rounded-lg inline-block mb-3 group-hover:scale-110 transition-transform duration-200">
+                    <i className="fas fa-search text-white text-lg"></i>
+                  </div>
+                  <h4 className="font-semibold text-green-800 mb-1">Mes candidatures</h4>
+                  <p className="text-sm text-green-600">Bourses d'études</p>
+                  {applicationStats && (
+                    <div className="mt-2 text-xs text-green-700">
+                      {applicationStats.consultation} candidature{applicationStats.consultation > 1 ? 's' : ''}
+                    </div>
+                  )}
+                </div>
+              </Link>
+
+              {/* Mes candidatures financement */}
+              <Link 
+                to="/candidat/financement-candidature"
+                className="group bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 rounded-lg p-4 border border-purple-200 transition-all duration-200 hover:shadow-md"
+              >
+                <div className="text-center">
+                  <div className="p-3 bg-purple-500 rounded-lg inline-block mb-3 group-hover:scale-110 transition-transform duration-200">
+                    <i className="fas fa-coins text-white text-lg"></i>
+                  </div>
+                  <h4 className="font-semibold text-purple-800 mb-1">Mes candidatures</h4>
+                  <p className="text-sm text-purple-600">Financement de projets</p>
+                  {applicationStats && (
+                    <div className="mt-2 text-xs text-purple-700">
+                      {applicationStats.funding} candidature{applicationStats.funding > 1 ? 's' : ''}
+                    </div>
+                  )}
+                </div>
+              </Link>
+
+              {/* Rechercher des offres */}
+              <Link 
+                to="/jobs"
+                className="group bg-gradient-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 rounded-lg p-4 border border-orange-200 transition-all duration-200 hover:shadow-md"
+              >
+                <div className="text-center">
+                  <div className="p-3 bg-orange-500 rounded-lg inline-block mb-3 group-hover:scale-110 transition-transform duration-200">
+                    <i className="fas fa-plus text-white text-lg"></i>
+                  </div>
+                  <h4 className="font-semibold text-orange-800 mb-1">Rechercher</h4>
+                  <p className="text-sm text-orange-600">Nouvelles offres</p>
+                  <div className="mt-2 text-xs text-orange-700">
+                    Postuler maintenant
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </div>
 
           {/* Profile Completion */}
           <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm mb-4 sm:mb-6">
@@ -394,108 +580,6 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Recent Applications */}
-          <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm mb-4 sm:mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-                <i className="fas fa-clock mr-2 text-fuchsia-600"></i>
-                Candidatures récentes
-              </h3>
-              <Link to="/candidat/candidature-recente" className="text-sm text-fuchsia-600 hover:text-fuchsia-700">
-                Voir tout
-              </Link>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-fuchsia-100 rounded-lg flex items-center justify-center mr-3">
-                    <i className="fas fa-briefcase text-fuchsia-600"></i>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">Développeur Full Stack</h4>
-                    <p className="text-sm text-gray-500">TechCorp • Cotonou</p>
-                  </div>
-                </div>
-                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">En cours</span>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                    <i className="fas fa-chart-line text-blue-600"></i>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">Marketing Manager</h4>
-                    <p className="text-sm text-gray-500">StartupBJ • Porto-Novo</p>
-                  </div>
-                </div>
-                <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">En attente</span>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                    <i className="fas fa-calculator text-purple-600"></i>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">Comptable Senior</h4>
-                    <p className="text-sm text-gray-500">Finance+ • Parakou</p>
-                  </div>
-                </div>
-                <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">Refusé</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Recommended Jobs */}
-          <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-                <i className="fas fa-star mr-2 text-fuchsia-600"></i>
-                Emplois recommandés
-              </h3>
-              <Link to="/candidat/offre" className="text-sm text-fuchsia-600 hover:text-fuchsia-700">
-                Voir plus
-              </Link>
-            </div>
-            <div className="space-y-3">
-              <div className="p-3 border border-gray-200 rounded-lg hover:border-fuchsia-300 transition duration-200">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900 mb-1">Développeur React</h4>
-                    <p className="text-sm text-gray-500 mb-2">Digital Solutions • Cotonou</p>
-                    <div className="flex flex-wrap gap-1 mb-2">
-                      <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">React</span>
-                      <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">Node.js</span>
-                      <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">MongoDB</span>
-                    </div>
-                    <p className="text-sm text-gray-600">Il y a 2h • 250k - 350k FCFA</p>
-                  </div>
-                  <button className="text-fuchsia-600 hover:text-fuchsia-700">
-                    <i className="fas fa-heart"></i>
-                  </button>
-                </div>
-              </div>
-              
-              <div className="p-3 border border-gray-200 rounded-lg hover:border-fuchsia-300 transition duration-200">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900 mb-1">UX/UI Designer</h4>
-                    <p className="text-sm text-gray-500 mb-2">Creative Agency • Abomey-Calavi</p>
-                    <div className="flex flex-wrap gap-1 mb-2">
-                      <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">Figma</span>
-                      <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">Adobe XD</span>
-                      <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">Sketch</span>
-                    </div>
-                    <p className="text-sm text-gray-600">Il y a 4h • 200k - 300k FCFA</p>
-                  </div>
-                  <button className="text-gray-400 hover:text-fuchsia-600">
-                    <i className="far fa-heart"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
 
 
         </div>

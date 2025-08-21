@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import profileService from '../../services/profileService';
+import CandidatNotificationService from '../../services/CandidatNotificationService';
 
 const CandidatHeader = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -11,6 +12,8 @@ const CandidatHeader = () => {
   const [mobileProfileOpen, setMobileProfileOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [candidateProfile, setCandidateProfile] = useState(null);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -21,6 +24,19 @@ const CandidatHeader = () => {
       setLoading(false);
       // Récupérer le profil candidat pour la photo
       fetchCandidateProfile();
+      // Récupérer le compteur de notifications
+      fetchNotificationCount();
+    }
+  }, [user]);
+
+  // Auto-refresh des notifications toutes les 30 secondes
+  useEffect(() => {
+    if (user) {
+      const interval = setInterval(() => {
+        fetchNotificationCount();
+      }, 30000); // 30 secondes
+
+      return () => clearInterval(interval);
     }
   }, [user]);
 
@@ -53,6 +69,22 @@ const CandidatHeader = () => {
       setCandidateProfile(profile);
     } catch (error) {
       console.error('Erreur lors de la récupération du profil candidat:', error);
+    }
+  };
+
+  // Récupérer le compteur de notifications
+  const fetchNotificationCount = async () => {
+    try {
+      setLoadingNotifications(true);
+      const stats = await CandidatNotificationService.getNotificationStats();
+      setNotificationCount(stats.unread || 0);
+      console.log('📊 Notifications non lues:', stats.unread);
+    } catch (error) {
+      console.error('❌ Erreur lors de la récupération des notifications:', error);
+      // En cas d'erreur, on garde le compteur à 0
+      setNotificationCount(0);
+    } finally {
+      setLoadingNotifications(false);
     }
   };
 
@@ -206,11 +238,8 @@ const CandidatHeader = () => {
               </button>
               <div className="dropdown-menu absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible z-10">
                 <div className="py-1">
-                  <Link to="/candidat/offre" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-search mr-2"></i>Rechercher des emplois
-                  </Link>
-                  <Link to="/candidat/candidature-recente" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-clock mr-2"></i>Candidatures récentes
+                  <Link to="/candidat/emploi-candidature" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
+                    <i className="fas fa-clock mr-2"></i>Mes candidatures emploi
                   </Link>
                   <Link to="/jobs" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
                     <i className="fas fa-external-link-alt mr-2"></i>Toutes les offres
@@ -227,15 +256,12 @@ const CandidatHeader = () => {
                   : 'text-gray-700 hover:text-fuchsia-600'
               }`}>
                 <i className="fas fa-money-bill-wave mr-1"></i>
-                Financements <i className="fas fa-chevron-down ml-1 text-xs"></i>
+                Financements  de projets<i className="fas fa-chevron-down ml-1 text-xs"></i>
               </button>
               <div className="dropdown-menu absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible z-10">
                 <div className="py-1">
-                  <Link to="/candidat/finacement" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-search mr-2"></i>Rechercher des financements
-                  </Link>
-                  <Link to="/candidat/candidature-recente" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-clock mr-2"></i>Candidatures récentes
+                  <Link to="/candidat/financement-candidature" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
+                    <i className="fas fa-clock mr-2"></i>Mes candidatures emploi
                   </Link>
                   <Link to="/financements" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
                     <i className="fas fa-external-link-alt mr-2"></i>Tous les financements
@@ -252,13 +278,10 @@ const CandidatHeader = () => {
                   : 'text-gray-700 hover:text-fuchsia-600'
               }`}>
                 <i className="fas fa-graduation-cap mr-1"></i>
-                Bourses <i className="fas fa-chevron-down ml-1 text-xs"></i>
+                Bourses d'études <i className="fas fa-chevron-down ml-1 text-xs"></i>
               </button>
               <div className="dropdown-menu absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible z-10">
                 <div className="py-1">
-                  <Link to="/candidat/bourse" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-search mr-2"></i>Rechercher des bourses
-                  </Link>
                   <Link to="/bourses" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
                     <i className="fas fa-external-link-alt mr-2"></i>Toutes les bourses
                   </Link>
@@ -300,7 +323,11 @@ const CandidatHeader = () => {
               <Link to="/candidat/notification">
                 <button className="text-gray-600 hover:text-fuchsia-600 p-2 rounded-full transition duration-200 relative">
                   <i className="fas fa-bell text-lg"></i>
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center notification-pulse">3</span>
+                  {notificationCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center notification-pulse">
+                      {notificationCount}
+                    </span>
+                  )}
                 </button>
               </Link>
             </div>
@@ -348,7 +375,11 @@ const CandidatHeader = () => {
             <Link to="/candidat/notification">
               <button className="text-gray-600 hover:text-fuchsia-600 p-2 rounded-full transition duration-200 relative touch-target">
                 <i className="fas fa-bell"></i>
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">3</span>
+                {notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                    {notificationCount}
+                  </span>
+                )}
               </button>
             </Link>
             
@@ -434,11 +465,8 @@ const CandidatHeader = () => {
               <i className={`fas fa-chevron-down text-xs transform transition-transform ${mobileOffersOpen ? 'rotate-180' : ''}`}></i>
             </button>
             <div className={`mobile-menu-slide ml-4 ${mobileOffersOpen ? 'show' : ''}`}>
-              <Link to="/candidat/offre" className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-                <i className="fas fa-search mr-2"></i>Rechercher des emplois
-              </Link>
-              <Link to="/candidat/candidature-recente" className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-                <i className="fas fa-clock mr-2"></i>Candidatures récentes
+              <Link to="/candidat/emploi-candidature" className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
+                <i className="fas fa-clock mr-2"></i>Mes candidatures emploi
               </Link>
               <Link to="/jobs" className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
                 <i className="fas fa-external-link-alt mr-2"></i>Toutes les offres
@@ -453,15 +481,12 @@ const CandidatHeader = () => {
                 ? 'text-fuchsia-600 bg-fuchsia-50' 
                 : 'text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50'
             }`}>
-              <span><i className="fas fa-money-bill-wave mr-2"></i>Financements</span>
+              <span><i className="fas fa-money-bill-wave mr-2"></i>Financements de projets</span>
               <i className={`fas fa-chevron-down text-xs transform transition-transform ${mobileOpportunitiesOpen ? 'rotate-180' : ''}`}></i>
             </button>
             <div className={`mobile-menu-slide ml-4 ${mobileOpportunitiesOpen ? 'show' : ''}`}>
-              <Link to="/candidat/finacement" className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-                <i className="fas fa-search mr-2"></i>Rechercher des financements
-              </Link>
-              <Link to="/candidat/candidature-recente" className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-                <i className="fas fa-clock mr-2"></i>Candidatures récentes
+              <Link to="/candidat/financement-candidature" className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
+                <i className="fas fa-clock mr-2"></i>Mes candidatures emploi
               </Link>
               <Link to="/financements" className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
                 <i className="fas fa-external-link-alt mr-2"></i>Tous les financements
@@ -476,13 +501,10 @@ const CandidatHeader = () => {
                 ? 'text-fuchsia-600 bg-fuchsia-50' 
                 : 'text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50'
             }`}>
-              <span><i className="fas fa-graduation-cap mr-2"></i>Bourses</span>
+              <span><i className="fas fa-graduation-cap mr-2"></i>Bourses d'études</span>
               <i className={`fas fa-chevron-down text-xs transform transition-transform ${mobileProfileOpen ? 'rotate-180' : ''}`}></i>
             </button>
             <div className={`mobile-menu-slide ml-4 ${mobileProfileOpen ? 'show' : ''}`}>
-              <Link to="/candidat/bourse" className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-                <i className="fas fa-search mr-2"></i>Rechercher des bourses
-              </Link>
               <Link to="/bourses" className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
                 <i className="fas fa-external-link-alt mr-2"></i>Toutes les bourses
               </Link>

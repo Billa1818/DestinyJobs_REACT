@@ -162,7 +162,7 @@ const CandidatureCard = ({
     <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
       {/* Header avec photo de profil et informations principales */}
       <div className="flex items-start justify-between mb-6">
-        <div className="flex items-start space-x-4">
+            <div className="flex items-start space-x-4">
           {/* Photo de profil */}
           {candidature.imageProfil ? (
             <img 
@@ -176,8 +176,8 @@ const CandidatureCard = ({
             />
           ) : null}
           <div className={`w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-md ${candidature.imageProfil ? 'hidden' : ''}`}>
-            {candidature.avatar || candidature.nom?.substring(0, 2).toUpperCase()}
-          </div>
+                {candidature.avatar || candidature.nom?.substring(0, 2).toUpperCase()}
+              </div>
           
           {/* Informations du candidat */}
           <div className="flex-1">
@@ -189,14 +189,14 @@ const CandidatureCard = ({
               <span className="flex items-center">
                 <i className="fas fa-envelope mr-2 text-blue-500"></i>
                 {candidature.email}
-              </span>
+                  </span>
               {candidature.telephone && (
                 <span className="flex items-center">
                   <i className="fas fa-phone mr-2 text-green-500"></i>
                   {candidature.telephone}
-                </span>
-              )}
-            </div>
+                    </span>
+                  )}
+                </div>
             
             {/* Localisation */}
             {candidature.localisation && (
@@ -205,20 +205,20 @@ const CandidatureCard = ({
                 {candidature.localisation}
               </div>
             )}
-          </div>
-        </div>
+              </div>
+            </div>
         
         {/* Statut et priorité */}
-        <div className="flex flex-col items-end space-y-2">
+            <div className="flex flex-col items-end space-y-2">
           <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(candidature.statut)}`}>
-            {getStatusText(candidature.statut)}
-          </span>
+                {getStatusText(candidature.statut)}
+              </span>
           {candidature.apiData?.priority && (
             <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getPriorityColor(candidature.apiData.priority)}`}>
               {getPriorityText(candidature.apiData.priority)}
             </span>
           )}
-        </div>
+              </div>
       </div>
       
       {/* Informations détaillées */}
@@ -261,26 +261,26 @@ const CandidatureCard = ({
             })()}
           </div>
           <div className="text-xs text-gray-600">Technologies</div>
-        </div>
-      </div>
-      
+            </div>
+          </div>
+          
       {/* Compétences */}
-      {candidature.competences && candidature.competences.length > 0 && (
+          {candidature.competences && candidature.competences.length > 0 && (
         <div className="mb-6">
           <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
             <i className="fas fa-star mr-2 text-yellow-500"></i>
             Compétences ({candidature.competences.length})
           </h4>
-          <div className="flex flex-wrap gap-2">
-            {candidature.competences.map((competence, index) => (
+              <div className="flex flex-wrap gap-2">
+                {candidature.competences.map((competence, index) => (
               <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                {competence}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-      
+                    {competence}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
       {/* Technologies */}
       {candidature.apiData?.applicant_profile?.technologies && (
         <div className="mb-6">
@@ -400,16 +400,16 @@ const CandidatureCard = ({
           {candidature.apiData?.applicant_profile?.country?.name && (
             <div>
               <span className="font-medium">Pays:</span> {candidature.apiData.applicant_profile.country.name}
-            </div>
+              </div>
           )}
           {candidature.apiData?.applicant_profile?.region?.name && (
             <div>
               <span className="font-medium">Région:</span> {candidature.apiData.applicant_profile.region.name}
             </div>
           )}
-        </div>
-      </div>
-      
+            </div>
+          </div>
+          
       {/* Informations sur l'offre */}
       {candidature.offre && candidature.offre !== 'je suis vivantuhjh' && (
         <div className="bg-orange-50 p-4 rounded-lg mb-6">
@@ -455,12 +455,12 @@ const CandidatureCard = ({
           <i className="fas fa-chart-pie mr-2"></i>Compatibilité
         </button>
         
-        <button 
+          <button 
           onClick={() => onContact?.(candidature)}
           className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200 text-sm font-medium flex items-center"
-        >
+          >
           <i className="fas fa-envelope mr-2"></i>Contacter
-        </button>
+          </button>
         
         {candidature.statut === 'pending' || candidature.statut === 'new' ? (
           <>
@@ -475,9 +475,9 @@ const CandidatureCard = ({
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200 text-sm font-medium flex items-center"
             >
               <i className="fas fa-times mr-2"></i>Refuser
-            </button>
-          </>
-        ) : null}
+              </button>
+            </>
+          ) : null}
       </div>
     </div>
   );

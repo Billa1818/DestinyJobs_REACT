@@ -40,13 +40,15 @@ const PublicHeader = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden xl:flex space-x-4 2xl:space-x-6">
-            <Link to="/" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200">
+            <Link to="/" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
+              <i className="fas fa-home mr-2"></i>
               Accueil
             </Link>
             
             {/* Offres Dropdown */}
             <div className="relative group">
               <button className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
+                <i className="fas fa-briefcase mr-2"></i>
                 Offres <i className="fas fa-chevron-down ml-1 text-xs"></i>
               </button>
               <div className="dropdown-menu absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible z-10">
@@ -67,13 +69,16 @@ const PublicHeader = () => {
               </div>
             </div>
 
-            <Link to="/blog" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200">
+            <Link to="/blog" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
+              <i className="fas fa-newspaper mr-2"></i>
               Blog
             </Link>
-            <Link to="/abonnements" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200">
+            <Link to="/abonnements" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
+              <i className="fas fa-crown mr-2"></i>
               Abonnements
             </Link>
-            <Link to="/contact" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200">
+            <Link to="/contact" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
+              <i className="fas fa-envelope mr-2"></i>
               Contact
             </Link>
           </nav>
@@ -81,26 +86,18 @@ const PublicHeader = () => {
           {/* User Menu - Desktop */}
           <div className="hidden lg:flex items-center space-x-2 xl:space-x-3">
             {/* Login Button */}
-            <Link to="/login" className="text-gray-700 hover:text-orange-600 px-3 py-2 rounded-md text-sm font-medium transition duration-200">
+            <Link to="/login" className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition duration-200 text-sm font-medium flex items-center">
+              <i className="fas fa-sign-in-alt mr-2"></i>
               Connexion
-            </Link>
-            
-            {/* Signup Button */}
-            <Link to="/signup" className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition duration-200 text-sm font-medium">
-              Inscription
             </Link>
           </div>
 
           {/* Mobile User Menu */}
           <div className="flex lg:hidden items-center space-x-1 sm:space-x-2">
             {/* Mobile Login */}
-            <Link to="/login" className="text-gray-700 hover:text-orange-600 px-2 py-1 rounded-md text-sm font-medium transition duration-200">
+            <Link to="/login" className="bg-orange-600 text-white px-3 py-1 rounded-md hover:bg-orange-700 transition duration-200 text-sm font-medium flex items-center">
+              <i className="fas fa-sign-in-alt mr-1"></i>
               Connexion
-            </Link>
-            
-            {/* Mobile Signup */}
-            <Link to="/signup" className="bg-orange-600 text-white px-3 py-1 rounded-md hover:bg-orange-700 transition duration-200 text-sm font-medium">
-              Inscription
             </Link>
           </div>
 
@@ -116,14 +113,18 @@ const PublicHeader = () => {
       {/* Mobile menu */}
       <div className={`xl:hidden mobile-menu-slide bg-white border-t border-gray-200 ${mobileMenuOpen ? 'show' : ''}`}>
         <div className="px-2 py-2 space-y-1">
-          <Link to="/" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+          <Link to="/" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+            <i className="fas fa-home mr-2"></i>
             Accueil
           </Link>
           
           {/* Mobile dropdown for "Offres" */}
           <div>
             <button onClick={toggleOffresMenu} className="w-full flex justify-between items-center px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
-              Offres
+              <span className="flex items-center">
+                <i className="fas fa-briefcase mr-2"></i>
+                Offres
+              </span>
               <i className={`fas fa-chevron-down text-xs transform transition-transform ${offresMenuOpen ? 'rotate-180' : ''}`}></i>
             </button>
             <div className={`mobile-menu-slide ml-4 ${offresMenuOpen ? 'show' : ''}`}>
@@ -142,13 +143,16 @@ const PublicHeader = () => {
             </div>
           </div>
           
-          <Link to="/blog" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+          <Link to="/blog" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+            <i className="fas fa-newspaper mr-2"></i>
             Blog
           </Link>
-          <Link to="/abonnements" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+          <Link to="/abonnements" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+            <i className="fas fa-crown mr-2"></i>
             Abonnements
           </Link>
-          <Link to="/contact" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+          <Link to="/contact" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+            <i className="fas fa-envelope mr-2"></i>
             Contact
           </Link>
         </div>

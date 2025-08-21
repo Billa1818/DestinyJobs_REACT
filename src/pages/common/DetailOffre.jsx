@@ -1,7 +1,23 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const DetailOffre = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  const handleApply = () => {
+    if (!isAuthenticated) {
+      // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
+      navigate('/login', { replace: true });
+      return;
+    }
+    
+    // Rediriger vers l'analyse de compatibilité IA
+    // Note: L'ID de l'offre est hardcodé ici, dans un vrai composant il viendrait des props ou de l'URL
+    navigate('/ia-compatibility/sample-offre-id/emploi');
+  };
+
   return (
     <main className="flex-1 bg-gray-50">
       {/* Breadcrumb */}
@@ -193,7 +209,10 @@ const DetailOffre = () => {
               <p className="text-gray-600 text-sm mb-4">
                 Soumettez votre candidature pour ce poste avant la date limite.
               </p>
-              <button className="w-full bg-fuchsia-600 text-white py-3 px-4 rounded-lg hover:bg-fuchsia-700 transition duration-200 font-medium">
+              <button 
+                onClick={handleApply}
+                className="w-full bg-fuchsia-600 text-white py-3 px-4 rounded-lg hover:bg-fuchsia-700 transition duration-200 font-medium"
+              >
                 <i className="fas fa-edit mr-2"></i>Commencer ma candidature
               </button>
               <p className="text-xs text-gray-500 mt-2 text-center">
