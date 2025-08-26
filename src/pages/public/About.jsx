@@ -5,23 +5,6 @@ const About = () => {
   return (
     <div className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
       <div className="space-y-8 sm:space-y-10 lg:space-y-12">
-        {/* Breadcrumb */}
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-3">
-            <li className="inline-flex items-center">
-              <Link to="/" className="inline-flex items-center text-xs sm:text-sm font-medium text-gray-700 hover:text-fuchsia-600">
-                <i className="fas fa-home mr-1 sm:mr-2 text-xs sm:text-sm"></i>
-                Accueil
-              </Link>
-            </li>
-            <li>
-              <div className="flex items-center">
-                <i className="fas fa-chevron-right text-gray-400 mx-1 sm:mx-2 text-xs"></i>
-                <span className="text-xs sm:text-sm font-medium text-gray-500">À propos</span>
-              </div>
-            </li>
-          </ol>
-        </nav>
 
         {/* Hero Section */}
         <section className="relative bg-gradient-to-br from-fuchsia-600 via-fuchsia-700 to-purple-800 rounded-xl sm:rounded-2xl overflow-hidden">
@@ -31,7 +14,7 @@ const About = () => {
               À propos de Destiny Jobs
             </h1>
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl max-w-4xl mx-auto leading-relaxed opacity-90 px-2">
-              Votre partenaire de confiance pour connecter les talents aux opportunités au Bénin
+              Votre partenaire de confiance pour connecter les talents aux opportunités en Afrique
             </p>
           </div>
         </section>
@@ -46,21 +29,21 @@ const About = () => {
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 sm:ml-4">Notre Mission</h2>
             </div>
             <p className="text-base sm:text-lg text-gray-600 leading-relaxed mb-4 sm:mb-6">
-              Chez Destiny Jobs, nous croyons que chaque personne mérite de trouver sa voie professionnelle. 
-              Notre mission est de révolutionner le marché de l'emploi au Bénin en créant un écosystème 
+              Chez Destiny Jobs, nous croyons que chaque personne mérite de trouver l'emploi qui lui convient. 
+              Notre mission est de révolutionner le marché de l'emploi en Afrique en créant un écosystème 
               dynamique qui facilite la rencontre entre les talents et les opportunités.
             </p>
             <div className="space-y-3 sm:space-y-4">
               <div className="flex items-start">
-                <i className="fas fa-check-circle text-green-500 mt-1 mr-2 sm:mr-3 text-sm sm:text-base flex-shrink-0"></i>
-                <span className="text-sm sm:text-base text-gray-700">Démocratiser l'accès à l'emploi pour tous les Béninois</span>
+                <i className="fas fa-check-circle text-green-500 mb-1 mr-2 sm:mr-3 text-sm sm:text-base flex-shrink-0"></i>
+                <span className="text-sm sm:text-base text-gray-700">Démocratiser l'accès à l'emploi pour tous les Africains</span>
               </div>
               <div className="flex items-start">
-                <i className="fas fa-check-circle text-green-500 mt-1 mr-2 sm:mr-3 text-sm sm:text-base flex-shrink-0"></i>
+                <i className="fas fa-check-circle text-green-500 mb-1 mr-2 sm:mr-3 text-sm sm:text-base flex-shrink-0"></i>
                 <span className="text-sm sm:text-base text-gray-700">Accompagner les entreprises dans leur recrutement</span>
               </div>
               <div className="flex items-start">
-                <i className="fas fa-check-circle text-green-500 mt-1 mr-2 sm:mr-3 text-sm sm:text-base flex-shrink-0"></i>
+                <i className="fas fa-check-circle text-green-500 mb-1 mr-2 sm:mr-3 text-sm sm:text-base flex-shrink-0"></i>
                 <span className="text-sm sm:text-base text-gray-700">Promouvoir le développement économique local</span>
               </div>
             </div>
@@ -78,7 +61,7 @@ const About = () => {
                 </div>
                 <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-6 shadow-sm">
                   <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600 mb-1 sm:mb-2">456</h3>
-                  <p className="text-xs sm:text-sm lg:text-base text-gray-600">Entreprises partenaires</p>
+                  <p className="text-xs sm:text-sm lg:text-base text-gray-600">Entreprises/Organisations partenaires</p>
                 </div>
                 <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-6 shadow-sm">
                   <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-orange-600 mb-1 sm:mb-2">89%</h3>
@@ -97,7 +80,7 @@ const About = () => {
               Notre Vision & Nos Valeurs
             </h2>
             <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-3xl mx-auto px-2">
-              Construire l'avenir professionnel du Bénin en nous appuyant sur des valeurs fortes
+              Construire l'avenir professionnel en Afrique en nous appuyant sur des valeurs fortes
             </p>
           </div>
 
@@ -148,14 +131,15 @@ const About = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+            <Link to="/diffusion-opportunites"> 
             <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 lg:p-8 shadow-lg hover:shadow-xl transition duration-300 border-t-4 border-fuchsia-600">
               <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-fuchsia-100 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6">
                 <i className="fas fa-briefcase text-fuchsia-600 text-lg sm:text-xl lg:text-2xl"></i>
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Emplois & Jobs</h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Diffusion d'opportunités</h3>
               <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
-                Accédez à des milliers d'offres d'emploi dans tous les secteurs d'activité au Bénin.
+                Accédez à des milliers d'offres d'emploi dans tous les secteurs d'activité en Afrique.
               </p>
               <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-500">
                 <li className="flex items-center"><i className="fas fa-check text-green-500 mr-2 text-xs"></i>Recherche avancée</li>
@@ -163,67 +147,44 @@ const About = () => {
                 <li className="flex items-center"><i className="fas fa-check text-green-500 mr-2 text-xs"></i>Candidature express</li>
               </ul>
             </div>
+            </Link>
 
             <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 lg:p-8 shadow-lg hover:shadow-xl transition duration-300 border-t-4 border-green-600">
               <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-green-100 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6">
                 <i className="fas fa-graduation-cap text-green-600 text-lg sm:text-xl lg:text-2xl"></i>
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Formations</h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Formations </h3>
               <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
                 Développez vos compétences avec nos formations professionnelles certifiantes.
               </p>
               <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-500">
-                <li className="flex items-center"><i className="fas fa-check text-green-500 mr-2 text-xs"></i>Formations en ligne</li>
+                <li className="flex items-center"><i className="fas fa-check text-green-500 mr-2 text-xs"></i>Formations à distance</li>
                 <li className="flex items-center"><i className="fas fa-check text-green-500 mr-2 text-xs"></i>Certificats reconnus</li>
                 <li className="flex items-center"><i className="fas fa-check text-green-500 mr-2 text-xs"></i>Accompagnement personnalisé</li>
               </ul>
             </div>
 
-            <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 lg:p-8 shadow-lg hover:shadow-xl transition duration-300 border-t-4 border-purple-600">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-purple-100 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6">
-                <i className="fas fa-hand-holding-usd text-purple-600 text-lg sm:text-xl lg:text-2xl"></i>
-              </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Financements</h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
-                Obtenez un financement pour vos projets professionnels ou entrepreneuriaux.
-              </p>
-              <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-500">
-                <li className="flex items-center"><i className="fas fa-check text-green-500 mr-2 text-xs"></i>Microcrédits</li>
-                <li className="flex items-center"><i className="fas fa-check text-green-500 mr-2 text-xs"></i>Prêts étudiants</li>
-                <li className="flex items-center"><i className="fas fa-check text-green-500 mr-2 text-xs"></i>Capital startup</li>
-              </ul>
-            </div>
+
+            <Link to="/abonnements"> 
 
             <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 lg:p-8 shadow-lg hover:shadow-xl transition duration-300 border-t-4 border-orange-600">
               <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-orange-100 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6">
                 <i className="fas fa-user-tie text-orange-600 text-lg sm:text-xl lg:text-2xl"></i>
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Consultation</h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Boost careers</h3>
               <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
                 Bénéficiez de conseils personnalisés pour votre carrière et votre développement professionnel.
               </p>
               <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-500">
                 <li className="flex items-center"><i className="fas fa-check text-green-500 mr-2 text-xs"></i>Coaching carrière</li>
-                <li className="flex items-center"><i className="fas fa-check text-green-500 mr-2 text-xs"></i>Optimisation CV</li>
+                <li className="flex items-center"><i className="fas fa-check text-green-500 mr-2 text-xs"></i>Optimisation CV et LM</li>
                 <li className="flex items-center"><i className="fas fa-check text-green-500 mr-2 text-xs"></i>Préparation entretiens</li>
               </ul>
             </div>
 
-            <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 lg:p-8 shadow-lg hover:shadow-xl transition duration-300 border-t-4 border-red-600">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-red-100 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6">
-                <i className="fas fa-award text-red-600 text-lg sm:text-xl lg:text-2xl"></i>
-              </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Bourses d'études</h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
-                Découvrez les opportunités de bourses d'études au Bénin et à l'international.
-              </p>
-              <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-500">
-                <li className="flex items-center"><i className="fas fa-check text-green-500 mr-2 text-xs"></i>Bourses nationales</li>
-                <li className="flex items-center"><i className="fas fa-check text-green-500 mr-2 text-xs"></i>Bourses internationales</li>
-                <li className="flex items-center"><i className="fas fa-check text-green-500 mr-2 text-xs"></i>Aide au dossier</li>
-              </ul>
-            </div>
+            </Link>
 
+            <Link to="/solutions-rh"> 
             <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 lg:p-8 shadow-lg hover:shadow-xl transition duration-300 border-t-4 border-indigo-600 sm:col-span-2 lg:col-span-1">
               <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-indigo-100 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6">
                 <i className="fas fa-building text-indigo-600 text-lg sm:text-xl lg:text-2xl"></i>
@@ -238,6 +199,7 @@ const About = () => {
                 <li className="flex items-center"><i className="fas fa-check text-green-500 mr-2 text-xs"></i>Évaluation talents</li>
               </ul>
             </div>
+            </Link>
           </div>
         </section>
 

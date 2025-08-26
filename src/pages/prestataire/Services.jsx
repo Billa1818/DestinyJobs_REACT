@@ -1,425 +1,496 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import ProviderPublicProfileService from '../../services/ProviderPublicProfileService';
 
-const Services = () => {
-  const [activeTab, setActiveTab] = useState('services');
-  const [services, setServices] = useState([
-    {
-      id: 1,
-      titre: 'Développement Web Full-Stack',
-      description: 'Création d\'applications web complètes avec React, Node.js et MongoDB',
-      prix: '150,000 FCFA',
-      duree: '2-3 mois',
-      competences: ['React', 'Node.js', 'MongoDB', 'Express'],
-      statut: 'Actif',
-      projets: 12,
-      note: 4.8
-    },
-    {
-      id: 2,
-      titre: 'Développement Mobile',
-      description: 'Applications mobiles natives et cross-platform',
-      prix: '200,000 FCFA',
-      duree: '3-4 mois',
-      competences: ['React Native', 'Flutter', 'iOS', 'Android'],
-      statut: 'Actif',
-      projets: 8,
-      note: 4.9
-    },
-    {
-      id: 3,
-      titre: 'Design UI/UX',
-      description: 'Conception d\'interfaces utilisateur modernes et intuitives',
-      prix: '80,000 FCFA',
-      duree: '1-2 mois',
-      competences: ['Figma', 'Adobe XD', 'Sketch', 'Prototyping'],
-      statut: 'En pause',
-      projets: 15,
-      note: 4.7
+const PrestataireServices = () => {
+  const { providerId } = useParams();
+  const { user } = useAuth();
+  
+  // États pour les données du profil
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Obtenir l'ID du prestataire (depuis l'URL ou l'utilisateur connecté)
+  const getProviderId = () => {
+    if (providerId) return providerId;
+    if (user?.id) return user.id;
+    return null;
+  };
+
+  // Normaliser l'ID du prestataire
+  const getNormalizedProviderId = () => {
+    const id = getProviderId();
+    if (!id) return null;
+    
+    // Normaliser l'ID (convertir en nombre si c'est une chaîne)
+    return ProviderPublicProfileService.normalizeProviderId(id);
+  };
+
+  // Charger le profil au montage du composant
+  useEffect(() => {
+    const id = getNormalizedProviderId();
+    if (id) {
+      loadProfile(id);
+    } else {
+      setError('ID du prestataire non disponible ou invalide');
+      setLoading(false);
     }
-  ]);
+  }, [providerId, user]);
 
-  const [competences] = useState([
-    { nom: 'React', niveau: 90, categorie: 'Frontend' },
-    { nom: 'Node.js', niveau: 85, categorie: 'Backend' },
-    { nom: 'MongoDB', niveau: 80, categorie: 'Base de données' },
-    { nom: 'React Native', niveau: 75, categorie: 'Mobile' },
-    { nom: 'Figma', niveau: 70, categorie: 'Design' },
-    { nom: 'Python', niveau: 65, categorie: 'Backend' }
-  ]);
-
-  const [projets] = useState([
-    {
-      id: 1,
-      titre: 'E-commerce Platform',
-      client: 'TechCorp Solutions',
-      description: 'Plateforme e-commerce complète avec paiement en ligne',
-      technologies: ['React', 'Node.js', 'Stripe'],
-      date: '2024-01-15',
-      statut: 'Terminé',
-      revenus: '450,000 FCFA'
-    },
-    {
-      id: 2,
-      titre: 'App de Livraison',
-      client: 'FastDelivery',
-      description: 'Application mobile pour la livraison de repas',
-      technologies: ['React Native', 'Firebase', 'Google Maps'],
-      date: '2023-12-20',
-      statut: 'En cours',
-      revenus: '300,000 FCFA'
-    },
-    {
-      id: 3,
-      titre: 'Dashboard Analytics',
-      client: 'DataViz Inc',
-      description: 'Tableau de bord analytique avec visualisations',
-      technologies: ['Vue.js', 'D3.js', 'Python'],
-      date: '2023-11-10',
-      statut: 'Terminé',
-      revenus: '280,000 FCFA'
+  // Charger le profil depuis l'API
+  const loadProfile = async (id) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // L'ID est déjà normalisé et validé par getNormalizedProviderId
+      console.log('🔄 Chargement du profil pour l\'ID:', id, 'Type:', typeof id);
+      
+      const data = await ProviderPublicProfileService.getPublicProfile(id);
+      const formattedData = ProviderPublicProfileService.formatProfileForDisplay(data);
+      
+      if (!formattedData) {
+        throw new Error('Données du profil invalides');
+      }
+      
+      setProfileData(formattedData);
+      console.log('✅ Profil chargé avec succès:', formattedData);
+      
+    } catch (err) {
+      console.error('❌ Erreur lors du chargement du profil:', err);
+      if (err.response?.status === 404) {
+        setError('Profil du prestataire non trouvé');
+      } else if (err.response?.status === 400) {
+        setError('ID du prestataire invalide');
+      } else {
+        setError(err.message || 'Erreur lors du chargement du profil');
+      }
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
-  const [tarifs] = useState([
-    {
-      type: 'Développement Web',
-      tarifHoraire: '25,000 FCFA',
-      tarifProjet: '150,000 - 500,000 FCFA',
-      delai: '2-8 semaines'
-    },
-    {
-      type: 'Développement Mobile',
-      tarifHoraire: '30,000 FCFA',
-      tarifProjet: '200,000 - 800,000 FCFA',
-      delai: '3-12 semaines'
-    },
-    {
-      type: 'Design UI/UX',
-      tarifHoraire: '20,000 FCFA',
-      tarifProjet: '80,000 - 300,000 FCFA',
-      delai: '1-4 semaines'
+  // Obtenir l'icône du type de prestataire
+  const getProviderIcon = () => {
+    if (profileData?.providerType === 'ORGANIZATION') {
+      return 'fas fa-building';
     }
-  ]);
+    return 'fas fa-user';
+  };
+
+  // Obtenir les couleurs selon le type de prestataire
+  const getProviderColors = () => {
+    if (profileData?.providerType === 'ORGANIZATION') {
+      return {
+        gradient: 'from-blue-500 to-indigo-600',
+        border: 'border-blue-200',
+        icon: 'text-blue-600'
+      };
+    } else {
+      return {
+        gradient: 'from-orange-500 to-purple-600',
+        border: 'border-orange-200',
+        icon: 'text-orange-600'
+      };
+    }
+  };
+
+  // Formater la date
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Date non spécifiée';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return 'Date invalide';
+    }
+  };
+
+  // Gérer le téléchargement du portfolio
+  const handlePortfolioDownload = () => {
+    if (profileData?.fullPortfolioUrl) {
+      const link = document.createElement('a');
+      link.href = profileData.fullPortfolioUrl;
+      link.download = `Portfolio_${profileData.username}.pdf`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  // Affichage du chargement
+  if (loading) {
+  return (
+      <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Chargement du profil...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Affichage de l'erreur
+  if (error) {
+    return (
+      <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
+        <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
+            <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <i className="fas fa-exclamation-circle text-red-400"></i>
+              </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">Erreur</h3>
+              <p className="text-sm text-red-700 mt-1">{error}</p>
+            </div>
+          </div>
+          <div className="mt-4">
+            <Link 
+              to="/prestataire" 
+              className="text-sm text-red-600 hover:text-red-500 underline"
+            >
+              Retour au tableau de bord
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Affichage du profil
+  if (!profileData) {
+    return (
+      <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
+        <div className="text-center py-8">
+          <i className="fas fa-user-slash text-4xl text-gray-300 mb-4"></i>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Profil non trouvé</h3>
+          <p className="text-gray-600">
+            Le profil demandé n'a pas pu être chargé.
+          </p>
+              </div>
+      </main>
+    );
+  }
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Mon Portfolio</h1>
-          <p className="text-gray-600">Gérez vos services, compétences et projets</p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <i className="fas fa-briefcase text-orange-600 text-xl"></i>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Services Actifs</p>
-                <p className="text-2xl font-bold text-gray-900">{services.filter(s => s.statut === 'Actif').length}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <i className="fas fa-project-diagram text-green-600 text-xl"></i>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Projets Réalisés</p>
-                <p className="text-2xl font-bold text-gray-900">{projets.length}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <i className="fas fa-star text-blue-600 text-xl"></i>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Note Moyenne</p>
-                <p className="text-2xl font-bold text-gray-900">4.8</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <i className="fas fa-money-bill-wave text-purple-600 text-xl"></i>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Revenus Totaux</p>
-                <p className="text-2xl font-bold text-gray-900">1.03M FCFA</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8 px-6">
-              <button
-                onClick={() => setActiveTab('services')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'services'
-                    ? 'border-orange-500 text-orange-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Mes Services
-              </button>
-              <button
-                onClick={() => setActiveTab('competences')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'competences'
-                    ? 'border-orange-500 text-orange-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Compétences
-              </button>
-              <button
-                onClick={() => setActiveTab('projets')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'projets'
-                    ? 'border-orange-500 text-orange-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Projets
-              </button>
-              <button
-                onClick={() => setActiveTab('tarifs')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'tarifs'
-                    ? 'border-orange-500 text-orange-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Tarifs
-              </button>
-            </nav>
-          </div>
-
-          <div className="p-6">
-            {/* Services Tab */}
-            {activeTab === 'services' && (
+    <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
+      <div className="flex flex-col xl:flex-row gap-3 sm:px-4 lg:gap-6">
+        {/* Main Content Column */}
+        <div className="xl:w-2/3">
+          {/* Header */}
+          <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm mb-4 sm:mb-6">
+            <div className="flex items-center justify-between mb-4">
               <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">Mes Services</h2>
-                  <button className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors">
-                    <i className="fas fa-plus mr-2"></i>Ajouter un service
-                  </button>
+                <h1 className="text-2xl font-bold text-gray-900">Profil Public</h1>
+                <p className="text-gray-600 mt-1">Vue publique de votre profil prestataire</p>
+              </div>
+              <Link 
+                to="/prestataire/profile"
+                className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition duration-200"
+              >
+                <i className="fas fa-edit mr-2"></i>
+                Modifier le profil
+              </Link>
+            </div>
+          </div>
+          
+          {/* Profile Information */}
+          <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              <i className="fas fa-user mr-2 text-orange-600"></i>
+              Informations du profil
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Nom complet */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nom complet
+                </label>
+                <p className="text-gray-900 font-medium">
+                  {profileData.displayName}
+                </p>
+              </div>
+
+              {/* Nom d'utilisateur */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nom d'utilisateur
+                </label>
+                <p className="text-gray-900">@{profileData.username}</p>
+              </div>
+
+              {/* Type de prestataire */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Type de prestataire
+                </label>
+                <div className="flex items-center">
+                  <i className={`${getProviderIcon()} ${getProviderColors().icon} mr-2`}></i>
+                  <span className="text-gray-900">{profileData.providerTypeLabel}</span>
+            </div>
+          </div>
+          
+              {/* Disponibilité */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Disponibilité
+                </label>
+            <div className="flex items-center">
+                  <div className={`w-3 h-3 ${profileData.availabilityStatus.bgColor} rounded-full mr-2`}>
+                    <i className={`${profileData.availabilityStatus.icon} ${profileData.availabilityStatus.color} text-xs`}></i>
+                  </div>
+                  <span className={`${profileData.availabilityStatus.color} font-medium`}>
+                    {profileData.availabilityStatus.text}
+                  </span>
+                </div>
+              </div>
+
+              {/* Spécialisations */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Spécialisations
+                </label>
+                <p className="text-gray-900">
+                  {profileData.specializations || 'Aucune spécialisation spécifiée'}
+                </p>
+              </div>
+
+              {/* Années d'expérience */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Expérience
+                </label>
+                <p className="text-gray-900">{profileData.experienceText}</p>
+        </div>
+
+              {/* Projets complétés */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Projets complétés
+                </label>
+                <p className="text-gray-900">
+                  {profileData.completedProjects || 0} projets
+                </p>
+          </div>
+
+              {/* Taux horaire */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Taux horaire
+                </label>
+                <p className="text-gray-900 font-medium">
+                  {profileData.hourlyRateFormatted}
+                </p>
                 </div>
                 
-                <div className="space-y-4">
-                  {services.map((service) => (
-                    <div key={service.id} className="border border-gray-200 rounded-lg p-6">
-                      <div className="flex justify-between items-start mb-4">
+              {/* Score de visibilité */}
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">{service.titre}</h3>
-                          <p className="text-gray-600 mb-3">{service.description}</p>
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            {service.competences.map((comp, index) => (
-                              <span key={index} className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
-                                {comp}
-                              </span>
-                            ))}
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Score de visibilité
+                </label>
+                <div className="flex items-center">
+                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${profileData.visibilityLevel.bgColor} ${profileData.visibilityLevel.color}`}>
+                    <i className={`${profileData.visibilityLevel.icon} mr-1`}></i>
+                    {profileData.visibilityLevel.level}
                           </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            service.statut === 'Actif' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {service.statut}
+                  <span className="ml-2 text-sm text-gray-600">
+                    ({profileData.visibilityScore}/100)
                           </span>
-                          <button className="text-gray-400 hover:text-gray-600">
-                            <i className="fas fa-edit"></i>
-                          </button>
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div>
-                          <p className="text-gray-500">Prix</p>
-                          <p className="font-semibold text-gray-900">{service.prix}</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500">Durée</p>
-                          <p className="font-semibold text-gray-900">{service.duree}</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500">Projets</p>
-                          <p className="font-semibold text-gray-900">{service.projets}</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500">Note</p>
+              {/* Localisation */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Localisation
+                </label>
                           <div className="flex items-center">
-                            <span className="font-semibold text-gray-900 mr-1">{service.note}</span>
-                            <i className="fas fa-star text-yellow-400 text-xs"></i>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  <i className="fas fa-map-marker-alt text-gray-400 mr-2"></i>
+                  <span className="text-gray-900">{profileData.location}</span>
                 </div>
               </div>
-            )}
 
-            {/* Compétences Tab */}
-            {activeTab === 'competences' && (
+              {/* Date de création */}
               <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">Mes Compétences</h2>
-                  <button className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors">
-                    <i className="fas fa-plus mr-2"></i>Ajouter une compétence
-                  </button>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Membre depuis
+                </label>
+                <p className="text-gray-900">{formatDate(profileData.createdAt)}</p>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {competences.map((comp, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-6">
-                      <div className="flex justify-between items-center mb-3">
-                        <h3 className="font-semibold text-gray-900">{comp.nom}</h3>
-                        <span className="text-sm text-gray-500">{comp.categorie}</span>
-                      </div>
-                      <div className="mb-2">
-                        <div className="flex justify-between text-sm text-gray-600 mb-1">
-                          <span>Niveau</span>
-                          <span>{comp.niveau}%</span>
+              {/* Dernière mise à jour */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Dernière mise à jour
+                </label>
+                <p className="text-gray-900">{formatDate(profileData.updatedAt)}</p>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-orange-600 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${comp.niveau}%` }}
-                          ></div>
                         </div>
                       </div>
-                      <div className="flex justify-end space-x-2">
-                        <button className="text-orange-600 hover:text-orange-700 text-sm">
-                          <i className="fas fa-edit mr-1"></i>Modifier
-                        </button>
-                        <button className="text-red-600 hover:text-red-700 text-sm">
-                          <i className="fas fa-trash mr-1"></i>Supprimer
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+
+          {/* Contact Information */}
+          <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              <i className="fas fa-envelope mr-2 text-blue-600"></i>
+              Informations de contact
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email
+                </label>
+                <div className="flex items-center">
+                  <i className="fas fa-envelope text-gray-400 mr-2"></i>
+                  <a 
+                    href={`mailto:${profileData.email}`}
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    {profileData.email}
+                  </a>
                 </div>
               </div>
-            )}
 
-            {/* Projets Tab */}
-            {activeTab === 'projets' && (
+              {/* Téléphone */}
               <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">Mes Projets</h2>
-                  <button className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors">
-                    <i className="fas fa-plus mr-2"></i>Ajouter un projet
-                  </button>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Téléphone
+                </label>
+                <div className="flex items-center">
+                  <i className="fas fa-phone text-gray-400 mr-2"></i>
+                  <a 
+                    href={`tel:${profileData.phone}`}
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    {profileData.phone}
+                  </a>
                 </div>
-                
-                <div className="space-y-4">
-                  {projets.map((projet) => (
-                    <div key={projet.id} className="border border-gray-200 rounded-lg p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">{projet.titre}</h3>
-                          <p className="text-gray-600 mb-3">{projet.description}</p>
-                          <p className="text-sm text-gray-500 mb-3">Client: {projet.client}</p>
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            {projet.technologies.map((tech, index) => (
-                              <span key={index} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                                {tech}
-                              </span>
-                            ))}
                           </div>
                         </div>
-                        <div className="flex flex-col items-end space-y-2">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            projet.statut === 'Terminé' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {projet.statut}
-                          </span>
-                          <p className="text-sm text-gray-500">{projet.date}</p>
                         </div>
                       </div>
                       
-                      <div className="flex justify-between items-center">
-                        <div className="text-sm">
-                          <span className="text-gray-500">Revenus: </span>
-                          <span className="font-semibold text-gray-900">{projet.revenus}</span>
-                        </div>
-                        <div className="flex space-x-2">
-                          <button className="text-orange-600 hover:text-orange-700 text-sm">
-                            <i className="fas fa-eye mr-1"></i>Voir
-                          </button>
-                          <button className="text-gray-600 hover:text-gray-700 text-sm">
-                            <i className="fas fa-edit mr-1"></i>Modifier
-                          </button>
+        {/* Sidebar */}
+        <div className="xl:w-1/3">
+          {/* Profile Summary */}
+          <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
+            <div className="text-center mb-6">
+              {/* Photo de profil */}
+              {profileData.fullImageUrl ? (
+                <div className="w-24 h-24 mx-auto mb-4">
+                  <img
+                    src={profileData.fullImageUrl}
+                    alt="Photo de profil"
+                    className={`w-24 h-24 object-cover rounded-full border-4 ${getProviderColors().border} shadow-lg`}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'block';
+                    }}
+                  />
+                  <div 
+                    className={`w-24 h-24 bg-gradient-to-r ${getProviderColors().gradient} rounded-full flex items-center justify-center mx-auto mb-4 hidden`}
+                    style={{ display: 'none' }}
+                  >
+                    <i className={`${getProviderIcon()} text-white text-2xl`}></i>
                         </div>
                       </div>
+              ) : (
+                <div className={`w-24 h-24 bg-gradient-to-r ${getProviderColors().gradient} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                  <i className={`${getProviderIcon()} text-white text-2xl`}></i>
+              </div>
+            )}
+
+              <h3 className="text-xl font-bold text-gray-900">
+                {profileData.displayName}
+              </h3>
+              <p className="text-gray-600">
+                {profileData.providerTypeLabel}
+              </p>
+              
+              {/* Statut de disponibilité */}
+              <div className="mt-3">
+                <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${profileData.availabilityStatus.bgColor} ${profileData.availabilityStatus.color}`}>
+                  <i className={`${profileData.availabilityStatus.icon} mr-2`}></i>
+                  {profileData.availabilityStatus.text}
+                </div>
+              </div>
+                </div>
+                
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <i className="fas fa-clock text-gray-400 mr-3"></i>
+                <span className="text-gray-700">{profileData.experienceText}</span>
+              </div>
+              <div className="flex items-center">
+                <i className="fas fa-check-circle text-gray-400 mr-3"></i>
+                <span className="text-gray-700">{profileData.completedProjects || 0} projets complétés</span>
+                        </div>
+              <div className="flex items-center">
+                <i className="fas fa-money-bill text-gray-400 mr-3"></i>
+                <span className="text-gray-700">{profileData.hourlyRateFormatted}</span>
+                        </div>
+              <div className="flex items-center">
+                <i className="fas fa-map-marker-alt text-gray-400 mr-3"></i>
+                <span className="text-gray-700">{profileData.location}</span>
+                        </div>
+                      </div>
+                      </div>
+
+          {/* Portfolio */}
+          {profileData.fullPortfolioUrl && (
+            <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Portfolio</h3>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <i className="fas fa-file-pdf text-blue-600 text-xl"></i>
                     </div>
-                  ))}
+                <p className="text-sm text-gray-600 mb-3">
+                  Portfolio disponible au téléchargement
+                </p>
+                <button
+                  onClick={handlePortfolioDownload}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200"
+                >
+                  <i className="fas fa-download mr-2"></i>
+                  Télécharger
+                </button>
                 </div>
               </div>
             )}
 
-            {/* Tarifs Tab */}
-            {activeTab === 'tarifs' && (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">Mes Tarifs</h2>
-                  <button className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors">
-                    <i className="fas fa-plus mr-2"></i>Ajouter un tarif
-                  </button>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {tarifs.map((tarif, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">{tarif.type}</h3>
-                      <div className="space-y-3">
-                        <div>
-                          <p className="text-sm text-gray-500">Tarif horaire</p>
-                          <p className="font-semibold text-gray-900">{tarif.tarifHoraire}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Tarif par projet</p>
-                          <p className="font-semibold text-gray-900">{tarif.tarifProjet}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Délai moyen</p>
-                          <p className="font-semibold text-gray-900">{tarif.delai}</p>
-                        </div>
-                      </div>
-                      <div className="mt-4 flex justify-end">
-                        <button className="text-orange-600 hover:text-orange-700 text-sm">
-                          <i className="fas fa-edit mr-1"></i>Modifier
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+          {/* Quick Actions */}
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Actions rapides</h3>
+            <div className="space-y-3">
+              <Link to="/prestataire/profile" className="flex items-center p-3 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition duration-200">
+                <i className="fas fa-edit text-orange-600 mr-3"></i>
+                <span className="text-gray-700">Modifier le profil</span>
+              </Link>
+              <Link to="/consultations" className="flex items-center p-3 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition duration-200">
+                <i className="fas fa-search text-orange-600 mr-3"></i>
+                <span className="text-gray-700">Rechercher des consultations</span>
+              </Link>
+              <Link to="/prestataire/demandes" className="flex items-center p-3 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition duration-200">
+                <i className="fas fa-paper-plane text-orange-600 mr-3"></i>
+                <span className="text-gray-700">Mes candidatures</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 
-export default Services; 
+export default PrestataireServices; 

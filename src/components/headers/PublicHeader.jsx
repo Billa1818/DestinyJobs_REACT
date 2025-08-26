@@ -69,18 +69,33 @@ const PublicHeader = () => {
               </div>
             </div>
 
+            <Link to="/utilisateurs" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
+              <i className="fas fa-users mr-2"></i>
+              Nos utilisateurs
+            </Link>
+
+            <Link to="/abonnements" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
+              <i className="fas fa-crown mr-2"></i>
+              Boost Careers
+            </Link>
+            
+            <Link to="/formation" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
+              <i className="fas fa-graduation-cap mr-2"></i>
+              Formation
+            </Link>
+            
             <Link to="/blog" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
               <i className="fas fa-newspaper mr-2"></i>
               Blog
             </Link>
-            <Link to="/abonnements" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
-              <i className="fas fa-crown mr-2"></i>
-              Abonnements
+            <Link to="/a-propos" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
+              <i className="fas fa-info-circle mr-2"></i>
+              À propos
             </Link>
-            <Link to="/contact" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
-              <i className="fas fa-envelope mr-2"></i>
-              Contact
-            </Link>
+
+           
+
+            
           </nav>
 
           {/* User Menu - Desktop */}
@@ -142,19 +157,30 @@ const PublicHeader = () => {
               </Link>
             </div>
           </div>
+          <Link to="/utilisateurs" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
+              <i className="fas fa-users mr-2"></i>
+              Nos utilisateurs
+            </Link>
           
+
+          <Link to="/abonnements" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+            <i className="fas fa-crown mr-2"></i>
+            Boost Careers
+          </Link>
+          <Link to="/formation" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+            <i className="fas fa-graduation-cap mr-2"></i>
+            Formation
+          </Link>
           <Link to="/blog" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
             <i className="fas fa-newspaper mr-2"></i>
             Blog
           </Link>
-          <Link to="/abonnements" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
-            <i className="fas fa-crown mr-2"></i>
-            Abonnements
+          <Link to="/a-propos" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+            <i className="fas fa-info-circle mr-2"></i>
+            À propos
           </Link>
-          <Link to="/contact" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
-            <i className="fas fa-envelope mr-2"></i>
-            Contact
-          </Link>
+          
+          
         </div>
       </div>
     </header>

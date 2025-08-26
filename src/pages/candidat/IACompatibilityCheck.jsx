@@ -120,8 +120,31 @@ const IACompatibilityCheck = () => {
     
     // Simulation de soumission
     setTimeout(() => {
-      alert('Candidature envoyée avec succès !');
+      const successMessage = offerType === 'consultation' 
+        ? 'Candidature à la consultation envoyée avec succès !'
+        : offerType === 'financement' 
+        ? 'Demande de financement envoyée avec succès !'
+        : offerType === 'bourse' 
+        ? 'Candidature à la bourse envoyée avec succès !'
+        : 'Candidature envoyée avec succès !';
+      
+      alert(successMessage);
+      
+      // Rediriger vers la bonne page selon le type d'offre
+      switch (offerType) {
+        case 'consultation':
+          navigate('/candidat/consultation-candidature');
+          break;
+        case 'financement':
+          navigate('/candidat/financement-candidature');
+          break;
+        case 'bourse':
+          navigate('/candidat/bourse-candidature');
+          break;
+        default:
       navigate('/candidat/emploi-candidature');
+      }
+      
       setIsSubmitting(false);
     }, 1500);
   };
@@ -138,6 +161,207 @@ const IACompatibilityCheck = () => {
     return 'Compatibilité limitée';
   };
 
+  // Générer les points forts basés sur les scores détaillés
+  const generateStrengths = (detailedScores, offerType) => {
+    const strengths = [];
+    const threshold = 80;
+    
+    switch (offerType) {
+      case 'emploi':
+        if (detailedScores.skills_match >= threshold) {
+          strengths.push('Excellente correspondance des compétences');
+        }
+        if (detailedScores.experience_match >= threshold) {
+          strengths.push('Expérience très pertinente pour le poste');
+        }
+        if (detailedScores.location_match >= threshold) {
+          strengths.push('Localisation parfaitement adaptée');
+        }
+        if (detailedScores.salary_match >= threshold) {
+          strengths.push('Attentes salariales alignées');
+        }
+        if (detailedScores.culture_match >= threshold) {
+          strengths.push('Culture d\'entreprise compatible');
+        }
+        break;
+        
+      case 'consultation':
+        if (detailedScores.expertise_match >= threshold) {
+          strengths.push('Expertise métier excellente');
+        }
+        if (detailedScores.portfolio_match >= threshold) {
+          strengths.push('Portfolio de qualité');
+        }
+        if (detailedScores.availability_match >= threshold) {
+          strengths.push('Disponibilité parfaite');
+        }
+        if (detailedScores.rates_match >= threshold) {
+          strengths.push('Tarifs compétitifs');
+        }
+        if (detailedScores.references_match >= threshold) {
+          strengths.push('Références de qualité');
+        }
+        break;
+        
+      case 'financement':
+      case 'bourse':
+        if (detailedScores.business_plan_match >= threshold) {
+          strengths.push('Plan d\'affaires solide');
+        }
+        if (detailedScores.financial_profile_match >= threshold) {
+          strengths.push('Profil financier excellent');
+        }
+        if (detailedScores.guarantees_match >= threshold) {
+          strengths.push('Garanties solides');
+        }
+        if (detailedScores.profitability_match >= threshold) {
+          strengths.push('Potentiel de rentabilité élevé');
+        }
+        if (detailedScores.risk_assessment >= threshold) {
+          strengths.push('Niveau de risque maîtrisé');
+        }
+        break;
+        
+      default:
+        // Fallback pour les types non reconnus
+        Object.entries(detailedScores).forEach(([key, score]) => {
+          if (score >= threshold) {
+            strengths.push(`Score élevé en ${key.replace('_', ' ')}`);
+          }
+        });
+    }
+    
+    return strengths.length > 0 ? strengths : ['Profil globalement compatible'];
+  };
+
+  // Générer les points faibles basés sur les scores détaillés
+  const generateWeaknesses = (detailedScores, offerType) => {
+    const weaknesses = [];
+    const threshold = 60;
+    
+    switch (offerType) {
+      case 'emploi':
+        if (detailedScores.skills_match < threshold) {
+          weaknesses.push('Certaines compétences requises manquent');
+        }
+        if (detailedScores.experience_match < threshold) {
+          weaknesses.push('Expérience insuffisante pour le poste');
+        }
+        if (detailedScores.location_match < threshold) {
+          weaknesses.push('Localisation non optimale');
+        }
+        if (detailedScores.salary_match < threshold) {
+          weaknesses.push('Attentes salariales non alignées');
+        }
+        if (detailedScores.culture_match < threshold) {
+          weaknesses.push('Culture d\'entreprise non compatible');
+        }
+        break;
+        
+      case 'consultation':
+        if (detailedScores.expertise_match < threshold) {
+          weaknesses.push('Expertise métier insuffisante');
+        }
+        if (detailedScores.portfolio_match < threshold) {
+          weaknesses.push('Portfolio à améliorer');
+        }
+        if (detailedScores.availability_match < threshold) {
+          weaknesses.push('Disponibilité limitée');
+        }
+        if (detailedScores.rates_match < threshold) {
+          weaknesses.push('Tarifs non compétitifs');
+        }
+        if (detailedScores.references_match < threshold) {
+          weaknesses.push('Références insuffisantes');
+        }
+        break;
+        
+      case 'financement':
+      case 'bourse':
+        if (detailedScores.business_plan_match < threshold) {
+          weaknesses.push('Plan d\'affaires à améliorer');
+        }
+        if (detailedScores.financial_profile_match < threshold) {
+          weaknesses.push('Profil financier fragile');
+        }
+        if (detailedScores.guarantees_match < threshold) {
+          weaknesses.push('Garanties insuffisantes');
+        }
+        if (detailedScores.profitability_match < threshold) {
+          weaknesses.push('Rentabilité incertaine');
+        }
+        if (detailedScores.risk_assessment < threshold) {
+          weaknesses.push('Niveau de risque élevé');
+        }
+        break;
+        
+      default:
+        // Fallback pour les types non reconnus
+        Object.entries(detailedScores).forEach(([key, score]) => {
+          if (score < threshold) {
+            weaknesses.push(`Score faible en ${key.replace('_', ' ')}`);
+          }
+        });
+    }
+    
+    return weaknesses.length > 0 ? weaknesses : ['Aucun point faible majeur identifié'];
+  };
+
+  // Générer les recommandations basées sur les scores détaillés
+  const generateRecommendations = (detailedScores, offerType) => {
+    const recommendations = [];
+    
+    switch (offerType) {
+      case 'emploi':
+        if (detailedScores.skills_match < 70) {
+          recommendations.push('Développer les compétences manquantes');
+        }
+        if (detailedScores.experience_match < 70) {
+          recommendations.push('Acquérir plus d\'expérience dans le domaine');
+        }
+        if (detailedScores.location_match < 70) {
+          recommendations.push('Envisager la mobilité géographique');
+        }
+        if (detailedScores.culture_match < 70) {
+          recommendations.push('Se renseigner sur la culture d\'entreprise');
+        }
+        break;
+        
+      case 'consultation':
+        if (detailedScores.expertise_match < 70) {
+          recommendations.push('Renforcer l\'expertise métier');
+        }
+        if (detailedScores.portfolio_match < 70) {
+          recommendations.push('Améliorer le portfolio avec des projets récents');
+        }
+        if (detailedScores.rates_match < 70) {
+          recommendations.push('Réviser la stratégie tarifaire');
+        }
+        break;
+        
+      case 'financement':
+      case 'bourse':
+        if (detailedScores.business_plan_match < 70) {
+          recommendations.push('Affiner le plan d\'affaires');
+        }
+        if (detailedScores.financial_profile_match < 70) {
+          recommendations.push('Consolider le profil financier');
+        }
+        if (detailedScores.guarantees_match < 70) {
+          recommendations.push('Renforcer les garanties');
+        }
+        break;
+        
+      default:
+        recommendations.push('Analyser les critères d\'évaluation');
+    }
+    
+    recommendations.push('Mettre en avant vos points forts dans la candidature');
+    recommendations.push('Préparer des exemples concrets de votre travail');
+    
+    return recommendations;
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -145,7 +369,7 @@ const IACompatibilityCheck = () => {
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-fuchsia-600 mx-auto mb-6"></div>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Analyse IA en cours...</h2>
           <p className="text-gray-600 mb-4">
-            Vérification de votre compatibilité avec le poste
+            Vérification de votre compatibilité avec {offerType === 'consultation' ? 'la consultation' : offerType === 'financement' ? 'le financement' : offerType === 'bourse' ? 'la bourse' : 'le poste'}
           </p>
           
           {/* Informations sur le processus */}
@@ -189,7 +413,7 @@ const IACompatibilityCheck = () => {
                 Analyse IA - Compatibilité
               </h1>
               <p className="text-gray-600 mt-2">
-                Analyse de votre profil pour le poste : <span className="font-semibold">{offer?.title}</span>
+                Analyse de votre profil pour {offerType === 'consultation' ? 'la consultation' : offerType === 'financement' ? 'le financement' : offerType === 'bourse' ? 'la bourse' : 'le poste'} : <span className="font-semibold">{offer?.title}</span>
               </p>
             </div>
             <div className="text-right space-y-2">
@@ -332,21 +556,39 @@ const IACompatibilityCheck = () => {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 <i className="fas fa-briefcase text-blue-600 mr-2"></i>
-                Détails de l'offre
+                Détails de {offerType === 'consultation' ? 'la consultation' : offerType === 'financement' ? 'du financement' : offerType === 'bourse' ? 'de la bourse' : 'l\'offre'}
               </h3>
               <div className="space-y-3">
                 <div>
                   <h4 className="font-medium text-gray-900">{offer?.title}</h4>
-                  <p className="text-sm text-blue-600">{offer?.company}</p>
+                  <p className="text-sm text-blue-600">
+                    {offerType === 'consultation' ? offer?.recruiter?.company_name : offer?.company}
+                  </p>
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <i className="fas fa-map-marker-alt mr-2"></i>
-                  <span>{offer?.location}</span>
+                  <span>
+                    {offerType === 'consultation' 
+                      ? (offer?.country?.name && offer?.region?.name ? `${offer.region.name}, ${offer.country.name}` : offer?.geographic_zone || 'Non précisé')
+                      : offer?.location || 'Non précisé'
+                    }
+                  </span>
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <i className="fas fa-money-bill mr-2"></i>
-                  <span>{offer?.salary}</span>
+                  <span>
+                    {offerType === 'consultation' 
+                      ? (offer?.price ? `${offer.price} FCFA` : 'À négocier')
+                      : offer?.salary || 'Non précisé'
+                    }
+                  </span>
                 </div>
+                {offerType === 'consultation' && offer?.consultation_type && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <i className="fas fa-tag mr-2"></i>
+                    <span>{offer.consultation_type.name || offer.consultation_type}</span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -354,7 +596,7 @@ const IACompatibilityCheck = () => {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 <i className="fas fa-paper-plane text-fuchsia-600 mr-2"></i>
-                Postuler
+                {offerType === 'consultation' ? 'Postuler à la consultation' : offerType === 'financement' ? 'Demander le financement' : offerType === 'bourse' ? 'Postuler à la bourse' : 'Postuler'}
               </h3>
               
               {compatibilityScore >= 60 ? (
@@ -373,7 +615,14 @@ const IACompatibilityCheck = () => {
                     className="w-full bg-fuchsia-600 text-white py-3 px-4 rounded-lg hover:bg-fuchsia-700 transition duration-200 font-medium"
                   >
                     <i className="fas fa-edit mr-2"></i>
-                    Rédiger ma candidature
+                    {offerType === 'consultation' 
+                      ? 'Rédiger ma candidature à la consultation'
+                      : offerType === 'financement' 
+                      ? 'Rédiger ma demande de financement'
+                      : offerType === 'bourse' 
+                      ? 'Rédiger ma candidature à la bourse'
+                      : 'Rédiger ma candidature'
+                    }
                   </button>
                 </div>
               ) : (
@@ -392,7 +641,14 @@ const IACompatibilityCheck = () => {
                     className="w-full bg-gray-600 text-white py-3 px-4 rounded-lg hover:bg-gray-700 transition duration-200 font-medium"
                   >
                     <i className="fas fa-edit mr-2"></i>
-                    Postuler quand même
+                    {offerType === 'consultation' 
+                      ? 'Postuler quand même à la consultation'
+                      : offerType === 'financement' 
+                      ? 'Demander quand même le financement'
+                      : offerType === 'bourse' 
+                      ? 'Postuler quand même à la bourse'
+                      : 'Postuler quand même'
+                    }
                   </button>
                 </div>
               )}
@@ -432,7 +688,14 @@ const IACompatibilityCheck = () => {
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-gray-900">
                     <i className="fas fa-edit text-fuchsia-600 mr-2"></i>
-                    Lettre de motivation
+                    {offerType === 'consultation' 
+                      ? 'Lettre de motivation - Consultation'
+                      : offerType === 'financement' 
+                      ? 'Lettre de motivation - Financement'
+                      : offerType === 'bourse' 
+                      ? 'Lettre de motivation - Bourse'
+                      : 'Lettre de motivation'
+                    }
                   </h2>
                   <button 
                     onClick={() => setShowMotivationForm(false)}
@@ -445,12 +708,27 @@ const IACompatibilityCheck = () => {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Pourquoi êtes-vous intéressé par ce poste ?
+                      {offerType === 'consultation' 
+                        ? 'Pourquoi êtes-vous le prestataire idéal pour cette consultation ?'
+                        : offerType === 'financement' 
+                        ? 'Pourquoi ce financement est-il important pour votre projet ?'
+                        : offerType === 'bourse' 
+                        ? 'Pourquoi méritez-vous cette bourse ?'
+                        : 'Pourquoi êtes-vous intéressé par ce poste ?'
+                      }
                     </label>
                     <textarea
                       value={motivationLetter}
                       onChange={(e) => setMotivationLetter(e.target.value)}
-                      placeholder="Rédigez votre lettre de motivation en expliquant pourquoi vous êtes le candidat idéal pour ce poste..."
+                      placeholder={
+                        offerType === 'consultation' 
+                          ? 'Rédigez votre lettre de motivation en expliquant pourquoi vous êtes le prestataire idéal pour cette consultation...'
+                          : offerType === 'financement' 
+                          ? 'Rédigez votre lettre de motivation en expliquant l\'importance de ce financement pour votre projet...'
+                          : offerType === 'bourse' 
+                          ? 'Rédigez votre lettre de motivation en expliquant pourquoi vous méritez cette bourse...'
+                          : 'Rédigez votre lettre de motivation en expliquant pourquoi vous êtes le candidat idéal pour ce poste...'
+                      }
                       className="w-full h-64 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent resize-none"
                     />
                   </div>
@@ -475,7 +753,14 @@ const IACompatibilityCheck = () => {
                       ) : (
                         <>
                           <i className="fas fa-paper-plane mr-2"></i>
-                          Envoyer ma candidature
+                          {offerType === 'consultation' 
+                            ? 'Envoyer ma candidature à la consultation'
+                            : offerType === 'financement' 
+                            ? 'Envoyer ma demande de financement'
+                            : offerType === 'bourse' 
+                            ? 'Envoyer ma candidature à la bourse'
+                            : 'Envoyer ma candidature'
+                          }
                         </>
                       )}
                     </button>

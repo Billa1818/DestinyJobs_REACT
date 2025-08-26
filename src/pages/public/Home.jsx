@@ -6,6 +6,7 @@ import consultationService from '../../services/consultationService';
 import financementService from '../../services/financementService';
 import bourseService from '../../services/bourseService';
 import blogService from '../../services/blogService';
+import HomeStatService from '../../services/HomeStatService';
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
@@ -16,6 +17,11 @@ const Home = () => {
   const [latestFinancements, setLatestFinancements] = useState([]);
   const [latestBourses, setLatestBourses] = useState([]);
   const [latestBlogPosts, setLatestBlogPosts] = useState([]);
+  
+  // États pour les statistiques publiques
+  const [publicStats, setPublicStats] = useState(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [errorStats, setErrorStats] = useState(null);
   
   // États de chargement
   const [loadingJobs, setLoadingJobs] = useState(true);
@@ -109,6 +115,28 @@ const Home = () => {
     }
   };
 
+  // Récupérer les statistiques publiques
+  const fetchPublicStats = async () => {
+    try {
+      setLoadingStats(true);
+      setErrorStats(null);
+      
+      const response = await HomeStatService.getPublicStats();
+      const formattedStats = HomeStatService.formatStatsForDisplay(response);
+      
+      setPublicStats(formattedStats);
+      console.log('✅ Statistiques publiques récupérées:', formattedStats);
+      
+    } catch (error) {
+      console.error('❌ Erreur lors de la récupération des statistiques publiques:', error);
+      setErrorStats('Impossible de charger les statistiques');
+      // Utiliser les statistiques par défaut en cas d'erreur
+      setPublicStats(HomeStatService.getDefaultStats());
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
   // Récupérer les 3 dernières bourses
   const fetchLatestBourses = async () => {
     try {
@@ -168,6 +196,7 @@ const Home = () => {
     fetchLatestFinancements();
     fetchLatestBourses();
     fetchLatestBlogPosts();
+    fetchPublicStats(); // Ajout de la récupération des statistiques
   }, []);
 
   // Fonction utilitaire pour formater la date
@@ -278,18 +307,154 @@ const Home = () => {
       </div>
 
       {/* Statistiques */}
+      <div className="space-y-6">
+        {/* Première ligne - 4 compteurs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { number: "2,500+", label: "Offres d'emploi", icon: "fas fa-briefcase" },
-          { number: "150+", label: "Bourses d'études", icon: "fas fa-graduation-cap" },
-          { number: "80+", label: "Financements", icon: "fas fa-money-bill-wave" },
-          { number: "200+", label: "Consultations", icon: "fas fa-handshake" }
+          {loadingStats ? (
+            // Affichage de chargement - 4 premiers compteurs
+            Array(4).fill(null).map((_, index) => (
+              <div key={index} className="bg-white rounded-lg p-4 shadow-sm text-center">
+                <div className="animate-pulse">
+                  <div className="h-8 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+            ))
+          ) : errorStats ? (
+            // Affichage d'erreur avec 4 premières statistiques par défaut
+            [
+              { number: "0+", label: "Offres d'emploi", icon: "fas fa-briefcase", color: "text-blue-600" },
+              { number: "0+", label: "Bourses d'études", icon: "fas fa-graduation-cap", color: "text-purple-600" },
+              { number: "0+", label: "Financements", icon: "fas fa-money-bill-wave", color: "text-green-600" },
+              { number: "0+", label: "Consultations", icon: "fas fa-handshake", color: "text-fuchsia-600" }
+            ].map((stat, index) => (
+              <div key={index} className="bg-white rounded-lg p-4 shadow-sm text-center">
+                <div className={`text-2xl font-bold ${stat.color} mb-1`}>{stat.number}</div>
+                <div className="text-sm text-gray-600">{stat.label}</div>
+              </div>
+            ))
+          ) : publicStats ? (
+            // Affichage des 4 premières vraies statistiques
+            [
+              { 
+                number: HomeStatService.formatNumber(publicStats.offers.jobOffers), 
+                label: "Offres d'emploi", 
+                icon: "fas fa-briefcase", 
+                color: "text-blue-600" 
+              },
+              { 
+                number: HomeStatService.formatNumber(publicStats.offers.scholarshipOffers), 
+                label: "Bourses d'études", 
+                icon: "fas fa-graduation-cap", 
+                color: "text-purple-600" 
+              },
+              { 
+                number: HomeStatService.formatNumber(publicStats.offers.fundingOffers), 
+                label: "Financements", 
+                icon: "fas fa-money-bill-wave", 
+                color: "text-green-600" 
+              },
+              { 
+                number: HomeStatService.formatNumber(publicStats.offers.consultationOffers), 
+                label: "Consultations", 
+                icon: "fas fa-handshake", 
+                color: "text-fuchsia-600" 
+              }
+            ].map((stat, index) => (
+              <div key={index} className="bg-white rounded-lg p-4 shadow-sm text-center">
+                <div className={`text-2xl font-bold ${stat.color} mb-1`}>{stat.number}</div>
+                <div className="text-sm text-gray-600">{stat.label}</div>
+              </div>
+            ))
+          ) : (
+            // Fallback avec 4 premières statistiques par défaut
+            [
+              { number: "0+", label: "Offres d'emploi", icon: "fas fa-briefcase", color: "text-blue-600" },
+              { number: "0+", label: "Bourses d'études", icon: "fas fa-graduation-cap", color: "text-purple-600" },
+              { number: "0+", label: "Financements", icon: "fas fa-money-bill-wave", color: "text-green-600" },
+              { number: "0+", label: "Consultations", icon: "fas fa-handshake", color: "text-fuchsia-600" }
         ].map((stat, index) => (
           <div key={index} className="bg-white rounded-lg p-4 shadow-sm text-center">
-            <div className="text-2xl font-bold text-fuchsia-600 mb-1">{stat.number}</div>
+                <div className={`text-2xl font-bold ${stat.color} mb-1`}>{stat.number}</div>
+                <div className="text-sm text-gray-600">{stat.label}</div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Deuxième ligne - 4 compteurs */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {loadingStats ? (
+            // Affichage de chargement - 4 derniers compteurs
+            Array(4).fill(null).map((_, index) => (
+              <div key={`bottom-${index}`} className="bg-white rounded-lg p-4 shadow-sm text-center">
+                <div className="animate-pulse">
+                  <div className="h-8 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+            ))
+          ) : errorStats ? (
+            // Affichage d'erreur avec 4 dernières statistiques par défaut
+            [
+              { number: "0+", label: "Total utilisateurs", icon: "fas fa-users", color: "text-indigo-600" },
+              { number: "0+", label: "Recruteurs", icon: "fas fa-user-tie", color: "text-orange-600" },
+              { number: "0+", label: "Candidats", icon: "fas fa-user-graduate", color: "text-teal-600" },
+              { number: "0+", label: "Prestataires", icon: "fas fa-user-cog", color: "text-red-600" }
+            ].map((stat, index) => (
+              <div key={`bottom-${index}`} className="bg-white rounded-lg p-4 shadow-sm text-center">
+                <div className={`text-2xl font-bold ${stat.color} mb-1`}>{stat.number}</div>
+                <div className="text-sm text-gray-600">{stat.label}</div>
+              </div>
+            ))
+          ) : publicStats ? (
+            // Affichage des 4 dernières vraies statistiques
+            [
+              { 
+                number: HomeStatService.formatNumber(publicStats.users.total), 
+                label: "Total utilisateurs", 
+                icon: "fas fa-users", 
+                color: "text-indigo-600" 
+              },
+              { 
+                number: HomeStatService.formatNumber(publicStats.users.recruiters), 
+                label: "Recruteurs", 
+                icon: "fas fa-user-tie", 
+                color: "text-orange-600" 
+              },
+              { 
+                number: HomeStatService.formatNumber(publicStats.users.candidates), 
+                label: "Candidats", 
+                icon: "fas fa-user-graduate", 
+                color: "text-teal-600" 
+              },
+              { 
+                number: HomeStatService.formatNumber(publicStats.users.providers), 
+                label: "Prestataires", 
+                icon: "fas fa-user-cog", 
+                color: "text-red-600" 
+              }
+            ].map((stat, index) => (
+              <div key={`bottom-${index}`} className="bg-white rounded-lg p-4 shadow-sm text-center">
+                <div className={`text-2xl font-bold ${stat.color} mb-1`}>{stat.number}</div>
+                <div className="text-sm text-gray-600">{stat.label}</div>
+              </div>
+            ))
+          ) : (
+            // Fallback avec 4 dernières statistiques par défaut
+            [
+              { number: "0+", label: "Total utilisateurs", icon: "fas fa-users", color: "text-indigo-600" },
+              { number: "0+", label: "Recruteurs", icon: "fas fa-user-tie", color: "text-orange-600" },
+              { number: "0+", label: "Candidats", icon: "fas fa-user-graduate", color: "text-teal-600" },
+              { number: "0+", label: "Prestataires", icon: "fas fa-user-cog", color: "text-red-600" }
+            ].map((stat, index) => (
+              <div key={`bottom-${index}`} className="bg-white rounded-lg p-4 shadow-sm text-center">
+                <div className={`text-2xl font-bold ${stat.color} mb-1`}>{stat.number}</div>
             <div className="text-sm text-gray-600">{stat.label}</div>
           </div>
-        ))}
+            ))
+          )}
+        </div>
       </div>
 
       {/* Offres par catégorie */}

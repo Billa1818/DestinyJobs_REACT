@@ -1,0 +1,800 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { ProviderProfilService, ProviderSettingService } from '../../services';
+
+const PrestataireProfile = () => {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  
+  // Données du profil utilisateur de base
+  const [userProfile, setUserProfile] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    date_of_birth: '',
+    gender: '',
+    country: null,
+    region: null,
+    profile_visibility: 'PUBLIC'
+  });
+
+  // Données du profil prestataire
+  const [providerProfile, setProviderProfile] = useState({
+    provider_type: 'INDIVIDUAL',
+    image: null,
+    cv: null,
+    portfolio: null,
+    specializations: '',
+    hourly_rate: '',
+    daily_rate: '',
+    availability: 'AVAILABLE',
+    years_experience: 0,
+    completed_projects: 0,
+    organization_name: '',
+    organization_logo: null,
+    organization_description: '',
+    organization_website: '',
+    organization_address: '',
+    organization_contact_email: '',
+    organization_contact_phone: '',
+    team_size: null
+  });
+
+  // Données des services
+  const [services, setServices] = useState({
+    specializations: '',
+    specializations_list: [],
+    hourly_rate: '',
+    daily_rate: '',
+    availability: 'AVAILABLE',
+    years_experience: 0,
+    completed_projects: 0
+  });
+
+  const [activeTab, setActiveTab] = useState('personal');
+
+  // Charger les données au montage du composant
+  useEffect(() => {
+    loadProfileData();
+  }, []);
+
+  // Charger toutes les données du profil
+  const loadProfileData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Charger le profil utilisateur de base
+      const userData = await ProviderProfilService.getUserProfile();
+      setUserProfile(userData);
+
+      // Charger le profil prestataire
+      const providerData = await ProviderProfilService.getProviderProfile();
+      setProviderProfile(providerData);
+
+      // Charger les services
+      const servicesData = await ProviderProfilService.getProviderServices();
+      setServices(servicesData);
+
+    } catch (err) {
+      console.error('Erreur lors du chargement du profil:', err);
+      setError('Erreur lors du chargement du profil. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Gérer les changements dans le profil utilisateur
+  const handleUserProfileChange = (field, value) => {
+    setUserProfile(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Gérer les changements dans le profil prestataire
+  const handleProviderProfileChange = (field, value) => {
+    setProviderProfile(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Gérer les changements dans les services
+  const handleServicesChange = (field, value) => {
+    setServices(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Sauvegarder le profil utilisateur
+  const saveUserProfile = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+
+      const formData = new FormData();
+      Object.keys(userProfile).forEach(key => {
+        if (userProfile[key] !== null && userProfile[key] !== undefined && userProfile[key] !== '') {
+          if (key === 'country' || key === 'region') {
+            formData.append(key, userProfile[key]?.id || '');
+          } else {
+            formData.append(key, userProfile[key]);
+          }
+        }
+      });
+
+      await ProviderProfilService.updateUserProfile(formData);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+
+    } catch (err) {
+      console.error('Erreur lors de la sauvegarde du profil utilisateur:', err);
+      setError('Erreur lors de la sauvegarde. Veuillez réessayer.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Sauvegarder le profil prestataire
+  const saveProviderProfile = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+
+      const formData = new FormData();
+      Object.keys(providerProfile).forEach(key => {
+        if (providerProfile[key] !== null && providerProfile[key] !== undefined && providerProfile[key] !== '') {
+          if (key === 'image' || key === 'cv' || key === 'portfolio' || key === 'organization_logo') {
+            if (providerProfile[key] instanceof File) {
+              formData.append(key, providerProfile[key]);
+            }
+          } else {
+            formData.append(key, providerProfile[key]);
+          }
+        }
+      });
+
+      await ProviderProfilService.updateProviderProfile(formData);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+
+    } catch (err) {
+      console.error('Erreur lors de la sauvegarde du profil prestataire:', err);
+      setError('Erreur lors de la sauvegarde. Veuillez réessayer.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Sauvegarder les services
+  const saveServices = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+
+      await ProviderSettingService.updateProviderServices(services);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+
+    } catch (err) {
+      console.error('Erreur lors de la sauvegarde des services:', err);
+      setError('Erreur lors de la sauvegarde. Veuillez réessayer.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Gérer l'ajout de compétences
+  const handleSkillAdd = (skill) => {
+    if (skill && !services.specializations_list.includes(skill)) {
+      const newSkills = [...services.specializations_list, skill];
+      setServices(prev => ({
+        ...prev,
+        specializations_list: newSkills,
+        specializations: newSkills.join(', ')
+      }));
+    }
+  };
+
+  // Gérer la suppression de compétences
+  const handleSkillRemove = (skillToRemove) => {
+    const newSkills = services.specializations_list.filter(skill => skill !== skillToRemove);
+    setServices(prev => ({
+      ...prev,
+      specializations_list: newSkills,
+      specializations: newSkills.join(', ')
+    }));
+  };
+
+  // Gérer l'upload de fichiers
+  const handleFileUpload = (field, file) => {
+    if (field === 'image' || field === 'cv' || field === 'portfolio' || field === 'organization_logo') {
+      setProviderProfile(prev => ({ ...prev, [field]: file }));
+    }
+  };
+
+  if (loading) {
+    return (
+      <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Chargement du profil...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
+      <div className="flex flex-col xl:flex-row gap-3 sm:gap-4 lg:gap-6">
+        {/* Main Content Column */}
+        <div className="xl:w-2/3">
+          {/* Header */}
+          <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm mb-4 sm:mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Mon profil</h1>
+                <p className="text-gray-600 mt-1">Gérez vos informations personnelles et professionnelles</p>
+              </div>
+            </div>
+
+            {/* Success Message */}
+            {success && (
+              <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg mb-4">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <i className="fas fa-check-circle text-green-400"></i>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-green-700">
+                      Profil mis à jour avec succès !
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg mb-4">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <i className="fas fa-exclamation-circle text-red-400"></i>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tabs */}
+            <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setActiveTab('personal')}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition duration-200 ${
+                  activeTab === 'personal' 
+                    ? 'bg-white text-orange-600 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <i className="fas fa-user mr-2"></i>Informations personnelles
+              </button>
+              <button
+                onClick={() => setActiveTab('professional')}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition duration-200 ${
+                  activeTab === 'professional' 
+                    ? 'bg-white text-orange-600 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <i className="fas fa-briefcase mr-2"></i>Profil professionnel
+              </button>
+              <button
+                onClick={() => setActiveTab('services')}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition duration-200 ${
+                  activeTab === 'services' 
+                    ? 'bg-white text-orange-600 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <i className="fas fa-tools mr-2"></i>Mes services
+              </button>
+            </div>
+          </div>
+
+          {/* Personal Information */}
+          {activeTab === 'personal' && (
+            <div className="bg-white rounded-lg p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  <i className="fas fa-user mr-2 text-orange-600"></i>
+                  Informations personnelles
+                </h2>
+                <button 
+                  onClick={saveUserProfile}
+                  disabled={saving}
+                  className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition duration-200 disabled:opacity-50"
+                >
+                  <i className="fas fa-save mr-2"></i>
+                  {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Prénom</label>
+                  <input
+                    type="text"
+                    value={userProfile.first_name || ''}
+                    onChange={(e) => handleUserProfileChange('first_name', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Nom</label>
+                  <input
+                    type="text"
+                    value={userProfile.last_name || ''}
+                    onChange={(e) => handleUserProfileChange('last_name', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <input
+                    type="email"
+                    value={userProfile.email || ''}
+                    disabled
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">L'email ne peut pas être modifié</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
+                  <input
+                    type="tel"
+                    value={userProfile.phone || ''}
+                    onChange={(e) => handleUserProfileChange('phone', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Date de naissance</label>
+                  <input
+                    type="date"
+                    value={userProfile.date_of_birth || ''}
+                    onChange={(e) => handleUserProfileChange('date_of_birth', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Genre</label>
+                  <select
+                    value={userProfile.gender || ''}
+                    onChange={(e) => handleUserProfileChange('gender', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  >
+                    <option value="">Sélectionner</option>
+                    <option value="M">Masculin</option>
+                    <option value="F">Féminin</option>
+                    <option value="OTHER">Autre</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Pays</label>
+                  <input
+                    type="text"
+                    value={userProfile.country?.name || ''}
+                    placeholder="Pays"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                    disabled
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Région</label>
+                  <input
+                    type="text"
+                    value={userProfile.region?.name || ''}
+                    placeholder="Région"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                    disabled
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Visibilité du profil</label>
+                  <select
+                    value={userProfile.profile_visibility || 'PUBLIC'}
+                    onChange={(e) => handleUserProfileChange('profile_visibility', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  >
+                    <option value="PUBLIC">Public</option>
+                    <option value="RECRUITERS_ONLY">Recruteurs uniquement</option>
+                    <option value="PRIVATE">Privé</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Professional Information */}
+          {activeTab === 'professional' && (
+            <div className="bg-white rounded-lg p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  <i className="fas fa-briefcase mr-2 text-orange-600"></i>
+                  Profil professionnel
+                </h2>
+                <button 
+                  onClick={saveProviderProfile}
+                  disabled={saving}
+                  className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition duration-200 disabled:opacity-50"
+                >
+                  <i className="fas fa-save mr-2"></i>
+                  {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Type de prestataire</label>
+                  <select
+                    value={providerProfile.provider_type || 'INDIVIDUAL'}
+                    onChange={(e) => handleProviderProfileChange('provider_type', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  >
+                    <option value="INDIVIDUAL">Individuel</option>
+                    <option value="ORGANIZATION">Organisation</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Années d'expérience</label>
+                  <input
+                    type="number"
+                    value={providerProfile.years_experience || ''}
+                    onChange={(e) => handleProviderProfileChange('years_experience', parseInt(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Projets complétés</label>
+                  <input
+                    type="number"
+                    value={providerProfile.completed_projects || ''}
+                    onChange={(e) => handleProviderProfileChange('completed_projects', parseInt(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Disponibilité</label>
+                  <select
+                    value={providerProfile.availability || 'AVAILABLE'}
+                    onChange={(e) => handleProviderProfileChange('availability', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  >
+                    <option value="AVAILABLE">Disponible</option>
+                    <option value="BUSY">Occupé</option>
+                    <option value="UNAVAILABLE">Non disponible</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tarif horaire (€)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={providerProfile.hourly_rate || ''}
+                    onChange={(e) => handleProviderProfileChange('hourly_rate', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tarif journalier (€)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={providerProfile.daily_rate || ''}
+                    onChange={(e) => handleProviderProfileChange('daily_rate', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+
+                {/* Champs organisationnels (conditionnels) */}
+                {providerProfile.provider_type === 'ORGANIZATION' && (
+                  <>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Nom de l'organisation</label>
+                      <input
+                        type="text"
+                        value={providerProfile.organization_name || ''}
+                        onChange={(e) => handleProviderProfileChange('organization_name', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Description de l'organisation</label>
+                      <textarea
+                        rows="3"
+                        value={providerProfile.organization_description || ''}
+                        onChange={(e) => handleProviderProfileChange('organization_description', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Site web</label>
+                      <input
+                        type="url"
+                        value={providerProfile.organization_website || ''}
+                        onChange={(e) => handleProviderProfileChange('organization_website', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Taille de l'équipe</label>
+                      <input
+                        type="number"
+                        value={providerProfile.team_size || ''}
+                        onChange={(e) => handleProviderProfileChange('team_size', parseInt(e.target.value) || null)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* Upload de fichiers */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Photo de profil</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload('image', e.target.files[0])}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                  {providerProfile.image && (
+                    <p className="text-sm text-green-600 mt-1">
+                      <i className="fas fa-check mr-1"></i>
+                      {providerProfile.image instanceof File ? providerProfile.image.name : 'Image téléchargée'}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">CV</label>
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={(e) => handleFileUpload('cv', e.target.files[0])}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                  {providerProfile.cv && (
+                    <p className="text-sm text-green-600 mt-1">
+                      <i className="fas fa-check mr-1"></i>
+                      {providerProfile.cv instanceof File ? providerProfile.cv.name : 'CV téléchargé'}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Portfolio</label>
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={(e) => handleFileUpload('portfolio', e.target.files[0])}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                  {providerProfile.portfolio && (
+                    <p className="text-sm text-green-600 mt-1">
+                      <i className="fas fa-check mr-1"></i>
+                      {providerProfile.portfolio instanceof File ? providerProfile.portfolio.name : 'Portfolio téléchargé'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Services */}
+          {activeTab === 'services' && (
+            <div className="bg-white rounded-lg p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  <i className="fas fa-tools mr-2 text-orange-600"></i>
+                  Mes services
+                </h2>
+                <button 
+                  onClick={saveServices}
+                  disabled={saving}
+                  className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition duration-200 disabled:opacity-50"
+                >
+                  <i className="fas fa-save mr-2"></i>
+                  {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+                </button>
+              </div>
+              
+              <div className="mb-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Spécialisations</h3>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {services.specializations_list && services.specializations_list.map((skill, index) => (
+                    <span key={index} className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm flex items-center">
+                      {skill}
+                      <button
+                        onClick={() => handleSkillRemove(skill)}
+                        className="ml-2 text-orange-600 hover:text-orange-800"
+                      >
+                        <i className="fas fa-times text-xs"></i>
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Ajouter une spécialisation..."
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSkillAdd(e.target.value);
+                        e.target.value = '';
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={(e) => {
+                      const input = e.target.previousSibling;
+                      handleSkillAdd(input.value);
+                      input.value = '';
+                    }}
+                    className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition duration-200"
+                  >
+                    Ajouter
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tarif horaire (€)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={services.hourly_rate || ''}
+                    onChange={(e) => handleServicesChange('hourly_rate', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tarif journalier (€)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={services.daily_rate || ''}
+                    onChange={(e) => handleServicesChange('daily_rate', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Disponibilité</label>
+                  <select
+                    value={services.availability || 'AVAILABLE'}
+                    onChange={(e) => handleServicesChange('availability', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  >
+                    <option value="AVAILABLE">Disponible</option>
+                    <option value="BUSY">Occupé</option>
+                    <option value="UNAVAILABLE">Non disponible</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Années d'expérience</label>
+                  <input
+                    type="number"
+                    value={services.years_experience || ''}
+                    onChange={(e) => handleServicesChange('years_experience', parseInt(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="xl:w-1/3">
+          {/* Profile Summary */}
+          <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
+            <div className="text-center mb-6">
+              <div className="w-24 h-24 bg-gradient-to-r from-orange-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                {providerProfile.image ? (
+                  <img 
+                    src={providerProfile.image instanceof File ? URL.createObjectURL(providerProfile.image) : providerProfile.image} 
+                    alt="Photo de profil"
+                    className="w-24 h-24 rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="text-white text-2xl font-bold">
+                    {userProfile.first_name?.[0]}{userProfile.last_name?.[0]}
+                  </span>
+                )}
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">
+                {userProfile.first_name} {userProfile.last_name}
+              </h3>
+              <p className="text-gray-600">
+                {providerProfile.provider_type === 'ORGANIZATION' ? 'Organisation' : 'Prestataire individuel'}
+              </p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <i className="fas fa-map-marker-alt text-gray-400 mr-3"></i>
+                <span className="text-gray-700">
+                  {userProfile.country?.name}, {userProfile.region?.name}
+                </span>
+              </div>
+              <div className="flex items-center">
+                <i className="fas fa-clock text-gray-400 mr-3"></i>
+                <span className="text-gray-700">
+                  {providerProfile.years_experience || 0} ans d'expérience
+                </span>
+              </div>
+              <div className="flex items-center">
+                <i className="fas fa-star text-gray-400 mr-3"></i>
+                <span className="text-gray-700">4.8/5 (24 avis)</span>
+              </div>
+              <div className="flex items-center">
+                <i className="fas fa-check-circle text-gray-400 mr-3"></i>
+                <span className="text-gray-700">
+                  {providerProfile.availability === 'AVAILABLE' ? 'Disponible' : 
+                   providerProfile.availability === 'BUSY' ? 'Occupé' : 'Non disponible'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Actions rapides</h3>
+            <div className="space-y-3">
+              <Link to="/prestataire/services" className="flex items-center p-3 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition duration-200">
+                <i className="fas fa-briefcase text-orange-600 mr-3"></i>
+                <span className="text-gray-700">Gérer mes services</span>
+              </Link>
+              <Link to="/consultation" className="flex items-center p-3 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition duration-200">
+                <i className="fas fa-search text-orange-600 mr-3"></i>
+                <span className="text-gray-700">Rechercher des consultations</span>
+              </Link>
+              <Link to="/prestataire/candidatures" className="flex items-center p-3 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition duration-200">
+                <i className="fas fa-paper-plane text-orange-600 mr-3"></i>
+                <span className="text-gray-700">Mes candidatures</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Statistics */}
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Statistiques</h3>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Projets complétés</span>
+                <span className="font-semibold text-gray-900">{providerProfile.completed_projects || 0}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Taux de satisfaction</span>
+                <span className="font-semibold text-gray-900">98%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Tarif horaire</span>
+                <span className="font-semibold text-gray-900">
+                  {providerProfile.hourly_rate ? `${providerProfile.hourly_rate}€` : 'Non défini'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-700">Tarif journalier</span>
+                <span className="font-semibold text-gray-900">
+                  {providerProfile.daily_rate ? `${providerProfile.daily_rate}€` : 'Non défini'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+};
+
+export default PrestataireProfile; 

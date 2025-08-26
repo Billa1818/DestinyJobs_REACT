@@ -28,6 +28,9 @@ import IACompatibilityCheck from '../pages/public/IACompatibilityCheck';
 import NotFound from '../pages/public/NotFound';
 import ProfilPublic from '../pages/recruteur/ProfilPublic';
 import CandidatePublicProfile from '../pages/public/CandidatePublicProfile';
+import NosUtilisateur from '../pages/public/NosUtilisateur';
+import SolutionsRh from '../pages/public/SolutionRh';
+import DiffusionOpportunites from '../pages/public/DiffusionOpportunites';
 
 
 const Formations = () => (
@@ -102,10 +105,7 @@ const publicRoutes = [
   },
   {
     path: '/utilisateurs',
-    element: <div className="bg-white rounded-lg shadow-sm p-6">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Nos utilisateurs</h1>
-      <p className="text-gray-600">Découvrez notre communauté d'utilisateurs.</p>
-    </div>
+    element: <NosUtilisateur />
   },
   {
     path: '/financements',
@@ -156,6 +156,15 @@ const publicRoutes = [
   {
     path: '/profile/candidat/:userId',
     element: <CandidatePublicProfile />
+
+  },
+  {
+    path: '/solutions-rh',
+    element: <SolutionsRh />
+  },
+  {
+    path: '/diffusion-opportunites',
+    element: <DiffusionOpportunites />
   },
   {
     path: '/404',

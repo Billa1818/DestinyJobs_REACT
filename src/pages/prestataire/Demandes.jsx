@@ -1,414 +1,556 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import consultationDemandesService from '../../services/consultationDemandesService';
 
 const Demandes = () => {
-  const [activeTab, setActiveTab] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('recent');
-
-  const [demandes] = useState([
-    {
-      id: 1,
-      titre: 'Développement d\'application mobile',
-      entreprise: 'TechCorp Solutions',
-      localisation: 'Abidjan, Côte d\'Ivoire',
-      budget: '500,000 - 800,000 FCFA',
-      type: 'Développement',
-      dateDemande: '2024-01-15',
-      statut: 'En attente',
-      priorite: 'Élevée',
-      description: 'Création d\'une application mobile native pour la gestion de commandes...',
-      competences: ['React Native', 'Node.js', 'MongoDB'],
-      duree: '3-4 mois',
-      derniereActivite: '2024-01-16'
-    },
-    {
-      id: 2,
-      titre: 'Design d\'identité visuelle',
-      entreprise: 'Startup Innovante',
-      localisation: 'Dakar, Sénégal',
-      budget: '200,000 - 350,000 FCFA',
-      type: 'Design',
-      dateDemande: '2024-01-12',
-      statut: 'En cours',
-      priorite: 'Moyenne',
-      description: 'Création complète de l\'identité visuelle d\'une startup tech...',
-      competences: ['Adobe Creative Suite', 'Branding', 'UI/UX'],
-      duree: '2-3 semaines',
-      derniereActivite: '2024-01-14'
-    },
-    {
-      id: 3,
-      titre: 'Consultation en marketing digital',
-      entreprise: 'E-commerce Plus',
-      localisation: 'Lomé, Togo',
-      budget: '300,000 - 500,000 FCFA',
-      type: 'Marketing',
-      dateDemande: '2024-01-10',
-      statut: 'Acceptée',
-      priorite: 'Faible',
-      description: 'Stratégie de marketing digital pour une plateforme e-commerce...',
-      competences: ['Google Ads', 'Facebook Ads', 'Analytics'],
-      duree: '1-2 mois',
-      derniereActivite: '2024-01-13'
-    },
-    {
-      id: 4,
-      titre: 'Formation en développement web',
-      entreprise: 'Centre de Formation Tech',
-      localisation: 'Ouagadougou, Burkina Faso',
-      budget: '400,000 - 600,000 FCFA',
-      type: 'Formation',
-      dateDemande: '2024-01-08',
-      statut: 'Refusée',
-      priorite: 'Moyenne',
-      description: 'Formation intensive en développement web pour 15 étudiants...',
-      competences: ['HTML/CSS', 'JavaScript', 'React', 'Node.js'],
-      duree: '6 semaines',
-      derniereActivite: '2024-01-11'
-    },
-    {
-      id: 5,
-      titre: 'Audit de sécurité informatique',
-      entreprise: 'Banque Régionale',
-      localisation: 'Bamako, Mali',
-      budget: '800,000 - 1,200,000 FCFA',
-      type: 'Sécurité',
-      dateDemande: '2024-01-05',
-      statut: 'Terminée',
-      priorite: 'Élevée',
-      description: 'Audit complet de sécurité pour une banque régionale...',
-      competences: ['Cybersécurité', 'Pentesting', 'ISO 27001'],
-      duree: '2-3 mois',
-      derniereActivite: '2024-01-15'
-    }
-  ]);
-
-  const filteredDemandes = demandes.filter(demande => {
-    const matchesSearch = demande.titre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         demande.entreprise.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         demande.localisation.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesTab = activeTab === 'all' || demande.statut.toLowerCase() === activeTab;
-    
-    return matchesSearch && matchesTab;
+  const navigate = useNavigate();
+  
+  // États pour les données
+  const [demandes, setDemandes] = useState([]);
+  const [formattedDemandes, setFormattedDemandes] = useState([]);
+  const [stats, setStats] = useState({});
+  
+  // États pour l'interface
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
+  
+  // États pour les filtres
+  const [filters, setFilters] = useState({
+    status: 'all',
+    search: '',
+    minScore: 0,
+    urgentOnly: false,
+    recentOnly: false,
+    unviewedOnly: false
   });
+  
+  // États pour le tri
+  const [sortBy, setSortBy] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState('desc');
+  
+  // États pour les actions
+  const [selectedDemande, setSelectedDemande] = useState(null);
+  const [showActionModal, setShowActionModal] = useState(false);
+  const [actionType, setActionType] = useState('');
+  const [actionReason, setActionReason] = useState('');
+  const [processingAction, setProcessingAction] = useState(false);
 
-  const sortedDemandes = [...filteredDemandes].sort((a, b) => {
-    if (sortBy === 'recent') {
-      return new Date(b.dateDemande) - new Date(a.dateDemande);
-    } else if (sortBy === 'budget') {
-      return parseInt(b.budget.split(' ')[0].replace(',', '')) - parseInt(a.budget.split(' ')[0].replace(',', ''));
-    } else if (sortBy === 'priorite') {
-      const prioriteOrder = { 'Élevée': 3, 'Moyenne': 2, 'Faible': 1 };
-      return prioriteOrder[b.priorite] - prioriteOrder[a.priorite];
-    }
-    return 0;
-  });
+  // Charger les demandes au montage du composant
+  useEffect(() => {
+    loadDemandes();
+  }, []);
 
-  const getStatutColor = (statut) => {
-    switch (statut) {
-      case 'En attente': return 'bg-yellow-100 text-yellow-800';
-      case 'En cours': return 'bg-blue-100 text-blue-800';
-      case 'Acceptée': return 'bg-green-100 text-green-800';
-      case 'Refusée': return 'bg-red-100 text-red-800';
-      case 'Terminée': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+  // Charger les demandes depuis l'API
+  const loadDemandes = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const demandesData = await consultationDemandesService.getConsultationDemandes();
+      setDemandes(demandesData);
+      
+      // Formater les demandes pour l'affichage
+      const formatted = demandesData.map(demande => 
+        consultationDemandesService.formatDemandeForDisplay(demande)
+      );
+      setFormattedDemandes(formatted);
+      
+      // Calculer les statistiques
+      const statsData = consultationDemandesService.getDemandesStats(demandesData);
+      setStats(statsData);
+      
+      console.log('✅ Demandes chargées:', demandesData.length);
+      
+    } catch (error) {
+      console.error('❌ Erreur lors du chargement des demandes:', error);
+      setError('Erreur lors du chargement des demandes. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getPrioriteColor = (priorite) => {
-    switch (priorite) {
-      case 'Élevée': return 'bg-red-100 text-red-800';
-      case 'Moyenne': return 'bg-yellow-100 text-yellow-800';
-      case 'Faible': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+  // Appliquer les filtres et le tri
+  useEffect(() => {
+    if (demandes.length > 0) {
+      let filtered = consultationDemandesService.filterDemandes(demandes, filters);
+      filtered = consultationDemandesService.sortDemandes(filtered, sortBy, sortOrder);
+      
+      // Filtrage supplémentaire par recherche
+      if (filters.search) {
+        filtered = filtered.filter(demande => {
+          const searchTerm = filters.search.toLowerCase();
+          const consultationTitle = demande.consultation_offer?.title?.toLowerCase() || '';
+          const candidateName = demande.candidate_profile?.user?.first_name?.toLowerCase() || '';
+          const candidateLastName = demande.candidate_profile?.user?.last_name?.toLowerCase() || '';
+          const candidateUsername = demande.candidate_profile?.user?.username?.toLowerCase() || '';
+          
+          return consultationTitle.includes(searchTerm) || 
+                 candidateName.includes(searchTerm) || 
+                 candidateLastName.includes(searchTerm) || 
+                 candidateUsername.includes(searchTerm);
+        });
+      }
+      
+      const formatted = filtered.map(demande => 
+        consultationDemandesService.formatDemandeForDisplay(demande)
+      );
+      setFormattedDemandes(formatted);
+    }
+  }, [demandes, filters, sortBy, sortOrder]);
+
+  // Gérer le changement de filtre
+  const handleFilterChange = (filterName, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterName]: value
+    }));
+  };
+
+  // Gérer le changement de tri
+  const handleSortChange = (newSortBy) => {
+    if (sortBy === newSortBy) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(newSortBy);
+      setSortOrder('desc');
     }
   };
 
-  const getTypeColor = (type) => {
-    switch (type) {
-      case 'Développement': return 'bg-blue-100 text-blue-800';
-      case 'Design': return 'bg-purple-100 text-purple-800';
-      case 'Marketing': return 'bg-green-100 text-green-800';
-      case 'Formation': return 'bg-orange-100 text-orange-800';
-      case 'Sécurité': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+  // Ouvrir le modal d'action
+  const openActionModal = (demande, type) => {
+    setSelectedDemande(demande);
+    setActionType(type);
+    setActionReason('');
+    setShowActionModal(true);
+  };
+
+  // Fermer le modal d'action
+  const closeActionModal = () => {
+    setShowActionModal(false);
+    setSelectedDemande(null);
+    setActionType('');
+    setActionReason('');
+  };
+
+  // Exécuter l'action sélectionnée
+  const executeAction = async () => {
+    if (!selectedDemande || !actionType) return;
+    
+    try {
+      setProcessingAction(true);
+      
+      // Marquer la demande comme vue
+      const result = await consultationDemandesService.markDemandeAsViewed(
+        selectedDemande.applicationId
+      );
+      
+      console.log('✅ Demande marquée comme vue:', result);
+      
+      // Recharger les demandes pour mettre à jour l'affichage
+      await loadDemandes();
+      
+      // Fermer le modal
+      closeActionModal();
+      
+    } catch (error) {
+      console.error('❌ Erreur lors de la mise à jour:', error);
+      setError('Erreur lors de la mise à jour. Veuillez réessayer.');
+    } finally {
+      setProcessingAction(false);
     }
   };
 
-  const stats = {
-    total: demandes.length,
-    enAttente: demandes.filter(d => d.statut === 'En attente').length,
-    enCours: demandes.filter(d => d.statut === 'En cours').length,
-    acceptees: demandes.filter(d => d.statut === 'Acceptée').length,
-    refusees: demandes.filter(d => d.statut === 'Refusée').length,
-    terminees: demandes.filter(d => d.statut === 'Terminée').length
+  // Obtenir le texte de l'action
+  const getActionText = () => 'Voir les détails';
+
+  // Obtenir la couleur de l'action
+  const getActionColor = () => 'bg-orange-600 hover:bg-orange-700';
+
+  // Obtenir l'icône de l'action
+  const getActionIcon = () => 'fas fa-eye';
+
+  // Formater la date
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Date non disponible';
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
+
+  // Formater le score de compatibilité
+  const formatScore = (score) => {
+    if (!score || score === 0) return 'N/A';
+    return `${parseFloat(score).toFixed(1)}%`;
+  };
+
+  // Obtenir la couleur du score
+  const getScoreColor = (score) => {
+    if (!score || score === 0) return 'text-gray-500';
+    const numScore = parseFloat(score);
+    if (numScore >= 80) return 'text-green-600';
+    if (numScore >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-600 mx-auto mb-6"></div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Chargement des demandes...</h2>
+          <p className="text-gray-600">Récupération des candidatures reçues</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+    <div className="w-full">
       {/* Header */}
-      <div className="mb-6 lg:mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Mes Demandes</h1>
-            <p className="text-gray-600">Suivez vos demandes de consultation et de services</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+              <i className="fas fa-inbox text-orange-600 mr-3"></i>
+              Demandes de consultation
+            </h1>
+            <p className="text-gray-600">Gérez les candidatures  pour vos consultations</p>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">
-              {sortedDemandes.length} demande{sortedDemandes.length > 1 ? 's' : ''}
-            </span>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200"
+            >
+              <i className="fas fa-filter mr-2"></i>
+              {showFilters ? 'Masquer' : 'Afficher'} les filtres
+            </button>
+            
+            <button
+              onClick={loadDemandes}
+              className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition duration-200"
+            >
+              <i className="fas fa-sync-alt mr-2"></i>
+              Actualiser
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-sm p-4">
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
+
+      {/* Statistiques */}
+      {formattedDemandes && formattedDemandes.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
-              <i className="fas fa-clipboard-list text-blue-600"></i>
+                <i className="fas fa-list text-blue-600 text-lg"></i>
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-600">Total</p>
-              <p className="text-lg font-semibold text-gray-900">{stats.total}</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.total || 0}</p>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-4">
+
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-yellow-100 rounded-lg">
-              <i className="fas fa-clock text-yellow-600"></i>
+                <i className="fas fa-clock text-yellow-600 text-lg"></i>
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-600">En attente</p>
-              <p className="text-lg font-semibold text-gray-900">{stats.enAttente}</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.pending || 0}</p>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-4">
+
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
-              <i className="fas fa-spinner text-blue-600"></i>
+                <i className="fas fa-star text-blue-600 text-lg"></i>
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-600">En cours</p>
-              <p className="text-lg font-semibold text-gray-900">{stats.enCours}</p>
+                <p className="text-sm font-medium text-gray-600">Shortlist</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.shortlisted || 0}</p>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-4">
+
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
-              <i className="fas fa-check text-green-600"></i>
+                <i className="fas fa-check text-green-600 text-lg"></i>
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-600">Acceptées</p>
-              <p className="text-lg font-semibold text-gray-900">{stats.acceptees}</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.accepted || 0}</p>
+            </div>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <div className="flex items-center">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <i className="fas fa-times text-red-600"></i>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-600">Refusées</p>
-              <p className="text-lg font-semibold text-gray-900">{stats.refusees}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <div className="flex items-center">
-            <div className="p-2 bg-gray-100 rounded-lg">
-              <i className="fas fa-flag-checkered text-gray-600"></i>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-600">Terminées</p>
-              <p className="text-lg font-semibold text-gray-900">{stats.terminees}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
 
-      {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
-        <div className="flex flex-col lg:flex-row gap-4">
-          {/* Search */}
+      {/* Filtres */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
-            <div className="relative">
-              <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
               <input
                 type="text"
-                placeholder="Rechercher dans vos demandes..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-              />
-            </div>
+              placeholder="Rechercher par titre de consultation ou candidat..."
+              value={filters.search || ''}
+              onChange={(e) => handleFilterChange('search', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            />
           </div>
-
-          {/* Sort */}
-          <div className="lg:w-48">
+          <div className="sm:w-48">
             <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              value={filters.status || 'all'}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             >
-              <option value="recent">Plus récentes</option>
-              <option value="budget">Budget élevé</option>
-              <option value="priorite">Priorité</option>
+              <option value="all">Tous les statuts</option>
+              <option value="PENDING">En attente</option>
+              <option value="SHORTLISTED">Pré-sélectionnée</option>
+              <option value="ACCEPTED">Acceptée</option>
+              <option value="REJECTED">Refusée</option>
+              <option value="WITHDRAWN">Retirée</option>
             </select>
           </div>
         </div>
-
-        {/* Tabs */}
-        <div className="mt-4">
-          <div className="flex flex-wrap gap-2">
-            {['all', 'en attente', 'en cours', 'acceptée', 'refusée', 'terminée'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeTab === tab
-                    ? 'bg-orange-100 text-orange-700 border border-orange-200'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {tab === 'all' ? 'Toutes' : tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
 
-      {/* Demandes List */}
+      {/* Liste des demandes */}
+      {formattedDemandes.length > 0 ? (
       <div className="space-y-4">
-        {sortedDemandes.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <div className="text-gray-400 mb-4">
-              <i className="fas fa-clipboard-list text-4xl"></i>
+          {formattedDemandes.map((demande) => (
+            <div key={demande.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                {/* Informations principales */}
+                <div className="flex-1">
+                  <div className="flex items-start space-x-4">
+                    {/* Photo du candidat */}
+                    <div className="flex-shrink-0">
+                      {demande.candidateImage ? (
+                        <img
+                          src={`http://localhost:8000${demande.candidateImage}`}
+                          alt={demande.candidateName}
+                          className="w-16 h-16 rounded-lg object-cover border border-gray-200"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
+                          <i className="fas fa-user text-gray-400 text-xl"></i>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucune demande trouvée</h3>
-            <p className="text-gray-600 mb-4">
-              {searchTerm ? 'Aucune demande ne correspond à votre recherche.' : 'Vous n\'avez pas encore de demandes de consultation.'}
-            </p>
-            {searchTerm ? (
-              <button
-                onClick={() => setSearchTerm('')}
-                className="text-orange-600 hover:text-orange-700 font-medium"
-              >
-                Effacer la recherche
-              </button>
-            ) : (
-              <Link
-                to="/prestataire/consultations"
-                className="inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
-              >
-                <i className="fas fa-search mr-2"></i>
-                Parcourir les consultations
-              </Link>
             )}
           </div>
-        ) : (
-          sortedDemandes.map((demande) => (
-            <div key={demande.id} className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-              <div className="p-4 sm:p-6">
-                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                  {/* Main Content */}
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                          {demande.titre}
+
+                    {/* Détails de la consultation */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900 truncate">
+                          {demande.consultationTitle || 'Titre non disponible'}
                         </h3>
-                        <p className="text-gray-600 mb-2">{demande.entreprise}</p>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${demande.statusColor}`}>
+                          {demande.statusDisplay}
+                        </span>
+                        {!demande.viewedAt && (
+                          <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">
+                            Nouveau
+                        </span>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(demande.type)}`}>
-                          {demande.type}
-                        </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatutColor(demande.statut)}`}>
-                          {demande.statut}
-                        </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPrioriteColor(demande.priorite)}`}>
-                          {demande.priorite}
-                        </span>
+                      
+                      <p className="text-gray-600 mb-2">
+                        <i className="fas fa-user text-gray-400 mr-2"></i>
+                        {demande.candidateName} • {demande.candidateUserType}
+                      </p>
+                      
+                      {/* Informations essentielles */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+                        <div className="flex items-center text-sm text-gray-600">
+                          <i className="fas fa-tag text-gray-400 mr-2"></i>
+                          <span className="truncate">
+                            {demande.consultationType || 'Type non spécifié'}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center text-sm text-gray-600">
+                          <i className="fas fa-globe text-gray-400 mr-2"></i>
+                          <span className="truncate">
+                            {demande.expertiseSector || 'Secteur non spécifié'}
+                          </span>
+                    </div>
+
+                      <div className="flex items-center text-sm text-gray-600">
+                          <i className="fas fa-briefcase text-gray-400 mr-2"></i>
+                          <span className="truncate">
+                            {demande.deliveryMode || 'Mode non spécifié'}
+                          </span>
+                      </div>
+                        
+                      <div className="flex items-center text-sm text-gray-600">
+                          <i className="fas fa-clock text-gray-400 mr-2"></i>
+                          <span className="truncate">
+                            {demande.estimatedDuration || 'Durée non spécifiée'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Score IA et autres détails */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                      <div className="flex items-center text-sm text-gray-600">
+                          <i className="fas fa-chart-line text-gray-400 mr-2"></i>
+                          <span>
+                            Score IA: {demande.hasAIAnalysis ? formatScore(demande.aiCompatibilityScore) : 'N/A'}
+                          </span>
+                      </div>
+                        
+                      <div className="flex items-center text-sm text-gray-600">
+                          <i className="fas fa-calendar-alt text-gray-400 mr-2"></i>
+                          <span>
+                            Postulé le {formatDate(demande.createdAt)}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Urgence et date de fin */}
+                      {demande.isUrgent && (
+                        <div className="flex items-center text-sm text-red-600 mb-2">
+                          <i className="fas fa-hourglass-half mr-2"></i>
+                          <span className="font-medium">CONSULTATION URGENTE</span>
+                        </div>
+                      )}
+                      
+                      {demande.endDate && (
+                        <div className="flex items-center text-sm text-gray-600 mb-2">
+                          <i className="fas fa-calendar-alt text-gray-400 mr-2"></i>
+                          <span>
+                            Date limite: {formatDate(demande.endDate)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <i className="fas fa-map-marker-alt mr-2 text-orange-500"></i>
-                        {demande.localisation}
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <i className="fas fa-money-bill-wave mr-2 text-green-500"></i>
-                        {demande.budget}
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <i className="fas fa-clock mr-2 text-blue-500"></i>
-                        {demande.duree}
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <i className="fas fa-calendar-plus mr-2 text-purple-500"></i>
-                        Demandée le {new Date(demande.dateDemande).toLocaleDateString('fr-FR')}
-                      </div>
+                {/* Actions */}
+                <div className="flex justify-end mt-4 lg:mt-0 lg:ml-4">
+                  <button
+                    onClick={() => openActionModal(demande, 'view')}
+                    className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-200"
+                  >
+                    <i className="fas fa-eye mr-2"></i>
+                    Voir les détails
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i className="fas fa-inbox text-gray-400 text-3xl"></i>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Aucune demande trouvée</h3>
+          <p className="text-gray-500 mb-6">
+            {demandes && demandes.length === 0 
+              ? "Vous n'avez pas encore reçu de demandes de consultation."
+              : "Aucune demande ne correspond à vos critères de recherche."
+            }
+          </p>
+        </div>
+      )}
+
+      {/* Modal d'action */}
+      {showActionModal && selectedDemande && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">
+                  <i className="fas fa-eye text-orange-600 mr-2"></i>
+                  Détails de la candidature
+                </h2>
+                <button 
+                  onClick={closeActionModal}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <i className="fas fa-times text-xl"></i>
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-medium text-gray-900 mb-3">Détails de la candidature</h3>
+                  
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Candidat:</span>
+                      <span className="font-medium">{selectedDemande.candidateName}</span>
                     </div>
 
-                    <p className="text-gray-700 mb-3">{demande.description}</p>
-
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {demande.competences.map((competence, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md"
-                        >
-                          {competence}
-                        </span>
-                      ))}
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Consultation:</span>
+                      <span className="font-medium">{selectedDemande.consultationTitle}</span>
                     </div>
 
-                    <div className="flex items-center text-xs text-gray-500">
-                      <i className="fas fa-history mr-1"></i>
-                      Dernière activité : {new Date(demande.derniereActivite).toLocaleDateString('fr-FR')}
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Type:</span>
+                      <span className="font-medium">{selectedDemande.consultationType}</span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Score IA:</span>
+                      <span className="font-medium">{selectedDemande.hasAIAnalysis ? formatScore(selectedDemande.aiCompatibilityScore) : 'N/A'}</span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Date de candidature:</span>
+                      <span className="font-medium">{formatDate(selectedDemande.createdAt)}</span>
+                    </div>
+                  </div>
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex flex-col gap-2 lg:w-48">
-                    <Link
-                      to={`/prestataire/consultations/${demande.id}`}
-                      className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-center font-medium"
-                    >
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={closeActionModal}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={executeAction}
+                  disabled={processingAction}
+                  className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {processingAction ? (
+                    <>
+                      <i className="fas fa-spinner fa-spin mr-2"></i>
+                      Traitement...
+                    </>
+                  ) : (
+                    <>
                       <i className="fas fa-eye mr-2"></i>
-                      Voir détails
-                    </Link>
-                    {demande.statut === 'En attente' && (
-                      <button className="w-full px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition-colors font-medium">
-                        <i className="fas fa-check mr-2"></i>
-                        Accepter
-                      </button>
-                    )}
-                    {demande.statut === 'En cours' && (
-                      <button className="w-full px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium">
-                        <i className="fas fa-comments mr-2"></i>
-                        Contacter
-                      </button>
-                    )}
-                    <button className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm">
-                      <i className="fas fa-ellipsis-h mr-2"></i>
-                      Plus d'actions
+                      Marquer comme vue
+                    </>
+                  )}
                     </button>
                   </div>
                 </div>
               </div>
             </div>
-          ))
         )}
-      </div>
     </div>
   );
 };
