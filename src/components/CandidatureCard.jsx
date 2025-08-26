@@ -28,7 +28,6 @@ const CandidatureCard = ({
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'shortlisted':
       case 'preselectionne':
-      case 'shortlisted':
         return 'bg-green-100 text-green-800 border-green-200';
       case 'interview':
       case 'entretien':
@@ -36,7 +35,6 @@ const CandidatureCard = ({
         return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'rejected':
       case 'refusee':
-      case 'rejected':
         return 'bg-red-100 text-red-800 border-red-200';
       case 'approved':
       case 'acceptee':
@@ -59,7 +57,6 @@ const CandidatureCard = ({
         return 'En évaluation';
       case 'shortlisted':
       case 'preselectionne':
-      case 'shortlisted':
         return 'Présélectionnée';
       case 'interview':
       case 'entretien':
@@ -67,7 +64,6 @@ const CandidatureCard = ({
         return 'Entretien';
       case 'rejected':
       case 'refusee':
-      case 'rejected':
         return 'Refusée';
       case 'approved':
       case 'acceptee':

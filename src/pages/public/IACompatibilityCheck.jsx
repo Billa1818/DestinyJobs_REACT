@@ -9,7 +9,7 @@ import bourseService from '../../services/bourseService';
 import CreeCandidatureService from '../../services/CreeCandidatureService';
 
 const IACompatibilityCheck = () => {
-  const { offerId, offerType } = useParams();
+  const { offerId, offerType: urlOfferType } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
@@ -20,6 +20,7 @@ const IACompatibilityCheck = () => {
   const [showMotivationForm, setShowMotivationForm] = useState(false);
   const [offer, setOffer] = useState(null);
   const [error, setError] = useState(null);
+  const [offerType, setOfferType] = useState(urlOfferType);
   
   // États pour la création de candidature
   const [showCandidatureForm, setShowCandidatureForm] = useState(false);
@@ -84,7 +85,7 @@ const IACompatibilityCheck = () => {
           window.history.replaceState({}, '', newPath);
           
           // Mettre à jour l'état local
-          offerType = detectedOfferType;
+          setOfferType(detectedOfferType);
         }
         
         // Effectuer l'analyse de compatibilité IA

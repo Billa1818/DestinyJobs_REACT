@@ -356,7 +356,7 @@ const Settings = () => {
         <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Paramètres de sécurité</h1>
           <p className="text-gray-600 mt-2">Gérez la sécurité de votre compte et vos sessions</p>
-        </div>
+          </div>
 
         {/* Messages de succès/erreur */}
         {success && (
@@ -364,10 +364,10 @@ const Settings = () => {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <i className="fas fa-check-circle text-green-400"></i>
-              </div>
+            </div>
               <div className="ml-3">
                 <p className="text-sm text-green-700">{success}</p>
-              </div>
+          </div>
             </div>
           </div>
         )}
@@ -377,10 +377,10 @@ const Settings = () => {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <i className="fas fa-exclamation-circle text-red-400"></i>
-              </div>
+        </div>
               <div className="ml-3">
                 <p className="text-sm text-red-700">{error}</p>
-              </div>
+      </div>
             </div>
           </div>
         )}
@@ -432,7 +432,7 @@ const Settings = () => {
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Changer le mot de passe</h3>
                   <form onSubmit={handlePasswordChange} className="space-y-4">
-                    <div>
+            <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Ancien mot de passe
                       </label>
@@ -443,12 +443,12 @@ const Settings = () => {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         required
                       />
-                    </div>
+            </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Nouveau mot de passe
                       </label>
-                      <input
+              <input
                         type="password"
                         value={passwordData.new_password}
                         onChange={(e) => handleInputChange('password', 'new_password', e.target.value)}
@@ -461,7 +461,7 @@ const Settings = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Confirmer le nouveau mot de passe
-                      </label>
+            </label>
                       <input
                         type="password"
                         value={passwordData.confirm_password}
@@ -478,16 +478,16 @@ const Settings = () => {
                       {loading ? 'Modification...' : 'Changer le mot de passe'}
                     </button>
                   </form>
-                </div>
+          </div>
 
                 <div className="border-t border-gray-200 pt-6">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Réinitialiser le mot de passe</h3>
                   <form onSubmit={handlePasswordReset} className="space-y-4">
-                    <div>
+            <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Email
                       </label>
-                      <input
+              <input
                         type="email"
                         value={resetData.email}
                         onChange={(e) => handleInputChange('reset', 'email', e.target.value)}
@@ -495,7 +495,7 @@ const Settings = () => {
                         placeholder="votre.email@exemple.com"
                         required
                       />
-                    </div>
+          </div>
                     <button
                       type="submit"
                       disabled={loading}
@@ -504,16 +504,16 @@ const Settings = () => {
                       {loading ? 'Envoi...' : 'Envoyer l\'email de réinitialisation'}
                     </button>
                   </form>
-                </div>
+          </div>
 
                 <div className="border-t border-gray-200 pt-6">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Confirmer la réinitialisation</h3>
                   <form onSubmit={handleConfirmPasswordReset} className="space-y-4">
-                    <div>
+            <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Token de réinitialisation
                       </label>
-                      <input
+              <input
                         type="text"
                         value={confirmResetData.token}
                         onChange={(e) => handleInputChange('confirmReset', 'token', e.target.value)}
@@ -521,12 +521,12 @@ const Settings = () => {
                         placeholder="Token reçu par email"
                         required
                       />
-                    </div>
-                    <div>
+          </div>
+            <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Nouveau mot de passe
                       </label>
-                      <input
+              <input
                         type="password"
                         value={confirmResetData.new_password}
                         onChange={(e) => handleInputChange('confirmReset', 'new_password', e.target.value)}
@@ -534,19 +534,19 @@ const Settings = () => {
                         required
                         minLength={8}
                       />
-                    </div>
-                    <div>
+          </div>
+            <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Confirmer le nouveau mot de passe
                       </label>
-                      <input
+              <input
                         type="password"
                         value={confirmResetData.confirm_password}
                         onChange={(e) => handleInputChange('confirmReset', 'confirm_password', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         required
                       />
-                    </div>
+          </div>
                     <button
                       type="submit"
                       disabled={loading}
@@ -555,20 +555,20 @@ const Settings = () => {
                       {loading ? 'Confirmation...' : 'Confirmer la réinitialisation'}
                     </button>
                   </form>
-                </div>
-              </div>
+        </div>
+      </div>
             )}
 
             {/* Tab: Vérification email */}
             {activeTab === 'email' && (
-              <div className="space-y-6">
-                <div>
+    <div className="space-y-6">
+          <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Vérification de l'email</h3>
                   
                   {userProfile && (
                     <div className="bg-gray-50 p-4 rounded-lg mb-6">
                       <div className="flex items-center justify-between">
-                        <div>
+          <div>
                           <p className="text-sm text-gray-600">Email actuel : <span className="font-medium text-gray-900">{userProfile.email}</span></p>
                           <p className="text-sm text-gray-600 mt-1">
                             Statut : 
@@ -576,7 +576,7 @@ const Settings = () => {
                               {userProfile.email_verified ? 'Vérifié' : 'Non vérifié'}
                             </span>
                           </p>
-                        </div>
+          </div>
                         {!userProfile.email_verified && (
                           <button
                             onClick={handleRequestEmailVerification}
@@ -586,16 +586,16 @@ const Settings = () => {
                             {loading ? 'Envoi...' : 'Demander la vérification'}
                           </button>
                         )}
-                      </div>
-                    </div>
+          </div>
+        </div>
                   )}
 
                   <form onSubmit={handleEmailVerification} className="space-y-4">
-                    <div>
+            <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Email à vérifier
-                      </label>
-                      <input
+            </label>
+              <input
                         type="email"
                         value={emailData.email}
                         onChange={(e) => handleInputChange('email', 'email', e.target.value)}
@@ -603,7 +603,7 @@ const Settings = () => {
                         placeholder="votre.email@exemple.com"
                         required
                       />
-                    </div>
+          </div>
                     <button
                       type="submit"
                       disabled={loading}
@@ -612,8 +612,8 @@ const Settings = () => {
                       {loading ? 'Vérification...' : 'Vérifier l\'email'}
                     </button>
                   </form>
-                </div>
-              </div>
+          </div>
+        </div>
             )}
 
             {/* Tab: Sessions actives */}
@@ -628,16 +628,16 @@ const Settings = () => {
                       className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-200 disabled:opacity-50 text-sm"
                     >
                       {loading ? 'Déconnexion...' : 'Forcer la déconnexion'}
-                    </button>
+          </button>
                     <button
                       onClick={handleLogoutAllSessions}
                       disabled={loading}
                       className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition duration-200 disabled:opacity-50 text-sm"
                     >
                       {loading ? 'Déconnexion...' : 'Déconnecter toutes les sessions'}
-                    </button>
-                  </div>
-                </div>
+          </button>
+        </div>
+      </div>
 
                 {loadingSessions ? (
                   <div className="text-center py-8">
@@ -668,16 +668,16 @@ const Settings = () => {
                               {session.expires_at && (
                                 <p>Expire le : {formatDate(session.expires_at)}</p>
                               )}
-                            </div>
-                          </div>
+    </div>
+      </div>
                           {!session.is_current_session && (
-                            <button
+                <button
                               onClick={() => handleInvalidateSession(session.session_id)}
                               disabled={loading}
                               className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 transition duration-200 disabled:opacity-50 text-sm"
                             >
                               Invalider
-                            </button>
+                </button>
                           )}
                         </div>
                       </div>
