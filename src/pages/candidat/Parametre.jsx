@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import profileService from '../../services/profileService';
 import authService from '../../services/authService';
+import conversionService from '../../services/conversionService';
 import PasswordManagement from '../../components/auth/PasswordManagement';
 import SessionManagement from '../../components/auth/SessionManagement';
 import LocationManager from '../../components/candidat/LocationManager';
+import ConversionConfirmationModal from '../../components/ConversionConfirmationModal';
+import { useMessage } from '../../components/MessageManager';
 
 
 const Parametre = () => {
+  const navigate = useNavigate();
+  const { success, error: showError } = useMessage();
+  
   const [activeTab, setActiveTab] = useState('profile');
   const [profileData, setProfileData] = useState({
     first_name: '',
@@ -33,6 +39,8 @@ const Parametre = () => {
     isVerified: false,
     isRequesting: false
   });
+  const [showConversionModal, setShowConversionModal] = useState(false);
+  const [conversionLoading, setConversionLoading] = useState(false);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -208,6 +216,43 @@ const Parametre = () => {
       setError('Erreur lors de la sauvegarde');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleOpenConversionModal = () => {
+    setShowConversionModal(true);
+  };
+
+  const handleCloseConversionModal = () => {
+    setShowConversionModal(false);
+  };
+
+  const handleConfirmConversion = async () => {
+    try {
+      setConversionLoading(true);
+
+      // Appeler le service de conversion
+      await conversionService.becomeProvider({
+        provider_type: 'INDIVIDUAL',
+        specializations: 'Développement Web',
+        hourly_rate: '50',
+        daily_rate: '400',
+        years_experience: 0,
+        availability: 'AVAILABLE'
+      });
+
+      success('Succès', 'Conversion en prestataire réussie');
+      
+      // Attendre 1 seconde avant de se déconnecter
+      setTimeout(async () => {
+        await authService.logout();
+        navigate('/login');
+      }, 1000);
+    } catch (err) {
+      showError('Erreur', err.response?.data?.message || 'Impossible de convertir en prestataire');
+    } finally {
+      setConversionLoading(false);
+      setShowConversionModal(false);
     }
   };
 
@@ -497,8 +542,38 @@ const Parametre = () => {
               </Link>
             </div>
           </div>
+
+          {/* Conversion Section */}
+          <div className="bg-white rounded-lg p-6 shadow-sm mt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <i className="fas fa-briefcase mr-2 text-fuchsia-600"></i>
+              Devenir Prestataire
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Transformez votre profil en prestataire et commencez à proposer vos services.
+            </p>
+            <button
+              onClick={handleOpenConversionModal}
+              className="w-full bg-fuchsia-600 text-white px-4 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200 flex items-center justify-center"
+            >
+              <i className="fas fa-arrow-right mr-2"></i>
+              Convertir en Prestataire
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Modal de conversion */}
+      <ConversionConfirmationModal
+        isOpen={showConversionModal}
+        title="Convertir en Prestataire"
+        message={`Êtes-vous sûr de vouloir convertir votre compte en prestataire ? Vous serez déconnecté et devrez vous reconnecter pour commencer.`}
+        confirmText="Convertir"
+        cancelText="Annuler"
+        isLoading={conversionLoading}
+        onConfirm={handleConfirmConversion}
+        onCancel={handleCloseConversionModal}
+      />
     </main>
   );
 };

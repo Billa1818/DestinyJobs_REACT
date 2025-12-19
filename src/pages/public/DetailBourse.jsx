@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import bourseService from '../../services/bourseService';
 import NotFound from './NotFound';
 import ShareModal from '../../components/ShareModal';
+import SavedOfferButton from '../../components/SavedOfferButton';
 
 const DetailBourse = () => {
   const { id } = useParams();
@@ -44,13 +45,7 @@ const DetailBourse = () => {
     }
   };
 
-  const handleSave = () => {
-    if (!user) {
-      alert('Vous devez être connecté pour sauvegarder une bourse.');
-      return;
-    }
-    alert('Bourse sauvegardée dans vos favoris !');
-  };
+
 
   const handleShare = () => {
     setShowShareModal(true);
@@ -228,6 +223,15 @@ const DetailBourse = () => {
                 <i className="fas fa-edit mr-2"></i>
                 Éditer la bourse
               </Link>
+            )}
+
+            {/* Bouton Ajouter aux favoris - affiché uniquement pour les utilisateurs connectés */}
+            {(!user || (user.id !== bourse.recruiter?.user?.id && user.id !== bourse.recruiter?.id)) && (
+              <SavedOfferButton
+                offerId={bourse.id}
+                offerType="SCHOLARSHIP"
+                className="px-6 py-3 rounded-lg"
+              />
             )}
 
             {/* Boutons secondaires */}

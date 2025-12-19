@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import consultationService from '../../services/consultationService';
 import ShareModal from '../../components/ShareModal';
+import SavedOfferButton from '../../components/SavedOfferButton';
 
 const DetailConsultation = () => {
   const { id } = useParams();
@@ -81,10 +82,6 @@ const DetailConsultation = () => {
     }
     
     navigate(`/ia-compatibility/${id}/consultation`);
-  };
-
-  const handleSave = () => {
-    alert('Consultation sauvegardée dans vos favoris !');
   };
 
   const handleShare = () => {
@@ -257,13 +254,11 @@ const DetailConsultation = () => {
               
               {/* Bouton Sauvegarder - visible uniquement pour les consultations publiques et non créateur */}
               {!isRecruiterOfThisConsultation && isPubliclyAccessible && (
-                <button
-                  onClick={handleSave}
-                  className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition duration-200 font-medium"
-                >
-                  <i className="fas fa-bookmark mr-2"></i>
-                  Sauvegarder
-                </button>
+                <SavedOfferButton
+                  offerId={id}
+                  offerType="CONSULTATION"
+                  className="w-full px-6 py-3 border rounded-lg font-medium"
+                />
               )}
               
               {/* Bouton Partager - toujours visible */}

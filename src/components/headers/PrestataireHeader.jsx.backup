@@ -116,7 +116,6 @@ const PrestataireHeader = () => {
                               <div className="py-1">
                 <Link to="/consultations" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">Parcourir</Link>
                 <Link to="/prestataire/demandes" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">Mes candidatures</Link>
-                <Link to="/prestataire/favoris" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">Favoris</Link>
               </div>
               </div>
             </div>
@@ -229,7 +228,6 @@ const PrestataireHeader = () => {
             <div className={`mobile-menu-slide ml-4 ${mobileConsultationsOpen ? 'show' : ''}`}>
               <Link to="/consultations" className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md">Parcourir</Link>
               <Link to="/prestataire/demandes" className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md">Mes candidatures</Link>
-              <Link to="/prestataire/favoris" className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md">Favoris</Link>
             </div>
           </div>
           

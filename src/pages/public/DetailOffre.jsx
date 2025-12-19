@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import ShareModal from '../../components/ShareModal';
+import SavedOfferButton from '../../components/SavedOfferButton';
 import jobService from '../../services/jobService';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -113,13 +114,7 @@ const DetailOffre = () => {
         navigate(`/ia-compatibility/${id}/emploi`);
     };
 
-    const handleSave = () => {
-        if (!isAuthenticated) {
-            alert('Vous devez être connecté pour sauvegarder une offre.');
-            return;
-        }
-        alert('Offre sauvegardée dans vos favoris !');
-    };
+
 
     const handleShare = () => {
         setShowShareModal(true);
@@ -336,15 +331,13 @@ const DetailOffre = () => {
                                 </button>
                             )}
 
-                            {/* Bouton Sauvegarder - visible uniquement pour les offres publiques et non créateur */}
+                            {/* Bouton Ajouter aux favoris - visible uniquement pour les offres publiques et non créateur */}
                             {!isRecruiterOfThisOffer && isPubliclyAccessible && (
-                                <button
-                                    onClick={handleSave}
-                                    className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition duration-200 font-medium"
-                                >
-                                    <i className="fas fa-bookmark mr-2"></i>
-                                    Sauvegarder
-                                </button>
+                                <SavedOfferButton
+                                    offerId={id}
+                                    offerType="JOB"
+                                    className="px-6 py-3 rounded-lg"
+                                />
                             )}
 
                             {/* Bouton Partager - toujours visible */}

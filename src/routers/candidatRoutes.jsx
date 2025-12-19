@@ -14,6 +14,7 @@ import Bourse from '../pages/candidat/Bourse';
 import DetailBourse from '../pages/candidat/DetailBourse';
 import IACompatibilityCheck from '../pages/candidat/IACompatibilityCheck';
 import FinancementCandidature from '../pages/candidat/FinancementCandidature';
+import Favoris from '../pages/candidat/Favoris';
 
 const candidatRoutes = [
   {
@@ -79,6 +80,10 @@ const candidatRoutes = [
   {
     path: 'ia-compatibility/:offerId/:offerType',
     element: <IACompatibilityCheck />
+  },
+  {
+    path: 'favoris',
+    element: <Favoris />
   }
 ];
 

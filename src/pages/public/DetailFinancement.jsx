@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import consultationService from '../../services/consultationService';
 import ShareModal from '../../components/ShareModal';
+import SavedOfferButton from '../../components/SavedOfferButton';
 
 const DetailFinancement = () => {
   const { id } = useParams();
@@ -142,9 +143,7 @@ const DetailFinancement = () => {
     navigate(`/ia-compatibility/${id}/financement`);
   };
 
-  const handleSave = () => {
-    alert('Offre de financement sauvegardée dans vos favoris !');
-  };
+
 
   const handleShare = () => {
     setShowShareModal(true);
@@ -282,13 +281,11 @@ const DetailFinancement = () => {
               )}
               
               {!isRecruiterOfThisFunding && isPubliclyAccessible && (
-                <button
-                  onClick={handleSave}
-                  className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition duration-200 font-medium"
-                >
-                  <i className="fas fa-bookmark mr-2"></i>
-                  Sauvegarder
-                </button>
+                <SavedOfferButton
+                  offerId={id}
+                  offerType="FUNDING"
+                  className="px-6 py-3 rounded-lg"
+                />
               )}
               
               <button

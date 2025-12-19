@@ -13,6 +13,7 @@ const PrestataireHeader = () => {
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
+  const [providerProfileId, setProviderProfileId] = useState(null);
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -70,8 +71,13 @@ const PrestataireHeader = () => {
         const providerProfile = await ProviderProfilService.getProviderProfile();
         if (providerProfile.image) {
           setProfileImage(providerProfile.image);
-          return;
         }
+        // Stocker l'ID du profil prestataire
+        if (providerProfile.id) {
+          setProviderProfileId(providerProfile.id);
+          console.log('✅ ID du profil prestataire récupéré:', providerProfile.id);
+        }
+        return;
       } catch (error) {
         console.log('Profil prestataire non disponible, utilisation du profil utilisateur');
       }
@@ -123,6 +129,11 @@ const PrestataireHeader = () => {
     return 'U';
   };
 
+  // Obtenir le lien vers le portfolio
+  const getPortfolioLink = () => {
+    return providerProfileId ? `/prestataire/services/${providerProfileId}` : '/prestataire/services';
+  };
+
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
       {/* Main header */}
@@ -147,20 +158,17 @@ const PrestataireHeader = () => {
                 Consultations <i className="fas fa-chevron-down ml-1 text-xs"></i>
               </button>
               <div className="dropdown-menu absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible z-10">
-                              <div className="py-1">
-                <Link to="/consultations" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
-                  <i className="fas fa-search mr-2"></i>Parcourir
-                </Link>
-                <Link to="/prestataire/demandes" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
-                  <i className="fas fa-file-alt mr-2"></i>Mes candidatures
-                </Link>
-                <Link to="/prestataire/favoris" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
-                  <i className="fas fa-heart mr-2"></i>Favoris
-                </Link>
-              </div>
+                <div className="py-1">
+                  <Link to="/consultations" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
+                    <i className="fas fa-search mr-2"></i>Parcourir
+                  </Link>
+                  <Link to="/prestataire/demandes" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
+                    <i className="fas fa-file-alt mr-2"></i>Mes candidatures
+                  </Link>
+                </div>
               </div>
             </div>
-            <Link to="/prestataire/services" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
+            <Link to={getPortfolioLink()} className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
               <i className="fas fa-briefcase mr-2"></i>
               Mon Portfolio
             </Link>
@@ -217,8 +225,11 @@ const PrestataireHeader = () => {
                   <Link to="/prestataire/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
                     <i className="fas fa-user mr-2"></i>Mon profil
                   </Link>
-                  <Link to="/prestataire/services" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
+                  <Link to={getPortfolioLink()} className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
                     <i className="fas fa-briefcase mr-2"></i>Mon portfolio
+                  </Link>
+                  <Link to="/prestataire/favoris" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
+                    <i className="fas fa-heart mr-2"></i>Favoris
                   </Link>
                   
                   <Link to="/prestataire/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
@@ -277,85 +288,86 @@ const PrestataireHeader = () => {
 
       {/* Mobile User Menu */}
       {userMenuOpen && (
-      <div className="lg:hidden bg-white border-t border-gray-200 animate-in slide-in-from-top-1 duration-200">
-        <div className="px-2 py-2 space-y-1">
-          <Link to="/prestataire/profile" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
-            <i className="fas fa-user mr-2"></i>Mon profil
-          </Link>
-          <Link to="/prestataire/services" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
-            <i className="fas fa-briefcase mr-2"></i>Mon portfolio
-          </Link>
-
-          <Link to="/prestataire/settings" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
-            <i className="fas fa-cog mr-2"></i>Paramètres
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="w-full text-left flex items-center px-3 py-2 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md"
-          >
-            <i className="fas fa-sign-out-alt mr-2"></i>Déconnexion
-          </button>
-          </div>
-          </div>
-          )}
-
-          {/* Mobile menu */}
-          {mobileMenuOpen && (
-          <div className="lg:hidden bg-white border-t border-gray-200 animate-in slide-in-from-top-1 duration-200">
-        <div className="px-2 py-2 space-y-1">
-          <Link to="/prestataire" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
-            <i className="fas fa-tachometer-alt mr-2"></i>
-            Tableau de bord
-          </Link>
-          
-          {/* Mobile dropdown for "Consultations" */}
-          <div>
-            <button onClick={() => toggleMobileDropdown('mobile-consultations')} className="w-full flex justify-between items-center px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
-              <span className="flex items-center">
-                <i className="fas fa-comments mr-2"></i>
-                Consultations
-              </span>
-              <i className={`fas fa-chevron-down text-xs transform transition-transform duration-300 ${mobileConsultationsOpen ? 'rotate-180' : ''}`}></i>
-            </button>
-            {mobileConsultationsOpen && (
-              <div className="ml-4 space-y-0">
-                <Link to="/consultations" onClick={() => setMobileConsultationsOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
-                  <i className="fas fa-search mr-2"></i>Parcourir
-                </Link>
-                <Link to="/prestataire/demandes" onClick={() => setMobileConsultationsOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
-                  <i className="fas fa-file-alt mr-2"></i>Mes candidatures
-                </Link>
-                <Link to="/prestataire/favoris" onClick={() => setMobileConsultationsOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
-                  <i className="fas fa-heart mr-2"></i>Favoris
-                </Link>
-              </div>
-            )}
-          </div>
-          
-          <Link to="/prestataire/services" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
-            <i className="fas fa-briefcase mr-2"></i>
-            Mon Portfolio
-          </Link>
-          
-          <Link to="/formation" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
-            <i className="fas fa-graduation-cap mr-2"></i>
-            Formation
-          </Link>
-          
-          <Link to="/prestataire/offres-prestation" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
-            <i className="fas fa-handshake mr-2"></i>
-            Offres de prestation
-          </Link>
-          
-          <Link to="/blog" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
-            <i className="fas fa-newspaper mr-2"></i>
-            Blog
+        <div className="lg:hidden bg-white border-t border-gray-200 animate-in slide-in-from-top-1 duration-200">
+          <div className="px-2 py-2 space-y-1">
+            <Link to="/prestataire/profile" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+              <i className="fas fa-user mr-2"></i>Mon profil
             </Link>
-            </div>
-            </div>
-            )}
-            </header>
-            );
-            };
+            <Link to={getPortfolioLink()} className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+              <i className="fas fa-briefcase mr-2"></i>Mon portfolio
+            </Link>
+            <Link to="/prestataire/favoris" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+              <i className="fas fa-heart mr-2"></i>Favoris
+            </Link>
+
+            <Link to="/prestataire/settings" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+              <i className="fas fa-cog mr-2"></i>Paramètres
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="w-full text-left flex items-center px-3 py-2 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md"
+            >
+              <i className="fas fa-sign-out-alt mr-2"></i>Déconnexion
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden bg-white border-t border-gray-200 animate-in slide-in-from-top-1 duration-200">
+          <div className="px-2 py-2 space-y-1">
+            <Link to="/prestataire" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+              <i className="fas fa-tachometer-alt mr-2"></i>
+              Tableau de bord
+            </Link>
             
-            export default PrestataireHeader;
+            {/* Mobile dropdown for "Consultations" */}
+            <div>
+              <button onClick={() => toggleMobileDropdown('mobile-consultations')} className="w-full flex justify-between items-center px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+                <span className="flex items-center">
+                  <i className="fas fa-comments mr-2"></i>
+                  Consultations
+                </span>
+                <i className={`fas fa-chevron-down text-xs transform transition-transform duration-300 ${mobileConsultationsOpen ? 'rotate-180' : ''}`}></i>
+              </button>
+              {mobileConsultationsOpen && (
+                <div className="ml-4 space-y-0">
+                  <Link to="/consultations" onClick={() => setMobileConsultationsOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+                    <i className="fas fa-search mr-2"></i>Parcourir
+                  </Link>
+                  <Link to="/prestataire/demandes" onClick={() => setMobileConsultationsOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+                    <i className="fas fa-file-alt mr-2"></i>Mes candidatures
+                  </Link>
+
+                </div>
+              )}
+            </div>
+            
+            <Link to={getPortfolioLink()} className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+              <i className="fas fa-briefcase mr-2"></i>
+              Mon Portfolio
+            </Link>
+            
+            <Link to="/formation" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+              <i className="fas fa-graduation-cap mr-2"></i>
+              Formation
+            </Link>
+            
+            <Link to="/prestataire/offres-prestation" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+              <i className="fas fa-handshake mr-2"></i>
+              Offres de prestation
+            </Link>
+            
+            <Link to="/blog" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+              <i className="fas fa-newspaper mr-2"></i>
+              Blog
+            </Link>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+};
+
+export default PrestataireHeader;

@@ -1,105 +1,102 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import SavedOffersService from '../../services/SavedOffersService';
 
 const Favoris = () => {
-  const [activeTab, setActiveTab] = useState('all');
+  const [savedOffers, setSavedOffers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('ALL');
   const [sortBy, setSortBy] = useState('recent');
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const [favoris] = useState([
-    {
-      id: 1,
-      titre: 'Développement d\'application mobile',
-      entreprise: 'TechCorp Solutions',
-      localisation: 'Abidjan, Côte d\'Ivoire',
-      budget: '500,000 - 800,000 FCFA',
-      type: 'Développement',
-      dateAjout: '2024-01-15',
-      description: 'Création d\'une application mobile native pour la gestion de commandes...',
-      competences: ['React Native', 'Node.js', 'MongoDB'],
-      duree: '3-4 mois',
-      urgence: 'Moyenne'
-    },
-    {
-      id: 2,
-      titre: 'Design d\'identité visuelle',
-      entreprise: 'Startup Innovante',
-      localisation: 'Dakar, Sénégal',
-      budget: '200,000 - 350,000 FCFA',
-      type: 'Design',
-      dateAjout: '2024-01-12',
-      description: 'Création complète de l\'identité visuelle d\'une startup tech...',
-      competences: ['Adobe Creative Suite', 'Branding', 'UI/UX'],
-      duree: '2-3 semaines',
-      urgence: 'Élevée'
-    },
-    {
-      id: 3,
-      titre: 'Consultation en marketing digital',
-      entreprise: 'E-commerce Plus',
-      localisation: 'Lomé, Togo',
-      budget: '300,000 - 500,000 FCFA',
-      type: 'Marketing',
-      dateAjout: '2024-01-10',
-      description: 'Stratégie de marketing digital pour une plateforme e-commerce...',
-      competences: ['Google Ads', 'Facebook Ads', 'Analytics'],
-      duree: '1-2 mois',
-      urgence: 'Faible'
-    },
-    {
-      id: 4,
-      titre: 'Formation en développement web',
-      entreprise: 'Centre de Formation Tech',
-      localisation: 'Ouagadougou, Burkina Faso',
-      budget: '400,000 - 600,000 FCFA',
-      type: 'Formation',
-      dateAjout: '2024-01-08',
-      description: 'Formation intensive en développement web pour 15 étudiants...',
-      competences: ['HTML/CSS', 'JavaScript', 'React', 'Node.js'],
-      duree: '6 semaines',
-      urgence: 'Moyenne'
+  useEffect(() => {
+    fetchSavedOffers();
+  }, [page, activeTab]);
+
+  const fetchSavedOffers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await SavedOffersService.getSavedOffersWithDetails(page);
+      setSavedOffers(response.results || []);
+      setTotalCount(response.count || 0);
+    } catch (err) {
+      console.error('Erreur lors du chargement des favoris:', err);
+      setError('Impossible de charger vos favoris. Veuillez réessayer.');
+      setSavedOffers([]);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
-  const filteredFavoris = favoris.filter(favori => {
-    const matchesSearch = favori.titre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         favori.entreprise.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         favori.localisation.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesTab = activeTab === 'all' || favori.type.toLowerCase() === activeTab;
-    
-    return matchesSearch && matchesTab;
+  const handleRemove = async (savedOfferId) => {
+    try {
+      await SavedOffersService.removeSavedOffer(savedOfferId);
+      setSavedOffers(savedOffers.filter(offer => offer.id !== savedOfferId));
+      setTotalCount(totalCount - 1);
+    } catch (err) {
+      console.error('Erreur lors de la suppression:', err);
+      setError('Impossible de supprimer cette offre. Veuillez réessayer.');
+    }
+  };
+
+  const filteredOffers = activeTab === 'ALL' 
+    ? savedOffers 
+    : savedOffers.filter(offer => offer.offer_type === activeTab);
+
+  const searchedOffers = filteredOffers.filter(offer => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      String(offer.id).toLowerCase().includes(searchLower) ||
+      offer.offer_type.toLowerCase().includes(searchLower) ||
+      (offer.details?.title && offer.details.title.toLowerCase().includes(searchLower)) ||
+      (offer.details?.position_name && offer.details.position_name.toLowerCase().includes(searchLower)) ||
+      (offer.details?.description && offer.details.description.toLowerCase().includes(searchLower))
+    );
   });
 
-  const sortedFavoris = [...filteredFavoris].sort((a, b) => {
+  const sortedOffers = [...searchedOffers].sort((a, b) => {
     if (sortBy === 'recent') {
-      return new Date(b.dateAjout) - new Date(a.dateAjout);
-    } else if (sortBy === 'budget') {
-      return parseInt(b.budget.split(' ')[0].replace(',', '')) - parseInt(a.budget.split(' ')[0].replace(',', ''));
-    } else if (sortBy === 'urgence') {
-      const urgenceOrder = { 'Élevée': 3, 'Moyenne': 2, 'Faible': 1 };
-      return urgenceOrder[b.urgence] - urgenceOrder[a.urgence];
+      return new Date(b.saved_at) - new Date(a.saved_at);
     }
     return 0;
   });
 
-  const getUrgenceColor = (urgence) => {
-    switch (urgence) {
-      case 'Élevée': return 'bg-red-100 text-red-800';
-      case 'Moyenne': return 'bg-yellow-100 text-yellow-800';
-      case 'Faible': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+  const getOfferIcon = (offerType) => {
+    switch (offerType) {
+      case 'CONSULTATION':
+        return 'fa-comments';
+      default:
+        return 'fa-star';
     }
   };
 
-  const getTypeColor = (type) => {
-    switch (type) {
-      case 'Développement': return 'bg-blue-100 text-blue-800';
-      case 'Design': return 'bg-purple-100 text-purple-800';
-      case 'Marketing': return 'bg-green-100 text-green-800';
-      case 'Formation': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
+  const getOfferBgColor = (offerType) => {
+    switch (offerType) {
+      case 'CONSULTATION':
+        return 'bg-blue-100';
+      default:
+        return 'bg-gray-100';
     }
+  };
+
+  const getOfferTextColor = (offerType) => {
+    switch (offerType) {
+      case 'CONSULTATION':
+        return 'text-blue-600';
+      default:
+        return 'text-gray-600';
+    }
+  };
+
+  const getOfferTypeLabel = (offerType) => {
+    const labels = {
+      'CONSULTATION': 'Consultation'
+    };
+    return labels[offerType] || offerType;
   };
 
   return (
@@ -109,12 +106,9 @@ const Favoris = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Mes Favoris</h1>
-            <p className="text-gray-600">Consultez vos consultations sauvegardées</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">
-              {sortedFavoris.length} favori{sortedFavoris.length > 1 ? 's' : ''}
-            </span>
+            <p className="text-gray-600">
+              {totalCount === 0 ? 'Vous n\'avez pas encore d\'offres favorites' : `${totalCount} offre${totalCount > 1 ? 's' : ''} sauvegardée${totalCount > 1 ? 's' : ''}`}
+            </p>
           </div>
         </div>
       </div>
@@ -144,8 +138,6 @@ const Favoris = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
             >
               <option value="recent">Plus récents</option>
-              <option value="budget">Budget élevé</option>
-              <option value="urgence">Urgence</option>
             </select>
           </div>
         </div>
@@ -153,33 +145,61 @@ const Favoris = () => {
         {/* Tabs */}
         <div className="mt-4">
           <div className="flex flex-wrap gap-2">
-            {['all', 'développement', 'design', 'marketing', 'formation'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeTab === tab
-                    ? 'bg-orange-100 text-orange-700 border border-orange-200'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {tab === 'all' ? 'Tous' : tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
+            <button
+              onClick={() => { setActiveTab('ALL'); setPage(1); }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'ALL'
+                  ? 'bg-orange-100 text-orange-700 border border-orange-200'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Tous ({totalCount})
+            </button>
+            <button
+              onClick={() => { setActiveTab('CONSULTATION'); setPage(1); }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                activeTab === 'CONSULTATION'
+                  ? 'bg-orange-100 text-orange-700 border border-orange-200'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <i className="fas fa-comments"></i>
+              Consultations
+            </button>
           </div>
         </div>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-700 flex items-center gap-2">
+            <i className="fas fa-exclamation-circle"></i>
+            {error}
+          </p>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-12">
+          <div className="inline-flex items-center gap-3">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+            <span className="text-gray-600">Chargement des favoris...</span>
+          </div>
+        </div>
+      )}
+
       {/* Favoris List */}
       <div className="space-y-4">
-        {sortedFavoris.length === 0 ? (
+        {!loading && sortedOffers.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-8 text-center">
             <div className="text-gray-400 mb-4">
               <i className="fas fa-heart text-4xl"></i>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucun favori trouvé</h3>
             <p className="text-gray-600 mb-4">
-              {searchTerm ? 'Aucun favori ne correspond à votre recherche.' : 'Vous n\'avez pas encore ajouté de consultations à vos favoris.'}
+              {searchTerm ? 'Aucun favori ne correspond à votre recherche.' : 'Vous n\'avez pas encore ajouté d\'offres à vos favoris.'}
             </p>
             {searchTerm ? (
               <button
@@ -190,97 +210,116 @@ const Favoris = () => {
               </button>
             ) : (
               <Link
-                to="/prestataire/consultations"
+                to="/consultations"
                 className="inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
               >
                 <i className="fas fa-search mr-2"></i>
-                Parcourir les consultations
+                Parcourir les offres
               </Link>
             )}
           </div>
         ) : (
-          sortedFavoris.map((favori) => (
-            <div key={favori.id} className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-              <div className="p-4 sm:p-6">
-                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                  {/* Main Content */}
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                          {favori.titre}
-                        </h3>
-                        <p className="text-gray-600 mb-2">{favori.entreprise}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(favori.type)}`}>
-                          {favori.type}
-                        </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getUrgenceColor(favori.urgence)}`}>
-                          {favori.urgence}
-                        </span>
+          !loading && sortedOffers.map((offer) => {
+            const details = offer.details;
+            
+            return (
+              <div key={offer.id} className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                <div className="p-4 sm:p-6">
+                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                    {/* Main Content */}
+                    <div className="flex-1">
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className={`w-14 h-14 ${getOfferBgColor(offer.offer_type)} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                          <i className={`fas ${getOfferIcon(offer.offer_type)} ${getOfferTextColor(offer.offer_type)} text-lg`}></i>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          {/* Title and type */}
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <h3 className="text-lg font-semibold text-gray-900">
+                              {details?.title || details?.position_name || `Offre #${offer.offer_id.substring(0, 8)}`}
+                            </h3>
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${getOfferBgColor(offer.offer_type)} ${getOfferTextColor(offer.offer_type)}`}>
+                              {getOfferTypeLabel(offer.offer_type)}
+                            </span>
+                          </div>
+                          
+                          {/* Description preview */}
+                          {details?.description && (
+                            <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                              {details.description}
+                            </p>
+                          )}
+                          
+                          {/* Save date */}
+                          <div className="flex flex-wrap gap-3 text-xs text-gray-500">
+                            <span>
+                              <i className="fas fa-bookmark mr-1 text-gray-400"></i>
+                              Sauvegardée le {new Date(offer.saved_at).toLocaleDateString('fr-FR', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                              })}
+                            </span>
+                            {details?.application_deadline && (
+                              <span>
+                                <i className="fas fa-calendar-alt mr-1 text-gray-400"></i>
+                                Deadline: {new Date(details.application_deadline).toLocaleDateString('fr-FR')}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <i className="fas fa-map-marker-alt mr-2 text-orange-500"></i>
-                        {favori.localisation}
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <i className="fas fa-money-bill-wave mr-2 text-green-500"></i>
-                        {favori.budget}
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <i className="fas fa-clock mr-2 text-blue-500"></i>
-                        {favori.duree}
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <i className="fas fa-calendar-plus mr-2 text-purple-500"></i>
-                        Ajouté le {new Date(favori.dateAjout).toLocaleDateString('fr-FR')}
-                      </div>
+                    {/* Actions */}
+                    <div className="flex flex-col gap-2 lg:w-48">
+                      <Link
+                        to={`/consultations/${offer.offer_id}`}
+                        className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-center font-medium text-sm"
+                      >
+                        <i className="fas fa-eye mr-2"></i>
+                        Voir détails
+                      </Link>
+                      <button
+                        onClick={() => handleRemove(offer.id)}
+                        className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                      >
+                        <i className="fas fa-trash mr-2 text-red-500"></i>
+                        Supprimer
+                      </button>
                     </div>
-
-                    <p className="text-gray-700 mb-3">{favori.description}</p>
-
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {favori.competences.map((competence, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md"
-                        >
-                          {competence}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex flex-col gap-2 lg:w-48">
-                    <Link
-                      to={`/prestataire/consultations/${favori.id}`}
-                      className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-center font-medium"
-                    >
-                      <i className="fas fa-eye mr-2"></i>
-                      Voir détails
-                    </Link>
-                    <button className="w-full px-4 py-2 border border-orange-600 text-orange-600 rounded-lg hover:bg-orange-50 transition-colors font-medium">
-                      <i className="fas fa-paper-plane mr-2"></i>
-                      Postuler
-                    </button>
-                    <button className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm">
-                      <i className="fas fa-heart mr-2 text-red-500"></i>
-                      Retirer des favoris
-                    </button>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
+
+      {/* Pagination */}
+      {!loading && totalCount > 0 && (
+        <div className="mt-8 flex justify-center items-center gap-4">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+          >
+            <i className="fas fa-chevron-left mr-2"></i>Précédent
+          </button>
+          <span className="text-gray-600">
+            Page {page}
+          </span>
+          <button
+            disabled={page * 20 >= totalCount}
+            onClick={() => setPage(page + 1)}
+            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+          >
+            Suivant<i className="fas fa-chevron-right ml-2"></i>
+          </button>
+        </div>
+      )}
     </div>
   );
 };
 
-export default Favoris; 
+export default Favoris;

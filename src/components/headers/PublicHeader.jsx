@@ -39,7 +39,7 @@ const PublicHeader = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden xl:flex space-x-4 2xl:space-x-6">
+          <nav className="hidden lg:flex space-x-4 2xl:space-x-6">
             <Link to="/" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
               <i className="fas fa-home mr-2"></i>
               Accueil
@@ -107,19 +107,18 @@ const PublicHeader = () => {
             </Link>
           </div>
 
-          {/* Mobile User Menu */}
+          {/* Mobile: Login + Burger */}
           <div className="flex lg:hidden items-center space-x-1 sm:space-x-2">
             {/* Mobile Login */}
-            <Link to="/login" className="bg-orange-600 text-white px-3 py-1 rounded-md hover:bg-orange-700 transition duration-200 text-sm font-medium flex items-center">
+            <Link to="/login" className="bg-orange-600 text-white px-3 py-2 rounded-md hover:bg-orange-700 transition duration-200 text-sm font-medium flex items-center whitespace-nowrap">
               <i className="fas fa-sign-in-alt mr-1"></i>
-              Connexion
+              <span className="hidden sm:inline">Connexion</span>
+              <span className="sm:hidden">Login</span>
             </Link>
-          </div>
 
-          {/* Mobile menu button */}
-          <div className="xl:hidden flex-shrink-0 ml-1 sm:ml-2">
+            {/* Mobile menu button */}
             <button type="button" className="text-gray-700 hover:text-orange-600 focus:outline-none focus:text-orange-600 p-2 touch-target" onClick={toggleMobileMenu}>
-              <i className="fas fa-bars text-base sm:text-lg"></i>
+              <i className="fas fa-bars text-lg"></i>
             </button>
           </div>
         </div>

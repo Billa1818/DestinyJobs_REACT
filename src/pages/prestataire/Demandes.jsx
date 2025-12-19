@@ -1,5 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faSearch,
+  faFilter,
+  faEye,
+  faMapMarkerAlt,
+  faClock,
+  faStar,
+  faChartLine,
+  faCalendarAlt,
+  faUser,
+  faBuilding,
+  faBriefcase,
+  faHourglassHalf,
+  faList,
+  faCheck,
+  faLightbulb,
+  faThumbsUp,
+  faThumbsDown,
+  faInbox,
+  faSyncAlt,
+  faTag,
+  faGlobe
+} from '@fortawesome/free-solid-svg-icons';
 import consultationDemandesService from '../../services/consultationDemandesService';
 
 const Demandes = () => {
@@ -7,34 +31,17 @@ const Demandes = () => {
   
   // États pour les données
   const [demandes, setDemandes] = useState([]);
-  const [formattedDemandes, setFormattedDemandes] = useState([]);
-  const [stats, setStats] = useState({});
-  
-  // États pour l'interface
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showFilters, setShowFilters] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [expandedId, setExpandedId] = useState(null);
   
   // États pour les filtres
   const [filters, setFilters] = useState({
-    status: 'all',
-    search: '',
-    minScore: 0,
-    urgentOnly: false,
-    recentOnly: false,
-    unviewedOnly: false
+    status: '',
+    search: ''
   });
-  
-  // États pour le tri
-  const [sortBy, setSortBy] = useState('created_at');
-  const [sortOrder, setSortOrder] = useState('desc');
-  
-  // États pour les actions
-  const [selectedDemande, setSelectedDemande] = useState(null);
-  const [showActionModal, setShowActionModal] = useState(false);
-  const [actionType, setActionType] = useState('');
-  const [actionReason, setActionReason] = useState('');
-  const [processingAction, setProcessingAction] = useState(false);
+  const [ordering, setOrdering] = useState('-created_at');
 
   // Charger les demandes au montage du composant
   useEffect(() => {
@@ -47,154 +54,121 @@ const Demandes = () => {
       setLoading(true);
       setError(null);
       
+      console.log('🔄 Chargement des demandes...');
       const demandesData = await consultationDemandesService.getConsultationDemandes();
-      setDemandes(demandesData);
       
-      // Formater les demandes pour l'affichage
-      const formatted = demandesData.map(demande => 
-        consultationDemandesService.formatDemandeForDisplay(demande)
-      );
-      setFormattedDemandes(formatted);
-      
-      // Calculer les statistiques
-      const statsData = consultationDemandesService.getDemandesStats(demandesData);
-      setStats(statsData);
-      
-      console.log('✅ Demandes chargées:', demandesData.length);
+      console.log('✅ Demandes chargées:', demandesData);
+      setDemandes(demandesData || []);
       
     } catch (error) {
       console.error('❌ Erreur lors du chargement des demandes:', error);
-      setError('Erreur lors du chargement des demandes. Veuillez réessayer.');
+      setError(`Erreur lors du chargement: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  // Appliquer les filtres et le tri
-  useEffect(() => {
-    if (demandes.length > 0) {
-      let filtered = consultationDemandesService.filterDemandes(demandes, filters);
-      filtered = consultationDemandesService.sortDemandes(filtered, sortBy, sortOrder);
-      
-      // Filtrage supplémentaire par recherche
-      if (filters.search) {
-        filtered = filtered.filter(demande => {
-          const searchTerm = filters.search.toLowerCase();
-          const consultationTitle = demande.consultation_offer?.title?.toLowerCase() || '';
-          const candidateName = demande.candidate_profile?.user?.first_name?.toLowerCase() || '';
-          const candidateLastName = demande.candidate_profile?.user?.last_name?.toLowerCase() || '';
-          const candidateUsername = demande.candidate_profile?.user?.username?.toLowerCase() || '';
-          
-          return consultationTitle.includes(searchTerm) || 
-                 candidateName.includes(searchTerm) || 
-                 candidateLastName.includes(searchTerm) || 
-                 candidateUsername.includes(searchTerm);
-        });
-      }
-      
-      const formatted = filtered.map(demande => 
-        consultationDemandesService.formatDemandeForDisplay(demande)
-      );
-      setFormattedDemandes(formatted);
-    }
-  }, [demandes, filters, sortBy, sortOrder]);
-
-  // Gérer le changement de filtre
-  const handleFilterChange = (filterName, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [filterName]: value
-    }));
+  // Fonction pour construire l'URL complète des images
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    if (imagePath.startsWith('http')) return imagePath;
+    return `http://localhost:8000${imagePath}`;
   };
 
-  // Gérer le changement de tri
-  const handleSortChange = (newSortBy) => {
-    if (sortBy === newSortBy) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(newSortBy);
-      setSortOrder('desc');
-    }
+  // Filtrer les demandes
+  const filteredDemandes = demandes.filter(demande => {
+    const matchesSearch = !filters.search ||
+      demande.consultation_offer?.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      demande.application?.applicant?.first_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      demande.application?.applicant?.last_name?.toLowerCase().includes(filters.search.toLowerCase());
+
+    const matchesStatus = !filters.status || demande.application?.status === filters.status;
+
+    return matchesSearch && matchesStatus;
+  });
+
+  // Calculer les statistiques
+  const stats = {
+    total: demandes.length,
+    pending: demandes.filter(d => d.application?.status === 'PENDING').length,
+    shortlisted: demandes.filter(d => d.application?.status === 'SHORTLISTED').length,
+    accepted: demandes.filter(d => d.application?.status === 'ACCEPTED').length
   };
-
-  // Ouvrir le modal d'action
-  const openActionModal = (demande, type) => {
-    setSelectedDemande(demande);
-    setActionType(type);
-    setActionReason('');
-    setShowActionModal(true);
-  };
-
-  // Fermer le modal d'action
-  const closeActionModal = () => {
-    setShowActionModal(false);
-    setSelectedDemande(null);
-    setActionType('');
-    setActionReason('');
-  };
-
-  // Exécuter l'action sélectionnée
-  const executeAction = async () => {
-    if (!selectedDemande || !actionType) return;
-    
-    try {
-      setProcessingAction(true);
-      
-      // Marquer la demande comme vue
-      const result = await consultationDemandesService.markDemandeAsViewed(
-        selectedDemande.applicationId
-      );
-      
-      console.log('✅ Demande marquée comme vue:', result);
-      
-      // Recharger les demandes pour mettre à jour l'affichage
-      await loadDemandes();
-      
-      // Fermer le modal
-      closeActionModal();
-      
-    } catch (error) {
-      console.error('❌ Erreur lors de la mise à jour:', error);
-      setError('Erreur lors de la mise à jour. Veuillez réessayer.');
-    } finally {
-      setProcessingAction(false);
-    }
-  };
-
-  // Obtenir le texte de l'action
-  const getActionText = () => 'Voir les détails';
-
-  // Obtenir la couleur de l'action
-  const getActionColor = () => 'bg-orange-600 hover:bg-orange-700';
-
-  // Obtenir l'icône de l'action
-  const getActionIcon = () => 'fas fa-eye';
 
   // Formater la date
   const formatDate = (dateString) => {
     if (!dateString) return 'Date non disponible';
-    return new Date(dateString).toLocaleDateString('fr-FR', {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      year: 'numeric'
     });
   };
 
-  // Formater le score de compatibilité
-  const formatScore = (score) => {
-    if (!score || score === 0) return 'N/A';
-    return `${parseFloat(score).toFixed(1)}%`;
+  // Obtenir la couleur du statut
+  const getStatusColor = (status) => {
+    const statusColors = {
+      'PENDING': 'bg-yellow-100 text-yellow-800',
+      'SHORTLISTED': 'bg-blue-100 text-blue-800',
+      'ACCEPTED': 'bg-green-100 text-green-800',
+      'REJECTED': 'bg-red-100 text-red-800',
+      'WITHDRAWN': 'bg-gray-100 text-gray-800'
+    };
+    return statusColors[status] || 'bg-gray-100 text-gray-800';
   };
 
-  // Obtenir la couleur du score
+  // Obtenir le texte du statut
+  const getStatusText = (status) => {
+    const statusTexts = {
+      'PENDING': 'En attente',
+      'SHORTLISTED': 'Pré-sélectionnée',
+      'ACCEPTED': 'Acceptée',
+      'REJECTED': 'Refusée',
+      'WITHDRAWN': 'Retirée'
+    };
+    return statusTexts[status] || status;
+  };
+
+  // Obtenir la couleur du score de compatibilité
   const getScoreColor = (score) => {
-    if (!score || score === 0) return 'text-gray-500';
-    const numScore = parseFloat(score);
-    if (numScore >= 80) return 'text-green-600';
-    if (numScore >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 70) return { bg: 'bg-green-100', text: 'text-green-700', icon: 'text-green-600' };
+    if (score >= 50) return { bg: 'bg-blue-100', text: 'text-blue-700', icon: 'text-blue-600' };
+    if (score >= 30) return { bg: 'bg-yellow-100', text: 'text-yellow-700', icon: 'text-yellow-600' };
+    return { bg: 'bg-red-100', text: 'text-red-700', icon: 'text-red-600' };
+  };
+
+  // Obtenir le label du score
+  const getScoreLabel = (score) => {
+    if (score >= 70) return 'Très bon match';
+    if (score >= 50) return 'Bon match';
+    if (score >= 30) return 'Match modéré';
+    return 'Faible match';
+  };
+
+  // Appliquer les filtres
+  const applyFilters = () => {
+    loadDemandes();
+  };
+
+  // Réinitialiser les filtres
+  const resetFilters = () => {
+    setFilters({ search: '', status: '' });
+    setOrdering('-created_at');
+    setTimeout(() => loadDemandes(), 0);
+  };
+
+  // Marquer comme vue
+  const markAsViewed = async (applicationId) => {
+    try {
+      await consultationDemandesService.markDemandeAsViewed(applicationId);
+      setSuccessMessage('Demande marquée comme vue');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      loadDemandes();
+    } catch (error) {
+      console.error('❌ Erreur:', error);
+      setError('Erreur lors de la mise à jour');
+    }
   };
 
   if (loading) {
@@ -216,28 +190,17 @@ const Demandes = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-              <i className="fas fa-inbox text-orange-600 mr-3"></i>
               Demandes de consultation
             </h1>
-            <p className="text-gray-600">Gérez les candidatures  pour vos consultations</p>
+            <p className="text-gray-600">Gérez les candidatures pour vos consultations</p>
           </div>
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200"
-            >
-              <i className="fas fa-filter mr-2"></i>
-              {showFilters ? 'Masquer' : 'Afficher'} les filtres
-            </button>
-            
-            <button
-              onClick={loadDemandes}
-              className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition duration-200"
-            >
-              <i className="fas fa-sync-alt mr-2"></i>
-              Actualiser
-            </button>
-          </div>
+          <button
+            onClick={loadDemandes}
+            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition duration-200"
+          >
+            <FontAwesomeIcon icon={faSyncAlt} className="mr-2" />
+            Actualiser
+          </button>
         </div>
       </div>
 
@@ -247,312 +210,400 @@ const Demandes = () => {
         </div>
       )}
 
+      {successMessage && (
+        <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+          {successMessage}
+        </div>
+      )}
+
       {/* Statistiques */}
-      {formattedDemandes && formattedDemandes.length > 0 && (
+      {demandes.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-                <i className="fas fa-list text-blue-600 text-lg"></i>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-600">Total</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total || 0}</p>
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <FontAwesomeIcon icon={faList} className="text-blue-600 text-lg" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-600">Total</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
               </div>
             </div>
           </div>
 
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-                <i className="fas fa-clock text-yellow-600 text-lg"></i>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-600">En attente</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.pending || 0}</p>
+            <div className="flex items-center">
+              <div className="p-2 bg-yellow-100 rounded-lg">
+                <FontAwesomeIcon icon={faClock} className="text-yellow-600 text-lg" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-600">En attente</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
               </div>
             </div>
           </div>
 
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-                <i className="fas fa-star text-blue-600 text-lg"></i>
-            </div>
-            <div className="ml-3">
-                <p className="text-sm font-medium text-gray-600">Shortlist</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.shortlisted || 0}</p>
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <FontAwesomeIcon icon={faStar} className="text-blue-600 text-lg" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-600">Pré-sélectionnées</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.shortlisted}</p>
               </div>
             </div>
           </div>
 
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-                <i className="fas fa-check text-green-600 text-lg"></i>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-600">Acceptées</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.accepted || 0}</p>
-            </div>
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <FontAwesomeIcon icon={faCheck} className="text-green-600 text-lg" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-600">Acceptées</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.accepted}</p>
+              </div>
             </div>
           </div>
         </div>
       )}
 
       {/* Filtres */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-              <input
-                type="text"
-              placeholder="Rechercher par titre de consultation ou candidat..."
-              value={filters.search || ''}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            />
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div className="p-6 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <FontAwesomeIcon icon={faFilter} className="mr-3 text-orange-600" />
+            Filtres et recherche
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {/* Recherche */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Recherche
+              </label>
+              <div className="relative">
+                <FontAwesomeIcon
+                  icon={faSearch}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                />
+                <input
+                  type="text"
+                  placeholder="Titre, candidat..."
+                  value={filters.search}
+                  onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                  className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Filtre par statut */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Statut
+              </label>
+              <select
+                value={filters.status}
+                onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              >
+                <option value="">Tous les statuts</option>
+                <option value="PENDING">En attente</option>
+                <option value="SHORTLISTED">Pré-sélectionnée</option>
+                <option value="ACCEPTED">Acceptée</option>
+                <option value="REJECTED">Refusée</option>
+                <option value="WITHDRAWN">Retirée</option>
+              </select>
+            </div>
+
+            {/* Tri */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tri
+              </label>
+              <select
+                value={ordering}
+                onChange={(e) => setOrdering(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              >
+                <option value="-created_at">Plus récentes</option>
+                <option value="created_at">Plus anciennes</option>
+                <option value="status">Par statut</option>
+              </select>
+            </div>
           </div>
-          <div className="sm:w-48">
-            <select
-              value={filters.status || 'all'}
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+
+          {/* Boutons d'action */}
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={applyFilters}
+              className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition duration-200 flex items-center font-medium"
             >
-              <option value="all">Tous les statuts</option>
-              <option value="PENDING">En attente</option>
-              <option value="SHORTLISTED">Pré-sélectionnée</option>
-              <option value="ACCEPTED">Acceptée</option>
-              <option value="REJECTED">Refusée</option>
-              <option value="WITHDRAWN">Retirée</option>
-            </select>
+              <FontAwesomeIcon icon={faSearch} className="mr-2" />
+              Appliquer les filtres
+            </button>
+
+            <button
+              onClick={resetFilters}
+              className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-200 font-medium"
+            >
+              Réinitialiser
+            </button>
           </div>
         </div>
       </div>
 
       {/* Liste des demandes */}
-      {formattedDemandes.length > 0 ? (
-      <div className="space-y-4">
-          {formattedDemandes.map((demande) => (
-            <div key={demande.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-                {/* Informations principales */}
-                <div className="flex-1">
-                  <div className="flex items-start space-x-4">
+      {filteredDemandes.length > 0 ? (
+        <div className="space-y-4">
+          {filteredDemandes.map((demande) => {
+            const aiAnalysis = demande.ai_analysis;
+            const compatibilityScore = aiAnalysis?.compatibility_score ? parseFloat(aiAnalysis.compatibility_score) : 0;
+            const scoreColors = getScoreColor(compatibilityScore);
+            const isExpanded = expandedId === demande.id;
+
+            const applicant = demande.application?.applicant;
+            const consultation = demande.consultation_offer;
+            const candidateName = applicant ? `${applicant.first_name} ${applicant.last_name}` : 'Candidat inconnu';
+
+            return (
+              <div key={demande.id} className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                {/* En-tête */}
+                <div className="p-6">
+                  <div className="flex items-start space-x-4 mb-4">
                     {/* Photo du candidat */}
                     <div className="flex-shrink-0">
-                      {demande.candidateImage ? (
+                      {demande.candidate_profile?.profile_picture ? (
                         <img
-                          src={`http://localhost:8000${demande.candidateImage}`}
-                          alt={demande.candidateName}
-                          className="w-16 h-16 rounded-lg object-cover border border-gray-200"
+                          src={getImageUrl(demande.candidate_profile.profile_picture)}
+                          alt={candidateName}
+                          className="w-20 h-20 rounded-lg object-cover border border-gray-200"
                         />
                       ) : (
-                        <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
-                          <i className="fas fa-user text-gray-400 text-xl"></i>
-            </div>
-            )}
-          </div>
+                        <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
+                          <FontAwesomeIcon icon={faUser} className="text-gray-400 text-2xl" />
+                        </div>
+                      )}
+                    </div>
 
-                    {/* Détails de la consultation */}
+                    {/* Titre et Badges */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 truncate">
-                          {demande.consultationTitle || 'Titre non disponible'}
-                        </h3>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${demande.statusColor}`}>
-                          {demande.statusDisplay}
+                      <h3 className="text-lg font-bold text-gray-900 mb-1">
+                        {consultation?.title || 'Titre non disponible'}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-2">
+                        <FontAwesomeIcon icon={faUser} className="mr-2 text-gray-400" />
+                        {candidateName} • {applicant?.user_type || 'Type non spécifié'}
+                      </p>
+
+                      {/* Badges de statut et score */}
+                      <div className="flex flex-wrap gap-2 items-center">
+                        <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(demande.application?.status)}`}>
+                          {getStatusText(demande.application?.status)}
                         </span>
-                        {!demande.viewedAt && (
-                          <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">
+                        {!demande.application?.viewed_at && (
+                          <span className="px-3 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
                             Nouveau
-                        </span>
+                          </span>
+                        )}
+                        {aiAnalysis && (
+                          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${scoreColors.bg} ${scoreColors.text}`}>
+                            <FontAwesomeIcon icon={faChartLine} className="mr-1" />
+                            {getScoreLabel(compatibilityScore)} ({compatibilityScore.toFixed(1)}%)
+                          </span>
                         )}
                       </div>
-                      
-                      <p className="text-gray-600 mb-2">
-                        <i className="fas fa-user text-gray-400 mr-2"></i>
-                        {demande.candidateName} • {demande.candidateUserType}
+                    </div>
+                  </div>
+
+                  {/* Ligne séparatrice */}
+                  <div className="border-t border-gray-100 my-4"></div>
+
+                  {/* Grille d'informations - VISIBLE TOUJOURS */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-gray-500 font-medium mb-1">Localisation</p>
+                      <p className="text-sm font-semibold text-gray-900 flex items-center">
+                        <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2 text-gray-400" />
+                        {consultation?.region?.name || 'N/A'}
                       </p>
-                      
-                      {/* Informations essentielles */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-                        <div className="flex items-center text-sm text-gray-600">
-                          <i className="fas fa-tag text-gray-400 mr-2"></i>
-                          <span className="truncate">
-                            {demande.consultationType || 'Type non spécifié'}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center text-sm text-gray-600">
-                          <i className="fas fa-globe text-gray-400 mr-2"></i>
-                          <span className="truncate">
-                            {demande.expertiseSector || 'Secteur non spécifié'}
-                          </span>
                     </div>
 
-                      <div className="flex items-center text-sm text-gray-600">
-                          <i className="fas fa-briefcase text-gray-400 mr-2"></i>
-                          <span className="truncate">
-                            {demande.deliveryMode || 'Mode non spécifié'}
-                          </span>
-                      </div>
-                        
-                      <div className="flex items-center text-sm text-gray-600">
-                          <i className="fas fa-clock text-gray-400 mr-2"></i>
-                          <span className="truncate">
-                            {demande.estimatedDuration || 'Durée non spécifiée'}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {/* Score IA et autres détails */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                      <div className="flex items-center text-sm text-gray-600">
-                          <i className="fas fa-chart-line text-gray-400 mr-2"></i>
-                          <span>
-                            Score IA: {demande.hasAIAnalysis ? formatScore(demande.aiCompatibilityScore) : 'N/A'}
-                          </span>
-                      </div>
-                        
-                      <div className="flex items-center text-sm text-gray-600">
-                          <i className="fas fa-calendar-alt text-gray-400 mr-2"></i>
-                          <span>
-                            Postulé le {formatDate(demande.createdAt)}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {/* Urgence et date de fin */}
-                      {demande.isUrgent && (
-                        <div className="flex items-center text-sm text-red-600 mb-2">
-                          <i className="fas fa-hourglass-half mr-2"></i>
-                          <span className="font-medium">CONSULTATION URGENTE</span>
-                        </div>
-                      )}
-                      
-                      {demande.endDate && (
-                        <div className="flex items-center text-sm text-gray-600 mb-2">
-                          <i className="fas fa-calendar-alt text-gray-400 mr-2"></i>
-                          <span>
-                            Date limite: {formatDate(demande.endDate)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                      </div>
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-gray-500 font-medium mb-1">Secteur</p>
+                      <p className="text-sm font-semibold text-gray-900 flex items-center">
+                        <FontAwesomeIcon icon={faGlobe} className="mr-2 text-gray-400" />
+                        {consultation?.company_details?.sector || 'N/A'}
+                      </p>
                     </div>
 
-                {/* Actions */}
-                <div className="flex justify-end mt-4 lg:mt-0 lg:ml-4">
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-gray-500 font-medium mb-1">Entreprise</p>
+                      <p className="text-sm font-semibold text-gray-900 flex items-center">
+                        <FontAwesomeIcon icon={faBuilding} className="mr-2 text-gray-400" />
+                        {consultation?.company_details?.company_name || 'N/A'}
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-gray-500 font-medium mb-1">Vues</p>
+                      <p className="text-sm font-semibold text-gray-900 flex items-center">
+                        <FontAwesomeIcon icon={faEye} className="mr-2 text-gray-400" />
+                        {consultation?.views_count || 0}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Bouton pour afficher plus */}
                   <button
-                    onClick={() => openActionModal(demande, 'view')}
-                    className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-200"
+                    onClick={() => setExpandedId(isExpanded ? null : demande.id)}
+                    className="w-full py-2 text-orange-600 font-semibold hover:bg-orange-50 rounded transition duration-200 flex items-center justify-center"
                   >
-                    <i className="fas fa-eye mr-2"></i>
-                    Voir les détails
+                    <FontAwesomeIcon
+                      icon={faChartLine}
+                      className={`mr-2 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                    />
+                    {isExpanded ? 'Masquer les détails' : 'Afficher plus de détails'}
                   </button>
                 </div>
+
+                {/* Contenu déroulable */}
+                {isExpanded && (
+                  <div className="border-t border-gray-100 p-6 bg-gray-50">
+                    {/* Dates et informations */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                      <div className="p-3 bg-green-50 rounded-lg">
+                        <p className="text-xs text-green-600 font-medium mb-1">Postulé le</p>
+                        <p className="text-sm font-semibold text-green-900">
+                          <FontAwesomeIcon icon={faCalendarAlt} className="mr-2" />
+                          {formatDate(demande.application?.created_at)}
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-blue-50 rounded-lg">
+                        <p className="text-xs text-blue-600 font-medium mb-1">Jours écoulés</p>
+                        <p className="text-sm font-bold text-blue-900">
+                          <FontAwesomeIcon icon={faClock} className="mr-2" />
+                          {demande.application?.days_since_application || 0} jours
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-purple-50 rounded-lg">
+                        <p className="text-xs text-purple-600 font-medium mb-1">Statut</p>
+                        <p className="text-sm font-semibold text-purple-900">
+                          {demande.application?.viewed_at ? 'Vue' : 'Non vue'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Analyse IA */}
+                    {aiAnalysis && (
+                      <div className="mb-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-100">
+                        <div className="flex items-center mb-3">
+                          <FontAwesomeIcon icon={faChartLine} className="text-indigo-600 mr-2" />
+                          <h4 className="font-bold text-gray-900">Analyse de compatibilité</h4>
+                        </div>
+
+                        {/* Détails des scores */}
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3">
+                          <div className="text-xs">
+                            <p className="text-gray-600">Compétences</p>
+                            <p className="font-bold text-indigo-600">
+                              {aiAnalysis.skill_match_percentage}%
+                            </p>
+                          </div>
+                          <div className="text-xs">
+                            <p className="text-gray-600">Expérience</p>
+                            <p className="font-bold text-indigo-600">
+                              {aiAnalysis.experience_match_percentage}%
+                            </p>
+                          </div>
+                          <div className="text-xs">
+                            <p className="text-gray-600">Localisation</p>
+                            <p className="font-bold text-indigo-600">
+                              {aiAnalysis.location_compatibility_score}%
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Forces et Faiblesses */}
+                        {(aiAnalysis.strengths?.length > 0 || aiAnalysis.weaknesses?.length > 0) && (
+                          <div className="grid md:grid-cols-2 gap-2 text-xs mb-3">
+                            {aiAnalysis.strengths?.length > 0 && (
+                              <div className="flex items-start">
+                                <FontAwesomeIcon icon={faThumbsUp} className="text-green-600 mr-2 mt-0.5 flex-shrink-0" />
+                                <div>
+                                  <p className="font-semibold text-gray-700">Forces:</p>
+                                  <ul className="text-gray-600">
+                                    {aiAnalysis.strengths.map((s, i) => (
+                                      <li key={i}>• {s}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            )}
+                            {aiAnalysis.weaknesses?.length > 0 && (
+                              <div className="flex items-start">
+                                <FontAwesomeIcon icon={faThumbsDown} className="text-red-600 mr-2 mt-0.5 flex-shrink-0" />
+                                <div>
+                                  <p className="font-semibold text-gray-700">À améliorer:</p>
+                                  <ul className="text-gray-600">
+                                    {aiAnalysis.weaknesses.map((w, i) => (
+                                      <li key={i}>• {w}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Recommandation */}
+                        {aiAnalysis.recommendations && (
+                          <div className="p-2 bg-white rounded border border-indigo-200">
+                            <p className="text-xs font-semibold text-gray-700 flex items-center mb-1">
+                              <FontAwesomeIcon icon={faLightbulb} className="text-yellow-600 mr-2" />
+                              Recommandation
+                            </p>
+                            <p className="text-xs text-gray-600">{aiAnalysis.recommendations}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => navigate(`/consultations/${consultation?.id}`)}
+                        className="flex-1 inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 text-sm font-medium text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-200"
+                      >
+                        <FontAwesomeIcon icon={faEye} className="mr-2" />
+                        Voir la consultation
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-12">
           <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i className="fas fa-inbox text-gray-400 text-3xl"></i>
+            <FontAwesomeIcon icon={faInbox} className="text-gray-400 text-3xl" />
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">Aucune demande trouvée</h3>
           <p className="text-gray-500 mb-6">
-            {demandes && demandes.length === 0 
+            {demandes.length === 0
               ? "Vous n'avez pas encore reçu de demandes de consultation."
               : "Aucune demande ne correspond à vos critères de recherche."
             }
           </p>
         </div>
       )}
-
-      {/* Modal d'action */}
-      {showActionModal && selectedDemande && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">
-                  <i className="fas fa-eye text-orange-600 mr-2"></i>
-                  Détails de la candidature
-                </h2>
-                <button 
-                  onClick={closeActionModal}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <i className="fas fa-times text-xl"></i>
-                </button>
-              </div>
-
-              <div className="mb-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-medium text-gray-900 mb-3">Détails de la candidature</h3>
-                  
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Candidat:</span>
-                      <span className="font-medium">{selectedDemande.candidateName}</span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Consultation:</span>
-                      <span className="font-medium">{selectedDemande.consultationTitle}</span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Type:</span>
-                      <span className="font-medium">{selectedDemande.consultationType}</span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Score IA:</span>
-                      <span className="font-medium">{selectedDemande.hasAIAnalysis ? formatScore(selectedDemande.aiCompatibilityScore) : 'N/A'}</span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Date de candidature:</span>
-                      <span className="font-medium">{formatDate(selectedDemande.createdAt)}</span>
-                    </div>
-                  </div>
-                    </div>
-                  </div>
-
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={closeActionModal}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={executeAction}
-                  disabled={processingAction}
-                  className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {processingAction ? (
-                    <>
-                      <i className="fas fa-spinner fa-spin mr-2"></i>
-                      Traitement...
-                    </>
-                  ) : (
-                    <>
-                      <i className="fas fa-eye mr-2"></i>
-                      Marquer comme vue
-                    </>
-                  )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-        )}
     </div>
   );
 };
 
-export default Demandes; 
+export default Demandes;

@@ -2,9 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProviderSettingService from '../../services/ProviderSettingService';
 import ProviderProfilService from '../../services/ProviderProfilService';
+import conversionService from '../../services/conversionService';
+import authService from '../../services/authService';
+import ConversionConfirmationModal from '../../components/ConversionConfirmationModal';
+import { useMessage } from '../../components/MessageManager';
 
 const Settings = () => {
   const navigate = useNavigate();
+  const { success, error: showError } = useMessage();
   
   // États pour les formulaires
   const [passwordData, setPasswordData] = useState({
@@ -31,10 +36,12 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState('password');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [sessions, setSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
+  const [showConversionModal, setShowConversionModal] = useState(false);
+  const [conversionLoading, setConversionLoading] = useState(false);
 
   // Charger le profil utilisateur au montage
   useEffect(() => {
@@ -115,7 +122,7 @@ const Settings = () => {
         new_password: passwordData.new_password
       });
 
-      setSuccess('Mot de passe modifié avec succès !');
+      setSuccessMessage('Mot de passe modifié avec succès !');
       setPasswordData({ old_password: '', new_password: '', confirm_password: '' });
       
       // Rediriger vers la page de connexion après 2 secondes
@@ -149,7 +156,7 @@ const Settings = () => {
       setError(null);
       
       await ProviderSettingService.requestPasswordReset(resetData);
-      setSuccess('Email de réinitialisation envoyé. Vérifiez votre boîte de réception.');
+      setSuccessMessage('Email de réinitialisation envoyé. Vérifiez votre boîte de réception.');
       setResetData({ email: '' });
       
     } catch (err) {
@@ -187,7 +194,7 @@ const Settings = () => {
         new_password: confirmResetData.new_password
       });
 
-      setSuccess('Mot de passe réinitialisé avec succès ! Vous pouvez maintenant vous connecter.');
+      setSuccessMessage('Mot de passe réinitialisé avec succès ! Vous pouvez maintenant vous connecter.');
       setConfirmResetData({ token: '', new_password: '', confirm_password: '' });
       
       // Rediriger vers la page de connexion après 2 secondes
@@ -220,7 +227,7 @@ const Settings = () => {
       setError(null);
       
       await ProviderSettingService.verifyEmail(emailData);
-      setSuccess('Email vérifié avec succès !');
+      setSuccessMessage('Email vérifié avec succès !');
       
       // Recharger le profil pour mettre à jour le statut
       setTimeout(() => {
@@ -245,7 +252,7 @@ const Settings = () => {
       setError(null);
       
       await ProviderSettingService.requestEmailVerification();
-      setSuccess('Email de vérification envoyé. Vérifiez votre boîte de réception.');
+      setSuccessMessage('Email de vérification envoyé. Vérifiez votre boîte de réception.');
       
     } catch (err) {
       setError('Erreur lors de l\'envoi de l\'email de vérification');
@@ -265,7 +272,7 @@ const Settings = () => {
       setError(null);
       
       const result = await ProviderSettingService.logoutAllSessions({ confirm: true });
-      setSuccess(result.message || 'Déconnexion de toutes les sessions réussie');
+      setSuccessMessage(result.message || 'Déconnexion de toutes les sessions réussie');
       
       // Rediriger vers la page de connexion si la session actuelle a été invalidée
       if (result.force_logout) {
@@ -297,7 +304,7 @@ const Settings = () => {
       setError(null);
       
       const result = await ProviderSettingService.forceLogout();
-      setSuccess(result.message || 'Déconnexion forcée réussie');
+      setSuccessMessage(result.message || 'Déconnexion forcée réussie');
       
       // Rediriger vers la page de connexion
       setTimeout(() => {
@@ -322,7 +329,7 @@ const Settings = () => {
       setError(null);
       
       await ProviderSettingService.invalidateSession(sessionId);
-      setSuccess('Session invalidée avec succès');
+      setSuccessMessage('Session invalidée avec succès');
       
       // Recharger les sessions
       setTimeout(() => {
@@ -349,6 +356,36 @@ const Settings = () => {
     return 'Informations non disponibles';
   };
 
+  const handleOpenConversionModal = () => {
+    setShowConversionModal(true);
+  };
+
+  const handleCloseConversionModal = () => {
+    setShowConversionModal(false);
+  };
+
+  const handleConfirmConversion = async () => {
+    try {
+      setConversionLoading(true);
+
+      // Appeler le service de conversion
+      await conversionService.becomeCandidate();
+
+      success('Succès', 'Conversion en candidat réussie');
+      
+      // Attendre 1 seconde avant de se déconnecter
+      setTimeout(async () => {
+        await authService.logout();
+        navigate('/login');
+      }, 1000);
+    } catch (err) {
+      showError('Erreur', err.response?.data?.message || 'Impossible de convertir en candidat');
+    } finally {
+      setConversionLoading(false);
+      setShowConversionModal(false);
+    }
+  };
+
   return (
     <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
       <div className="max-w-4xl mx-auto">
@@ -366,7 +403,7 @@ const Settings = () => {
                 <i className="fas fa-check-circle text-green-400"></i>
               </div>
               <div className="ml-3">
-                <p className="text-sm text-green-700">{success}</p>
+                <p className="text-sm text-green-700">{successMessage}</p>
               </div>
             </div>
           </div>
@@ -693,9 +730,39 @@ const Settings = () => {
             )}
           </div>
         </div>
+
+        {/* Conversion Section */}
+        <div className="bg-white rounded-lg p-6 shadow-sm mt-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <i className="fas fa-user-graduate mr-2 text-orange-600"></i>
+            Devenir Candidat
+          </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Transformez votre profil en candidat et commencez à postuler aux offres d'emploi.
+          </p>
+          <button
+            onClick={handleOpenConversionModal}
+            className="w-full bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition duration-200 flex items-center justify-center"
+          >
+            <i className="fas fa-arrow-right mr-2"></i>
+            Convertir en Candidat
+          </button>
+        </div>
       </div>
+
+      {/* Modal de conversion */}
+      <ConversionConfirmationModal
+        isOpen={showConversionModal}
+        title="Convertir en Candidat"
+        message={`Êtes-vous sûr de vouloir convertir votre compte en candidat ? Vous serez déconnecté et devrez vous reconnecter pour commencer.`}
+        confirmText="Convertir"
+        cancelText="Annuler"
+        isLoading={conversionLoading}
+        onConfirm={handleConfirmConversion}
+        onCancel={handleCloseConversionModal}
+      />
     </main>
   );
 };
 
-export default Settings; 
+export default Settings;

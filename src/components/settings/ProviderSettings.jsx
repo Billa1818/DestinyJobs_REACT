@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useMessage } from '../MessageManager';
 import { profileService } from '../../services/profileService';
+import conversionService from '../../services/conversionService';
+import authService from '../../services/authService';
 import BaseSettings from './BaseSettings';
+import ConversionConfirmationModal from '../ConversionConfirmationModal';
 
 const ProviderSettings = () => {
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const { success, error } = useMessage();
+  
+  const [showConversionModal, setShowConversionModal] = useState(false);
+  const [conversionLoading, setConversionLoading] = useState(false);
   
   const [providerProfile, setProviderProfile] = useState({
     providerType: 'individual', // individual ou organization
@@ -174,6 +182,36 @@ const ProviderSettings = () => {
     { key: 'saturday', label: 'Samedi' },
     { key: 'sunday', label: 'Dimanche' }
   ];
+
+  const handleOpenConversionModal = () => {
+    setShowConversionModal(true);
+  };
+
+  const handleCloseConversionModal = () => {
+    setShowConversionModal(false);
+  };
+
+  const handleConfirmConversion = async () => {
+    try {
+      setConversionLoading(true);
+
+      // Appeler le service de conversion
+      await conversionService.becomeCandidate();
+
+      success('Succès', 'Conversion en candidat réussie');
+      
+      // Attendre 1 seconde avant de se déconnecter
+      setTimeout(async () => {
+        await authService.logout();
+        navigate('/login');
+      }, 1000);
+    } catch (err) {
+      error('Erreur', err.response?.data?.message || 'Impossible de convertir en candidat');
+    } finally {
+      setConversionLoading(false);
+      setShowConversionModal(false);
+    }
+  };
 
   return (
     <BaseSettings userType="PRESTATAIRE">
@@ -426,6 +464,38 @@ const ProviderSettings = () => {
           </button>
         </div>
       </div>
+
+      {/* Section Conversion en Candidat */}
+      <div className="bg-white rounded-lg p-6 shadow-sm mt-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          <i className="fas fa-user-graduate mr-2 text-fuchsia-600"></i>
+          Devenir Candidat
+        </h2>
+
+        <p className="text-gray-700 mb-6">
+          Transformez votre profil de prestataire en profil de candidat et commencez à postuler aux offres d'emploi.
+        </p>
+
+        <button
+          onClick={handleOpenConversionModal}
+          className="bg-fuchsia-600 text-white px-6 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200 flex items-center"
+        >
+          <i className="fas fa-arrow-right mr-2"></i>
+          Convertir en Candidat
+        </button>
+      </div>
+
+      {/* Modal de conversion */}
+      <ConversionConfirmationModal
+        isOpen={showConversionModal}
+        title="Convertir en Candidat"
+        message={`Êtes-vous sûr de vouloir convertir votre compte en candidat ? Cette action transformera votre profil de prestataire en profil de candidat.`}
+        confirmText="Convertir"
+        cancelText="Annuler"
+        isLoading={conversionLoading}
+        onConfirm={handleConfirmConversion}
+        onCancel={handleCloseConversionModal}
+      />
     </BaseSettings>
   );
 };

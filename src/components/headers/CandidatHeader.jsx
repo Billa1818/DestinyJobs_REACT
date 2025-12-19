@@ -353,6 +353,9 @@ const CandidatHeader = () => {
                   <Link to="/candidat/editer-profil" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
                     <i className="fas fa-edit mr-2"></i>Modifier mon profil
                   </Link>
+                  <Link to="/candidat/favoris" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
+                    <i className="fas fa-heart mr-2"></i>Favoris
+                  </Link>
                   <div className="border-t border-gray-100"></div>
                   <Link to="/candidat/parametre" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
                     <i className="fas fa-cog mr-2"></i>Paramètres
@@ -424,6 +427,9 @@ const CandidatHeader = () => {
           </Link>
           <Link to="/candidat/editer-profil" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
             <i className="fas fa-edit mr-2"></i>Modifier mon profil
+          </Link>
+          <Link to="/candidat/favoris" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
+            <i className="fas fa-heart mr-2"></i>Favoris
           </Link>
           <Link to="/candidat/postuler" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
             <i className="fas fa-paper-plane mr-2"></i>Postuler

@@ -293,22 +293,7 @@ const PrestataireServices = () => {
                 </p>
                 </div>
                 
-              {/* Score de visibilité */}
-                        <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Score de visibilité
-                </label>
-                <div className="flex items-center">
-                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${profileData.visibilityLevel.bgColor} ${profileData.visibilityLevel.color}`}>
-                    <i className={`${profileData.visibilityLevel.icon} mr-1`}></i>
-                    {profileData.visibilityLevel.level}
-                          </div>
-                  <span className="ml-2 text-sm text-gray-600">
-                    ({profileData.visibilityScore}/100)
-                          </span>
-                        </div>
-                      </div>
-                      
+
               {/* Localisation */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
