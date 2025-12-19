@@ -18,11 +18,10 @@ const GestionFinancement = () => {
   // États pour les filtres et recherche
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
-  const [sector, setSector] = useState('');
-  const [target, setTarget] = useState('');
   
   // États pour la pagination
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   
@@ -33,10 +32,6 @@ const GestionFinancement = () => {
     fundingName: ''
   });
 
-  // États pour les données de référence
-  const [fundingSectors, setFundingSectors] = useState([]);
-  const [fundingTargets, setFundingTargets] = useState([]);
-
   // Vérifier l'authentification
   useEffect(() => {
     if (!isAuthenticated || user?.user_type !== 'RECRUTEUR') {
@@ -44,29 +39,10 @@ const GestionFinancement = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
-  // Charger les données au montage
+  // Charger les données au montage et lors des changements de page/filtre
   useEffect(() => {
-    loadReferenceData();
     loadMyFundingOffers();
-  }, []);
-
-  // Charger les données de référence
-  const loadReferenceData = async () => {
-    try {
-      const [
-        sectorsData,
-        targetsData
-      ] = await Promise.all([
-        consultationService.getFundingSectors(),
-        consultationService.getFundingTargets()
-      ]);
-
-      setFundingSectors(sectorsData);
-      setFundingTargets(targetsData);
-    } catch (error) {
-      console.error('Erreur lors du chargement des données de référence:', error);
-    }
-  };
+  }, [currentPage, search, status]);
 
   // Charger mes offres de financement
   const loadMyFundingOffers = async () => {
@@ -74,40 +50,58 @@ const GestionFinancement = () => {
       setLoading(true);
       setError(null);
       
-      const response = await consultationService.getMyFundingOffers();
+      // Construire les paramètres de recherche
+      const params = {
+        page: currentPage,
+        page_size: pageSize
+      };
       
-      if (response.results) {
+      if (search) {
+        params.search = search;
+      }
+      
+      if (status) {
+        params.status = status;
+      }
+      
+      const response = await consultationService.getMyFundingOffers(params);
+      
+      if (response && response.results) {
         setFundings(response.results);
         setTotalCount(response.count || 0);
-        setTotalPages(Math.ceil((response.count || 0) / 10)); // Supposons 10 par page
-      } else {
+        setTotalPages(Math.ceil((response.count || 0) / pageSize));
+      } else if (Array.isArray(response)) {
         setFundings(response);
         setTotalCount(response.length || 0);
         setTotalPages(1);
       }
     } catch (error) {
       setError(error.message || 'Erreur lors du chargement des offres');
+      console.error('Erreur chargement offres:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Filtrer les offres
+  // Filtrer les offres localement
   const filteredFundings = fundings.filter((funding) => {
     const matchesSearch = !search || 
       funding.title?.toLowerCase().includes(search.toLowerCase()) ||
-      funding.description?.toLowerCase().includes(search.toLowerCase());
+      funding.objective?.toLowerCase().includes(search.toLowerCase());
     
-    // Gestion spéciale pour le statut "expiré" basé sur la date limite
+    // Gestion du filtre statut
     let matchesStatus = true;
     if (status) {
-      if (status === 'DEADLINE_EXPIRED') {
+      if (status === 'EXPIRED') {
+        // Filtrer les offres expirées
+        matchesStatus = funding.is_expired === true;
+      } else if (status === 'DEADLINE_EXPIRED') {
         // Filtrer les offres avec date limite expirée
-        matchesStatus = funding.application_deadline && new Date(funding.application_deadline) < new Date();
+        matchesStatus = funding.date_limite && new Date(funding.date_limite) < new Date();
       } else if (status === 'DEADLINE_SOON') {
         // Filtrer les offres avec date limite proche (≤30 jours)
-        if (funding.application_deadline) {
-          const deadline = new Date(funding.application_deadline);
+        if (funding.date_limite) {
+          const deadline = new Date(funding.date_limite);
           const now = new Date();
           const diffDays = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
           matchesStatus = diffDays <= 30 && diffDays > 0;
@@ -120,10 +114,7 @@ const GestionFinancement = () => {
       }
     }
     
-    const matchesSector = !sector || funding.sector?.id === parseInt(sector);
-    const matchesTarget = !target || funding.target?.id === parseInt(target);
-    
-    return matchesSearch && matchesStatus && matchesSector && matchesTarget;
+    return matchesSearch && matchesStatus;
   });
 
   // Gérer la suppression
@@ -150,9 +141,9 @@ const GestionFinancement = () => {
         
         // Mettre à jour la liste locale
         setFundings(prev => prev.filter(f => f.id !== deleteModal.fundingId));
-        setTotalCount(prev => prev - 1);
+        setTotalCount(prev => Math.max(0, prev - 1));
         
-      closeDeleteModal();
+        closeDeleteModal();
       } catch (error) {
         setError(error.message || 'Erreur lors de la suppression');
       }
@@ -166,19 +157,23 @@ const GestionFinancement = () => {
 
   // Gérer l'aperçu
   const handleApercu = (id) => {
-    // Naviguer vers l'aperçu dans le même onglet
     navigate(`/financements/${id}`);
   };
 
   // Obtenir le texte du statut
   const getStatusText = (funding) => {
     // Vérifier d'abord si la date limite est expirée
-    if (funding.application_deadline) {
-      const deadline = new Date(funding.application_deadline);
+    if (funding.date_limite) {
+      const deadline = new Date(funding.date_limite);
       const now = new Date();
       if (deadline < now) {
         return 'Limite expirée';
       }
+    }
+    
+    // Vérifier si l'offre est expirée
+    if (funding.is_expired) {
+      return 'Expirée';
     }
     
     // Sinon, utiliser le statut normal
@@ -193,22 +188,25 @@ const GestionFinancement = () => {
         return 'Publiée';
       case 'REJECTED':
         return 'Refusée';
-      case 'EXPIRED':
-        return 'Expirée';
       default:
-        return funding.status;
+        return funding.status || 'Statut inconnu';
     }
   };
 
   // Obtenir la couleur du statut
   const getStatusColor = (funding) => {
     // Vérifier d'abord si la date limite est expirée
-    if (funding.application_deadline) {
-      const deadline = new Date(funding.application_deadline);
+    if (funding.date_limite) {
+      const deadline = new Date(funding.date_limite);
       const now = new Date();
       if (deadline < now) {
-        return 'bg-red-600 text-white'; // Rouge plus foncé pour la limite expirée
+        return 'bg-red-600 text-white';
       }
+    }
+    
+    // Vérifier si l'offre est expirée
+    if (funding.is_expired) {
+      return 'bg-red-100 text-red-800';
     }
     
     // Sinon, utiliser la couleur du statut normal
@@ -223,8 +221,6 @@ const GestionFinancement = () => {
         return 'bg-blue-100 text-blue-800';
       case 'REJECTED':
         return 'bg-red-100 text-red-800';
-      case 'EXPIRED':
-        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -235,7 +231,7 @@ const GestionFinancement = () => {
     if (!amount) return 'Non précisé';
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
-      currency: 'XOF',
+      currency: 'EUR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount);
@@ -260,7 +256,7 @@ const GestionFinancement = () => {
         </div>
       </div>
     );
-    }
+  }
 
   return (
     <div className="w-full">
@@ -312,16 +308,19 @@ const GestionFinancement = () => {
 
       {/* Filters and Search */}
       <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm mb-4 sm:mb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2">
             <div className="relative">
               <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
               <input
                 type="text"
-                placeholder="Rechercher un financement..."
+                placeholder="Rechercher par titre ou objectif..."
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-fuchsia-600 focus:border-fuchsia-600"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
               />
             </div>
           </div>
@@ -329,44 +328,20 @@ const GestionFinancement = () => {
             <select
               className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-fuchsia-600 focus:border-fuchsia-600"
               value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                setCurrentPage(1);
+              }}
             >
               <option value="">Tous les statuts</option>
               <option value="DRAFT">Brouillons</option>
               <option value="PENDING_APPROVAL">En attente d'approbation</option>
               <option value="APPROVED">Approuvées</option>
+              <option value="PUBLISHED">Publiées</option>
               <option value="REJECTED">Refusées</option>
               <option value="EXPIRED">Expirées</option>
               <option value="DEADLINE_EXPIRED">Limite expirée</option>
               <option value="DEADLINE_SOON">Limite proche (≤30j)</option>
-            </select>
-          </div>
-          <div>
-            <select
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-fuchsia-600 focus:border-fuchsia-600"
-              value={sector}
-              onChange={(e) => setSector(e.target.value)}
-            >
-              <option value="">Tous les secteurs</option>
-              {fundingSectors.map(sectorItem => (
-                <option key={sectorItem.id} value={sectorItem.id}>
-                  {sectorItem.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <select
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-fuchsia-600 focus:border-fuchsia-600"
-              value={target}
-              onChange={(e) => setTarget(e.target.value)}
-            >
-              <option value="">Tous les publics</option>
-              {fundingTargets.map(targetItem => (
-                <option key={targetItem.id} value={targetItem.id}>
-                  {targetItem.name}
-                </option>
-              ))}
             </select>
           </div>
         </div>
@@ -382,28 +357,31 @@ const GestionFinancement = () => {
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">{funding.title}</h3>
                     <div className="flex flex-wrap gap-2 mb-2">
-                      {funding.sector && (
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-                          {funding.sector.name}
-                      </span>
+                      {funding.organization_name && (
+                        <span className="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs">
+                          {funding.organization_name}
+                        </span>
                       )}
-                      {funding.target && (
-                      <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
-                          {funding.target.name}
-                      </span>
+                      {funding.montant && (
+                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                          {formatAmount(funding.montant)}
+                        </span>
                       )}
-                      <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                        {formatAmount(funding.min_amount)} - {formatAmount(funding.max_amount)}
-                      </span>
-                      {funding.annual_interest_rate && (
-                      <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs">
-                          {funding.annual_interest_rate}% taux
-                      </span>
+                      {funding.country && (
+                        <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs">
+                          <i className="fas fa-map-marker-alt mr-1"></i>
+                          {funding.country.name}
+                        </span>
+                      )}
+                      {funding.region && (
+                        <span className="px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full text-xs">
+                          {funding.region.name}
+                        </span>
                       )}
                     </div>
-                    {funding.description && (
+                    {funding.objective && (
                       <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                        {funding.description}
+                        {funding.objective}
                       </p>
                     )}
                   </div>
@@ -418,27 +396,15 @@ const GestionFinancement = () => {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-fuchsia-600">
-                      {funding.applications_count || 0}
-                    </div>
-                    <div className="text-xs text-gray-500">Candidatures</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">
                       {funding.views_count || 0}
                     </div>
                     <div className="text-xs text-gray-500">Vues</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">
-                      {funding.repayment_duration || 'N/A'}
+                    <div className="text-2xl font-bold text-blue-600">
+                      {funding.project_duration || 'N/A'}
                     </div>
-                    <div className="text-xs text-gray-500">Durée remboursement</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-purple-600">
-                      {funding.geographic_zone || 'Toutes zones'}
-                    </div>
-                    <div className="text-xs text-gray-500">Zone géographique</div>
+                    <div className="text-xs text-gray-500">Durée projet</div>
                   </div>
                 </div>
                 
@@ -447,10 +413,10 @@ const GestionFinancement = () => {
                     <i className="fas fa-calendar-plus mr-1"></i>
                     Créé le {formatDate(funding.created_at)}
                   </span>
-                  {funding.application_deadline && (
+                  {funding.date_limite && (
                     <span>
                       <i className="fas fa-calendar-times mr-1"></i>
-                      Expire le {formatDate(funding.application_deadline)}
+                      Expire le {formatDate(funding.date_limite)}
                     </span>
                   )}
                   {funding.updated_at && funding.updated_at !== funding.created_at && (
@@ -466,16 +432,16 @@ const GestionFinancement = () => {
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 mt-6 pt-4 border-t border-gray-200">
               <Link 
-                to={`/recruteur/postulations-financements?financement=${funding.id}`}
-                className="flex items-center px-4 py-2 bg-fuchsia-600 text-white rounded-md hover:bg-fuchsia-700 transition duration-200"
+                to={`/recruteur/postulations-financements/${funding.id}`}
+                className="flex items-center px-4 py-2 bg-fuchsia-600 text-white rounded-md hover:bg-fuchsia-700 transition duration-200 text-sm"
               >
                 <i className="fas fa-users mr-2"></i>
-                Voir candidatures ({funding.applications_count || 0})
+                Voir candidatures
               </Link>
-              
+
               <button 
                 onClick={() => handleModifier(funding.id)}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200"
+                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200 text-sm"
               >
                 <i className="fas fa-edit mr-2"></i>
                 Modifier
@@ -483,7 +449,7 @@ const GestionFinancement = () => {
               
               <button 
                 onClick={() => handleApercu(funding.id)}
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-200"
+                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-200 text-sm"
               >
                 <i className="fas fa-eye mr-2"></i>
                 Aperçu
@@ -491,7 +457,7 @@ const GestionFinancement = () => {
               
               <button 
                 onClick={() => openDeleteModal(funding.id, funding.title)}
-                className="flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200"
+                className="flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200 text-sm"
               >
                 <i className="fas fa-trash mr-2"></i>
                 Supprimer
@@ -527,7 +493,7 @@ const GestionFinancement = () => {
           </p>
           <Link 
             to="/recruteur/creer-financement"
-            className="px-4 py-2 bg-fuchsia-600 text-white rounded-md hover:bg-fuchsia-700 transition duration-200"
+            className="px-4 py-2 bg-fuchsia-600 text-white rounded-md hover:bg-fuchsia-700 transition duration-200 inline-block"
           >
             {fundings.length === 0 ? 'Créer votre premier financement' : 'Créer un nouveau financement'}
           </Link>

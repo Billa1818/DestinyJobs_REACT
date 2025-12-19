@@ -136,7 +136,7 @@ const PrestataireHeader = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden xl:flex space-x-4 2xl:space-x-6">
+          <nav className="hidden lg:flex space-x-4 2xl:space-x-6">
             <Link to="/prestataire" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
               <i className="fas fa-tachometer-alt mr-2"></i>
               Tableau de bord
@@ -236,7 +236,7 @@ const PrestataireHeader = () => {
             </div>
           </div>
 
-          {/* Mobile User Menu */}
+          {/* Mobile User Menu - Ordre: Notification, Profil, Burger */}
           <div className="flex lg:hidden items-center space-x-1 sm:space-x-2">
             {/* Mobile Notifications */}
             <Link to="/prestataire/notifications" className="text-gray-600 hover:text-orange-600 p-2 rounded-full transition duration-200 relative touch-target">
@@ -266,10 +266,8 @@ const PrestataireHeader = () => {
               </div>
               <i className="fas fa-chevron-down text-xs"></i>
             </button>
-          </div>
 
-          {/* Mobile menu button */}
-          <div className="xl:hidden flex-shrink-0 ml-1 sm:ml-2">
+            {/* Mobile menu button */}
             <button type="button" className="text-gray-700 hover:text-orange-600 focus:outline-none focus:text-orange-600 p-2 touch-target" onClick={toggleMobileMenu}>
               <i className="fas fa-bars text-base sm:text-lg"></i>
             </button>
@@ -278,7 +276,8 @@ const PrestataireHeader = () => {
       </div>
 
       {/* Mobile User Menu */}
-      <div className={`lg:hidden mobile-menu-slide bg-white border-t border-gray-200 ${userMenuOpen ? 'show' : ''}`}>
+      {userMenuOpen && (
+      <div className="lg:hidden bg-white border-t border-gray-200 animate-in slide-in-from-top-1 duration-200">
         <div className="px-2 py-2 space-y-1">
           <Link to="/prestataire/profile" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
             <i className="fas fa-user mr-2"></i>Mon profil
@@ -296,11 +295,13 @@ const PrestataireHeader = () => {
           >
             <i className="fas fa-sign-out-alt mr-2"></i>Déconnexion
           </button>
-        </div>
-      </div>
+          </div>
+          </div>
+          )}
 
-      {/* Mobile menu */}
-      <div className={`xl:hidden mobile-menu-slide bg-white border-t border-gray-200 ${mobileMenuOpen ? 'show' : ''}`}>
+          {/* Mobile menu */}
+          {mobileMenuOpen && (
+          <div className="lg:hidden bg-white border-t border-gray-200 animate-in slide-in-from-top-1 duration-200">
         <div className="px-2 py-2 space-y-1">
           <Link to="/prestataire" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
             <i className="fas fa-tachometer-alt mr-2"></i>
@@ -314,19 +315,21 @@ const PrestataireHeader = () => {
                 <i className="fas fa-comments mr-2"></i>
                 Consultations
               </span>
-              <i className={`fas fa-chevron-down text-xs transform transition-transform ${mobileConsultationsOpen ? 'rotate-180' : ''}`}></i>
+              <i className={`fas fa-chevron-down text-xs transform transition-transform duration-300 ${mobileConsultationsOpen ? 'rotate-180' : ''}`}></i>
             </button>
-            <div className={`mobile-menu-slide ml-4 ${mobileConsultationsOpen ? 'show' : ''}`}>
-              <Link to="/consultations" className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
-                <i className="fas fa-search mr-2"></i>Parcourir
-              </Link>
-              <Link to="/prestataire/demandes" className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
-                <i className="fas fa-file-alt mr-2"></i>Mes candidatures
-              </Link>
-              <Link to="/prestataire/favoris" className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
-                <i className="fas fa-heart mr-2"></i>Favoris
-              </Link>
-            </div>
+            {mobileConsultationsOpen && (
+              <div className="ml-4 space-y-0">
+                <Link to="/consultations" onClick={() => setMobileConsultationsOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+                  <i className="fas fa-search mr-2"></i>Parcourir
+                </Link>
+                <Link to="/prestataire/demandes" onClick={() => setMobileConsultationsOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+                  <i className="fas fa-file-alt mr-2"></i>Mes candidatures
+                </Link>
+                <Link to="/prestataire/favoris" onClick={() => setMobileConsultationsOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+                  <i className="fas fa-heart mr-2"></i>Favoris
+                </Link>
+              </div>
+            )}
           </div>
           
           <Link to="/prestataire/services" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
@@ -347,11 +350,12 @@ const PrestataireHeader = () => {
           <Link to="/blog" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
             <i className="fas fa-newspaper mr-2"></i>
             Blog
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-};
-
-export default PrestataireHeader;
+            </Link>
+            </div>
+            </div>
+            )}
+            </header>
+            );
+            };
+            
+            export default PrestataireHeader;

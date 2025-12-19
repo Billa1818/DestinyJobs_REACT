@@ -26,17 +26,9 @@ const Consultations = () => {
 
   const [apiFilters, setApiFilters] = useState({
     query: '',
-    consultation_type: '',
-    expertise_sector: '',
-    delivery_mode: '',
-    pricing_type: '',
-    price_min: '',
-    price_max: '',
-    client_type: '',
-    is_urgent: null,
     country: '',
     region: '',
-    sort_by: 'post_date',
+    sort_by: 'created_at',
     sort_order: 'desc'
   });
 
@@ -76,23 +68,21 @@ const Consultations = () => {
     return {
       id: apiConsultation.id,
       title: apiConsultation.title || 'Titre non spécifié',
-      client: apiConsultation.recruiter?.company_name || 'Entreprise non spécifiée',
-      location: apiConsultation.recruiter?.region?.name || apiConsultation.recruiter?.country?.name || null,
-      category: apiConsultation.consultation_type?.name || 'Catégorie non spécifiée',
-      budget: apiConsultation.price ? `${apiConsultation.price} FCFA` : 'Prix non spécifié',
-      duration: apiConsultation.estimated_duration || 'Durée non spécifiée',
-      experience: apiConsultation.required_experience_years ? `${apiConsultation.required_experience_years}+ ans` : 'Expérience non spécifiée',
+      client: apiConsultation.company_details?.company_name || 'Entreprise non spécifiée',
+      location: apiConsultation.region?.name || apiConsultation.country?.name || null,
+      category: 'Consultation',
+      status: apiConsultation.status || 'Statut non spécifié',
+      views: apiConsultation.views_count || 0,
       postedDate: apiConsultation.created_at ? new Date(apiConsultation.created_at).toLocaleDateString('fr-FR') : 'Date non spécifiée',
-      deadline: apiConsultation.application_deadline ? new Date(apiConsultation.application_deadline).toLocaleDateString('fr-FR') : 'Date limite non spécifiée',
       description: apiConsultation.description || 'Description non disponible',
-      logo: apiConsultation.recruiter?.logo ? 
-        (apiConsultation.recruiter.logo.startsWith('http') ? apiConsultation.recruiter.logo : `http://localhost:8000${apiConsultation.recruiter.logo}`) : 
+      logo: apiConsultation.company_logo ? 
+        (apiConsultation.company_logo.startsWith('http') ? apiConsultation.company_logo : `http://localhost:8000${apiConsultation.company_logo}`) : 
         null,
-      deliveryMode: apiConsultation.delivery_mode || 'Mode non spécifié',
-      pricingType: apiConsultation.pricing_type || 'Tarification non spécifiée',
-      isUrgent: apiConsultation.is_urgent || false,
-      clientType: apiConsultation.client_type || 'Type de client non spécifié',
-      expertiseSector: apiConsultation.expertise_sector || 'Secteur non spécifié'
+      recruiterName: apiConsultation.recruiter?.first_name && apiConsultation.recruiter?.last_name 
+        ? `${apiConsultation.recruiter.first_name} ${apiConsultation.recruiter.last_name}`
+        : 'Recruteur',
+      country: apiConsultation.country,
+      region: apiConsultation.region
     };
   };
 
@@ -388,27 +378,7 @@ const Consultations = () => {
                             {consultation.description}
                           </p>
                           
-                          {/* Tags Row */}
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            <span className="bg-fuchsia-50 text-fuchsia-700 px-2 py-1 rounded-lg text-xs font-medium border border-fuchsia-200">
-                              {consultation.budget}
-                            </span>
-                            <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-lg text-xs font-medium border border-blue-200">
-                              {consultation.duration}
-                            </span>
-                            <span className="bg-green-50 text-green-700 px-2 py-1 rounded-lg text-xs font-medium border border-green-200">
-                              {consultation.experience}
-                            </span>
-                            <span className="bg-orange-50 text-orange-700 px-2 py-1 rounded-lg text-xs font-medium border border-orange-200">
-                              {consultation.category}
-                            </span>
-                            {consultation.isUrgent && (
-                              <span className="bg-red-50 text-red-700 px-2 py-1 rounded-lg text-xs font-medium border border-red-200">
-                                <i className="fas fa-exclamation-triangle mr-1"></i>
-                                Urgent
-                              </span>
-                            )}
-                          </div>
+
 
                           {/* Meta Information */}
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
@@ -420,21 +390,15 @@ const Consultations = () => {
                               </span>
                             </div>
 
-                            {/* Right Side - Deadline & Action */}
-                            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-                              {consultation.deadline && (
-                                <span className="text-xs text-red-600 font-medium flex items-center">
-                                  <i className="fas fa-clock mr-1"></i>
-                                  Limite : {consultation.deadline}
-                                </span>
-                              )}
-                              <Link 
-                                to={`/consultations/${consultation.id}`}
-                                className="bg-fuchsia-600 text-white px-4 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200 text-sm font-medium text-center"
-                              >
-                                Voir les détails
-                              </Link>
-                            </div>
+                            {/* Right Side - Action */}
+                             <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                               <Link 
+                                 to={`/consultations/${consultation.id}`}
+                                 className="bg-fuchsia-600 text-white px-4 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200 text-sm font-medium text-center"
+                               >
+                                 Voir les détails
+                               </Link>
+                             </div>
                           </div>
                         </div>
                       </div>

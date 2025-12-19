@@ -70,57 +70,92 @@ const Financements = () => {
     }
   };
 
+  // Fonction helper pour obtenir le logo avec priorité
+  const getLogoWithPriority = (apiFinancement) => {
+    if (apiFinancement.is_admin_only) {
+      // Priorité: admin_company_logo > company_logo > null
+      if (apiFinancement.admin_company_logo) {
+        return apiFinancement.admin_company_logo.startsWith('http') 
+          ? apiFinancement.admin_company_logo 
+          : `http://localhost:8000${apiFinancement.admin_company_logo}`;
+      }
+      if (apiFinancement.company_logo) {
+        return apiFinancement.company_logo.startsWith('http') 
+          ? apiFinancement.company_logo 
+          : `http://localhost:8000${apiFinancement.company_logo}`;
+      }
+    } else {
+      // Priorité: company_logo > admin_company_logo > null
+      if (apiFinancement.company_logo) {
+        return apiFinancement.company_logo.startsWith('http') 
+          ? apiFinancement.company_logo 
+          : `http://localhost:8000${apiFinancement.company_logo}`;
+      }
+      if (apiFinancement.admin_company_logo) {
+        return apiFinancement.admin_company_logo.startsWith('http') 
+          ? apiFinancement.admin_company_logo 
+          : `http://localhost:8000${apiFinancement.admin_company_logo}`;
+      }
+    }
+    return null;
+  };
+
   // Formater les données de l'API
   const formatFinancementData = (apiFinancement) => {
+    // Formater le montant
+    let amountDisplay = 'Montant non spécifié';
+    if (apiFinancement.montant) {
+      const amount = parseFloat(apiFinancement.montant);
+      amountDisplay = `${amount.toLocaleString('fr-FR', { minimumFractionDigits: 0 })} FCFA`;
+    }
+
+    // Formater la deadline
+    let deadlineDisplay = null;
+    if (apiFinancement.date_limite) {
+      deadlineDisplay = new Date(apiFinancement.date_limite).toLocaleDateString('fr-FR');
+    }
+
+    // Obtenir le logo avec priorité
+    const logo = getLogoWithPriority(apiFinancement);
+
     return {
       id: apiFinancement.id,
       title: apiFinancement.title || 'Titre non disponible',
-      institution: apiFinancement.recruiter?.company_name || 'Institution non spécifiée',
-      location: apiFinancement.geographic_zone || apiFinancement.recruiter?.region?.name || 'Localisation non spécifiée',
-      type: apiFinancement.target?.name || 'Type non spécifié',
-      amount: apiFinancement.min_amount && apiFinancement.max_amount 
-        ? `${apiFinancement.min_amount.toLocaleString()} - ${apiFinancement.max_amount.toLocaleString()} FCFA`
-        : apiFinancement.min_amount 
-          ? `À partir de ${apiFinancement.min_amount.toLocaleString()} FCFA`
-          : apiFinancement.max_amount
-            ? `Jusqu'à ${apiFinancement.max_amount.toLocaleString()} FCFA`
-            : 'Montant non spécifié',
-      duration: apiFinancement.repayment_duration ? `${apiFinancement.repayment_duration} mois` : 'Durée non spécifiée',
+      institution: apiFinancement.organization_name || 'Institution non spécifiée',
+      location: apiFinancement.region?.name || apiFinancement.country?.name || 'Localisation non spécifiée',
+      type: 'Financement',
+      amount: amountDisplay,
+      duration: apiFinancement.project_duration || 'Durée non spécifiée',
       postedDate: apiFinancement.post_date ? new Date(apiFinancement.post_date).toLocaleDateString('fr-FR') : null,
-      deadline: apiFinancement.application_deadline 
-        ? new Date(apiFinancement.application_deadline).toLocaleDateString('fr-FR') 
-        : null,
-      description: apiFinancement.description || 'Description non disponible',
-      logo: apiFinancement.recruiter?.logo 
-        ? (apiFinancement.recruiter.logo.startsWith('http') 
-            ? apiFinancement.recruiter.logo 
-            : `http://localhost:8000${apiFinancement.recruiter.logo}`)
-        : "https://via.placeholder.com/60x60",
+      deadline: deadlineDisplay,
+      description: apiFinancement.objective || 'Description non disponible',
+      logo: logo || "https://via.placeholder.com/60x60",
       
       // Attributs supplémentaires de l'API
-      sector: apiFinancement.sector?.name || null,
-      target: apiFinancement.target?.name || null,
-      conditions: apiFinancement.conditions || null,
-      requirements: apiFinancement.requirements || null,
-      documents_required: apiFinancement.documents_required || null,
-      interest_rate: apiFinancement.interest_rate || null,
-      grace_period: apiFinancement.grace_period || null,
-      guarantee_required: apiFinancement.guarantee_required || null,
-      is_urgent: apiFinancement.is_urgent || false,
       status: apiFinancement.status || null,
       views_count: apiFinancement.views_count || 0,
       applications_count: apiFinancement.applications_count || 0,
+      is_expired: apiFinancement.is_expired || false,
+      is_admin_only: apiFinancement.is_admin_only || false,
       
       // Informations du recruteur
       recruiter_info: {
-        company_name: apiFinancement.recruiter?.company_name || null,
-        company_description: apiFinancement.recruiter?.description || null,
-        company_sector: apiFinancement.recruiter?.sector || null,
-        company_size: apiFinancement.recruiter?.company_size || null,
-        website: apiFinancement.recruiter?.website || null,
-        country: apiFinancement.recruiter?.country?.name || null,
-        region: apiFinancement.recruiter?.region?.name || null
-      }
+        username: apiFinancement.recruiter?.username || null,
+        email: apiFinancement.recruiter?.email || null,
+        first_name: apiFinancement.recruiter?.first_name || null,
+        last_name: apiFinancement.recruiter?.last_name || null,
+        phone: apiFinancement.recruiter?.phone || null,
+        user_type: apiFinancement.recruiter?.user_type || null
+      },
+      
+      // Détails du financement
+      eligibility_criteria: apiFinancement.eligibility_criteria || null,
+      countries_covered: apiFinancement.countries_covered || null,
+      contact_email: apiFinancement.contact_email || null,
+      contact_info: apiFinancement.contact_info || null,
+      company_website_url: apiFinancement.company_website_url || null,
+      external_application_url: apiFinancement.external_application_url || null,
+      is_external_application: apiFinancement.is_external_application || false
     };
   };
 
@@ -213,10 +248,9 @@ const Financements = () => {
     const matchesSearch = financement.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          financement.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          financement.institution.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = !selectedType || financement.type === selectedType;
-    const matchesLocation = !selectedLocation || financement.location.includes(selectedLocation);
+    const matchesLocation = !selectedLocation || financement.location.toLowerCase().includes(selectedLocation.toLowerCase());
     
-    return matchesSearch && matchesType && matchesLocation;
+    return matchesSearch && matchesLocation;
   });
 
   return (
@@ -408,18 +442,12 @@ const Financements = () => {
                             </Link>
                           </h3>
                           
-                          {/* Institution & Location */}
+                          {/* Institution */}
                           <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-1 sm:space-y-0 mb-3">
                             <span className="flex items-center text-sm text-gray-600">
                               <i className="fas fa-building mr-2 text-fuchsia-500"></i>
                               {financement.institution}
                             </span>
-                            {financement.location && (
-                              <span className="flex items-center text-sm text-gray-600">
-                                <i className="fas fa-map-marker-alt mr-2 text-blue-500"></i>
-                                {financement.location}
-                              </span>
-                            )}
                           </div>
                           
                           {/* Financement Description - Une seule ligne */}
@@ -435,15 +463,6 @@ const Financements = () => {
                             <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-lg text-xs font-medium border border-blue-200">
                               {financement.duration}
                             </span>
-                            <span className="bg-green-50 text-green-700 px-2 py-1 rounded-lg text-xs font-medium border border-green-200">
-                              {financement.type}
-                            </span>
-                            {financement.is_urgent && (
-                              <span className="bg-red-50 text-red-700 px-2 py-1 rounded-lg text-xs font-medium border border-red-200">
-                                <i className="fas fa-exclamation-triangle mr-1"></i>
-                                Urgent
-                              </span>
-                            )}
                           </div>
 
                           {/* Meta Information */}

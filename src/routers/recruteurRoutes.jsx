@@ -7,7 +7,7 @@ import ProfilPublic from '../pages/recruteur/ProfilPublic';
 import CreeOffre from '../pages/recruteur/CreeOffre';
 import GestionOffre from '../pages/recruteur/GestionOffre';
 import PostulationOffre from '../pages/recruteur/PostulationOffre';
-import CreeFinacement from '../pages/recruteur/CreeFinacement';
+import CreeFinancement from '../pages/recruteur/CreeFinancement';
 import GestionFinancement from '../pages/recruteur/GestionFinancement';
 import PostulationFinancement from '../pages/recruteur/PostulationFinancement';
 import CreeBourse from '../pages/recruteur/CreeBourse';
@@ -35,7 +35,7 @@ const recruteurRoutes = [
   { path: 'postulations-offres', element: <PostulationOffre /> },
   
   // Gestion des financements
-  { path: 'creer-financement', element: <CreeFinacement /> },
+  { path: 'creer-financement', element: <CreeFinancement /> },
   { path: 'gestion-financements', element: <GestionFinancement /> },
   { path: 'postulations-financements', element: <PostulationFinancement /> },
   { path: 'postulations-financements/:financementId', element: <PostulationFinancement /> },

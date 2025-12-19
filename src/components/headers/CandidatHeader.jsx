@@ -212,7 +212,7 @@ const CandidatHeader = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden xl:flex space-x-4 2xl:space-x-6">
+          <nav className="hidden lg:flex space-x-4 2xl:space-x-6">
             {/* Tableau de bord */}
             <Link 
               to="/candidat" 
@@ -369,7 +369,7 @@ const CandidatHeader = () => {
             </div>
           </div>
 
-          {/* Mobile User Menu */}
+          {/* Mobile User Menu - Ordre: Notification, Profil, Burger */}
           <div className="flex lg:hidden items-center space-x-1 sm:space-x-2">
             {/* Mobile Notifications */}
             <Link to="/candidat/notification">
@@ -391,10 +391,8 @@ const CandidatHeader = () => {
               </span>
               <i className="fas fa-chevron-down text-xs"></i>
             </button>
-          </div>
 
-          {/* Mobile menu button */}
-          <div className="xl:hidden flex-shrink-0 ml-1 sm:ml-2">
+            {/* Mobile menu button */}
             <button type="button" className="text-gray-700 hover:text-fuchsia-600 focus:outline-none focus:text-fuchsia-600 p-2 touch-target" onClick={toggleMobileMenu}>
               <i className="fas fa-bars text-base sm:text-lg"></i>
             </button>
@@ -403,7 +401,8 @@ const CandidatHeader = () => {
       </div>
 
       {/* Mobile User Menu */}
-      <div className={`lg:hidden mobile-menu-slide bg-white border-t border-gray-200 ${userMenuOpen ? 'show' : ''}`}>
+      {userMenuOpen && (
+      <div className="lg:hidden bg-white border-t border-gray-200 animate-in slide-in-from-top-1 duration-200">
         <div className="px-2 py-2 space-y-1">
           {/* User Info Header */}
           <div className="px-3 py-3 bg-gray-50 rounded-md mb-2">
@@ -439,10 +438,12 @@ const CandidatHeader = () => {
             <i className="fas fa-sign-out-alt mr-2"></i>Déconnexion
           </button>
         </div>
-      </div>
+        </div>
+        )}
 
-      {/* Mobile menu */}
-      <div className={`xl:hidden mobile-menu-slide bg-white border-t border-gray-200 ${mobileMenuOpen ? 'show' : ''}`}>
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+        <div className="lg:hidden bg-white border-t border-gray-200 animate-in slide-in-from-top-1 duration-200">
         <div className="px-2 py-2 space-y-1">
           {/* Tableau de bord */}
           <Link to="/candidat" className={`flex items-center px-3 py-2 text-sm rounded-md ${
@@ -462,16 +463,18 @@ const CandidatHeader = () => {
                 : 'text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50'
             }`}>
               <span><i className="fas fa-briefcase mr-2"></i>Emplois</span>
-              <i className={`fas fa-chevron-down text-xs transform transition-transform ${mobileOffersOpen ? 'rotate-180' : ''}`}></i>
+              <i className={`fas fa-chevron-down text-xs transform transition-transform duration-300 ${mobileOffersOpen ? 'rotate-180' : ''}`}></i>
             </button>
-            <div className={`mobile-menu-slide ml-4 ${mobileOffersOpen ? 'show' : ''}`}>
-              <Link to="/candidat/emploi-candidature" className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-                <i className="fas fa-clock mr-2"></i>Mes candidatures emploi
-              </Link>
-              <Link to="/jobs" className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-                <i className="fas fa-external-link-alt mr-2"></i>Toutes les offres
-              </Link>
-            </div>
+            {mobileOffersOpen && (
+              <div className="ml-4 space-y-0">
+                <Link to="/candidat/emploi-candidature" onClick={() => setMobileOffersOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
+                  <i className="fas fa-clock mr-2"></i>Mes candidatures emploi
+                </Link>
+                <Link to="/jobs" onClick={() => setMobileOffersOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
+                  <i className="fas fa-external-link-alt mr-2"></i>Toutes les offres
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Financements */}
@@ -482,16 +485,18 @@ const CandidatHeader = () => {
                 : 'text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50'
             }`}>
               <span><i className="fas fa-money-bill-wave mr-2"></i>Financements de projets</span>
-              <i className={`fas fa-chevron-down text-xs transform transition-transform ${mobileOpportunitiesOpen ? 'rotate-180' : ''}`}></i>
+              <i className={`fas fa-chevron-down text-xs transform transition-transform duration-300 ${mobileOpportunitiesOpen ? 'rotate-180' : ''}`}></i>
             </button>
-            <div className={`mobile-menu-slide ml-4 ${mobileOpportunitiesOpen ? 'show' : ''}`}>
-              <Link to="/candidat/financement-candidature" className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-                <i className="fas fa-clock mr-2"></i>Mes candidatures emploi
-              </Link>
-              <Link to="/financements" className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-                <i className="fas fa-external-link-alt mr-2"></i>Tous les financements
-              </Link>
-            </div>
+            {mobileOpportunitiesOpen && (
+              <div className="ml-4 space-y-0">
+                <Link to="/candidat/financement-candidature" onClick={() => setMobileOpportunitiesOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
+                  <i className="fas fa-clock mr-2"></i>Mes candidatures emploi
+                </Link>
+                <Link to="/financements" onClick={() => setMobileOpportunitiesOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
+                  <i className="fas fa-external-link-alt mr-2"></i>Tous les financements
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Bourses */}
@@ -502,13 +507,15 @@ const CandidatHeader = () => {
                 : 'text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50'
             }`}>
               <span><i className="fas fa-graduation-cap mr-2"></i>Bourses d'études</span>
-              <i className={`fas fa-chevron-down text-xs transform transition-transform ${mobileProfileOpen ? 'rotate-180' : ''}`}></i>
+              <i className={`fas fa-chevron-down text-xs transform transition-transform duration-300 ${mobileProfileOpen ? 'rotate-180' : ''}`}></i>
             </button>
-            <div className={`mobile-menu-slide ml-4 ${mobileProfileOpen ? 'show' : ''}`}>
-              <Link to="/bourses" className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-                <i className="fas fa-external-link-alt mr-2"></i>Toutes les bourses
-              </Link>
-            </div>
+            {mobileProfileOpen && (
+              <div className="ml-4 space-y-0">
+                <Link to="/bourses" onClick={() => setMobileProfileOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
+                  <i className="fas fa-external-link-alt mr-2"></i>Toutes les bourses
+                </Link>
+              </div>
+            )}
           </div>
           
           {/* Formations */}
@@ -529,11 +536,12 @@ const CandidatHeader = () => {
           }`}>
             <i className="fas fa-blog mr-2"></i>
             Blog
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-};
-
-export default CandidatHeader;
+            </Link>
+            </div>
+            </div>
+            )}
+            </header>
+            );
+            };
+            
+            export default CandidatHeader;

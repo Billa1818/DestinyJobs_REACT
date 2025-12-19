@@ -15,7 +15,7 @@ const DetailFinancement = () => {
   const [showShareModal, setShowShareModal] = useState(false);
 
   // Vérifier si l'utilisateur connecté est le recruteur de ce financement
-  const isRecruiterOfThisFunding = isAuthenticated && user && funding?.recruiter?.user?.id === user.id;
+  const isRecruiterOfThisFunding = isAuthenticated && user && funding?.recruiter?.id === user.id;
 
   // Vérifier si le financement est accessible publiquement
   const isPubliclyAccessible = funding ? (funding.status === 'APPROVED' || funding.status === 'PUBLISHED') : false;
@@ -43,16 +43,13 @@ const DetailFinancement = () => {
     } catch (error) {
       console.error('Erreur lors du chargement du financement:', error);
       
-      // Gérer spécifiquement l'erreur 403 (Forbidden) - Accès refusé
       if (error.response && error.response.status === 403) {
         navigate('/404', { replace: true });
         return;
       }
       
-      // Gérer l'erreur 404 (Not Found) - Financement inexistant
       if (error.response && error.response.status === 404) {
-        console.log('🔍 Financement non trouvé (404) - Redirection vers 404');
-        // Rediriger vers la page 404 en cas de financement inexistant
+        console.log('Financement non trouvé (404) - Redirection vers 404');
         navigate('/404', { replace: true });
         return;
       }
@@ -66,7 +63,7 @@ const DetailFinancement = () => {
   // Fonctions de formatage
   const formatAmount = (amount) => {
     if (!amount) return 'À négocier';
-    return new Intl.NumberFormat('fr-FR').format(parseFloat(amount)) + ' FCFA';
+    return new Intl.NumberFormat('fr-FR').format(parseFloat(amount)) + ' €';
   };
 
   const formatDate = (dateString) => {
@@ -100,29 +97,52 @@ const DetailFinancement = () => {
     return colorMap[status] || 'bg-gray-100 text-gray-800';
   };
 
-  const getSectorText = (sector) => {
-    if (!sector) return 'Non précisé';
-    return sector.name || sector;
-  };
-
-  const getTargetText = (target) => {
-    if (!target) return 'Non précisé';
-    return target.name || target;
+  // Fonction helper pour obtenir le logo avec priorité
+  const getLogoWithPriority = (fundingData) => {
+    if (fundingData.is_admin_only) {
+      // Priorité: admin_company_logo > company_logo > null
+      if (fundingData.admin_company_logo) {
+        return fundingData.admin_company_logo.startsWith('http') 
+          ? fundingData.admin_company_logo 
+          : `http://localhost:8000${fundingData.admin_company_logo}`;
+      }
+      if (fundingData.company_logo) {
+        return fundingData.company_logo.startsWith('http') 
+          ? fundingData.company_logo 
+          : `http://localhost:8000${fundingData.company_logo}`;
+      }
+    } else {
+      // Priorité: company_logo > admin_company_logo > null
+      if (fundingData.company_logo) {
+        return fundingData.company_logo.startsWith('http') 
+          ? fundingData.company_logo 
+          : `http://localhost:8000${fundingData.company_logo}`;
+      }
+      if (fundingData.admin_company_logo) {
+        return fundingData.admin_company_logo.startsWith('http') 
+          ? fundingData.admin_company_logo 
+          : `http://localhost:8000${fundingData.admin_company_logo}`;
+      }
+    }
+    return null;
   };
 
   const handleApply = () => {
+    // Si c'est un financement admin_only, rediriger vers site_url
+    if (funding?.is_admin_only && funding?.site_url) {
+      window.open(funding.site_url, '_blank');
+      return;
+    }
+
     if (!isAuthenticated) {
-      // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
       navigate('/login', { replace: true });
       return;
     }
     
-    // Rediriger vers l'analyse de compatibilité IA
     navigate(`/ia-compatibility/${id}/financement`);
   };
 
   const handleSave = () => {
-    // Logique de sauvegarde
     alert('Offre de financement sauvegardée dans vos favoris !');
   };
 
@@ -142,7 +162,7 @@ const DetailFinancement = () => {
   }
 
   if (error) {
-  return (
+    return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
@@ -161,15 +181,14 @@ const DetailFinancement = () => {
     );
   }
 
-  // Vérification supplémentaire pour éviter le rendu prématuré
   if (!funding || !funding.id) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Chargement des données du financement...</p>
-            </div>
-            </div>
+        </div>
+      </div>
     );
   }
 
@@ -179,82 +198,79 @@ const DetailFinancement = () => {
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col lg:flex-row justify-between">
-          <div className="flex-1">
+            <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{funding.title}</h1>
               
-              {/* Informations de l'entreprise en header */}
+              {/* Information du recruteur en header */}
               {funding.recruiter && (
                 <div className="flex items-center mb-4">
-                  {funding.recruiter.logo && (
-                    <div className="mr-3">
-                      <img 
-                        src={`http://localhost:8000${funding.recruiter.logo}`}
-                        alt={funding.recruiter.company_name}
-                        className="w-16 h-16 rounded-lg object-cover border-2 border-gray-200"
-                        onError={(e) => {
-                          console.error('Erreur de chargement du logo:', e.target.src);
-                          e.target.style.display = 'none';
-                        }}
-                        onLoad={() => {
-                          console.log('Logo chargé avec succès:', funding.recruiter.logo);
-                        }}
-                      />
-                    </div>
-                  )}
+                  {(() => {
+                    const logoUrl = getLogoWithPriority(funding);
+                    return logoUrl ? (
+                      <div className="mr-3">
+                        <img 
+                          src={logoUrl}
+                          alt={funding.organization_name}
+                          className="w-16 h-16 rounded-lg object-cover border-2 border-gray-200"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    ) : null;
+                  })()}
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-800">{funding.recruiter.company_name}</h2>
-                    {funding.recruiter.region && funding.recruiter.country && (
-                      <p className="text-sm text-gray-600">
-                        <i className="fas fa-map-marker-alt mr-1"></i>
-                        {funding.recruiter.region.name}, {funding.recruiter.country.name}
-                      </p>
-                    )}
-              </div>
+                    <h2 className="text-lg font-semibold text-gray-800">{funding.organization_name}</h2>
+                    <p className="text-sm text-gray-600">
+                      <i className="fas fa-user mr-1"></i>
+                      {funding.recruiter.first_name} {funding.recruiter.last_name}
+                    </p>
+                  </div>
                 </div>
               )}
-                
-                <div className="flex flex-wrap gap-2 mb-4">
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                  {getSectorText(funding.sector)}
+              
+              <div className="flex flex-wrap gap-2 mb-4">
+                {funding.montant && (
+                  <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                    {formatAmount(funding.montant)}
                   </span>
-                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                  {getTargetText(funding.target)}
+                )}
+                {funding.project_duration && (
+                  <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                    Durée: {funding.project_duration}
                   </span>
-                {funding.funding_type && (
+                )}
+                {funding.country && (
                   <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
-                    {funding.funding_type}
+                    <i className="fas fa-map-marker-alt mr-1"></i>
+                    {funding.country.name}
                   </span>
                 )}
               </div>
-              
-              <div className="text-lg text-gray-600 mb-4">
-                Montant : {formatAmount(funding.max_amount)}
-                </div>
               
               <div className="flex flex-wrap gap-4 text-sm text-gray-500">
                 {funding.created_at && (
                   <span><i className="fas fa-calendar-plus mr-1"></i>Créée le {formatDate(funding.created_at)}</span>
                 )}
-                {funding.application_deadline && (
-                  <span><i className="fas fa-calendar-times mr-1"></i>Date limite : {formatDate(funding.application_deadline)}</span>
+                {funding.date_limite && (
+                  <span><i className="fas fa-calendar-times mr-1"></i>Date limite : {formatDate(funding.date_limite)}</span>
                 )}
+
+              </div>
             </div>
-          </div>
-          
+            
             {/* Boutons d'action */}
             <div className="flex flex-col gap-3 mt-6 lg:mt-0 lg:ml-6">
-              {/* Bouton Postuler - visible uniquement pour les financements publics et non créateur */}
               {!isRecruiterOfThisFunding && isPubliclyAccessible && (
-            <button
-              onClick={handleApply}
-              className="bg-fuchsia-600 text-white px-6 py-3 rounded-lg hover:bg-fuchsia-700 transition duration-200 font-medium"
-            >
-              <i className="fas fa-paper-plane mr-2"></i>
-              Postuler maintenant
-            </button>
+                <button
+                  onClick={handleApply}
+                  className="bg-fuchsia-600 text-white px-6 py-3 rounded-lg hover:bg-fuchsia-700 transition duration-200 font-medium"
+                >
+                  <i className={`mr-2 ${funding?.is_admin_only ? 'fas fa-external-link-alt' : 'fas fa-paper-plane'}`}></i>
+                  {funding?.is_admin_only ? 'Postuler sur le site' : 'Postuler maintenant'}
+                </button>
               )}
               
-              {/* Bouton Éditer - visible uniquement pour l'auteur du financement */}
               {isRecruiterOfThisFunding && (
                 <button
                   onClick={() => navigate(`/recruteur/creer-financement?edit=${id}`)}
@@ -265,18 +281,16 @@ const DetailFinancement = () => {
                 </button>
               )}
               
-              {/* Bouton Sauvegarder - visible uniquement pour les financements publics et non créateur */}
               {!isRecruiterOfThisFunding && isPubliclyAccessible && (
-              <button
-                onClick={handleSave}
+                <button
+                  onClick={handleSave}
                   className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition duration-200 font-medium"
-              >
+                >
                   <i className="fas fa-bookmark mr-2"></i>
-                Sauvegarder
-              </button>
+                  Sauvegarder
+                </button>
               )}
               
-              {/* Bouton Partager - toujours visible */}
               <button
                 onClick={handleShare}
                 className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition duration-200 font-medium"
@@ -285,42 +299,38 @@ const DetailFinancement = () => {
                 Partager
               </button>
               
-              {/* Messages informatifs selon le statut et les permissions */}
               {isRecruiterOfThisFunding && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
                   <p className="text-sm text-blue-700">
                     <i className="fas fa-info-circle mr-1"></i>
-                    Vous consultez votre propre offre de financement
+                    Vous consultez votre propre offre
                   </p>
                 </div>
               )}
               
-              {/* Message pour financements en attente d'approbation (visiteurs) */}
               {!isRecruiterOfThisFunding && isPendingApproval && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-center">
                   <p className="text-sm text-yellow-700">
                     <i className="fas fa-clock mr-1"></i>
-                    Cette offre de financement est en attente d'approbation
+                    En attente d'approbation
                   </p>
                 </div>
               )}
               
-              {/* Message pour financements brouillon (visiteurs) */}
               {!isRecruiterOfThisFunding && isDraft && (
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
                   <p className="text-sm text-gray-700">
                     <i className="fas fa-file-alt mr-1"></i>
-                    Cette offre de financement est en cours de rédaction
+                    En cours de rédaction
                   </p>
                 </div>
               )}
               
-              {/* Message pour financements rejetés (visiteurs) */}
               {!isRecruiterOfThisFunding && isRejected && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
                   <p className="text-sm text-red-700">
                     <i className="fas fa-times-circle mr-1"></i>
-                    Cette offre de financement a été rejetée
+                    Offre rejetée
                   </p>
                 </div>
               )}
@@ -329,16 +339,15 @@ const DetailFinancement = () => {
         </div>
       </div>
 
-        {/* Contenu principal */}
+      {/* Contenu principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Colonne principale */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Statut du financement - visible pour tous */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Statut de l'offre de financement</h2>
+            {/* Statut du financement */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Statut de l'offre</h2>
               <div className="space-y-4">
-                {/* Badge de statut */}
                 <div className="flex items-center">
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(funding.status)}`}>
                     <i className={`fas mr-2 ${
@@ -352,15 +361,13 @@ const DetailFinancement = () => {
                     }`}></i>
                     {getStatusText(funding.status)}
                   </span>
-          </div>
+                </div>
 
-                {/* Informations supplémentaires selon le statut */}
                 {isPendingApproval && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                     <p className="text-sm text-yellow-700">
                       <i className="fas fa-info-circle mr-2"></i>
-                      <strong>En attente d'approbation :</strong> Cette offre de financement est en cours de validation par notre équipe. 
-                      {isRecruiterOfThisFunding ? ' Vous recevrez une notification dès qu\'elle sera approuvée.' : ' Elle sera visible publiquement une fois approuvée.'}
+                      <strong>En attente d'approbation :</strong> Cette offre est en cours de validation par notre équipe.
                     </p>
                   </div>
                 )}
@@ -369,8 +376,7 @@ const DetailFinancement = () => {
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
                     <p className="text-sm text-gray-700">
                       <i className="fas fa-info-circle mr-2"></i>
-                      <strong>Brouillon :</strong> Cette offre de financement est en cours de rédaction et n'est pas encore soumise pour approbation.
-                      {isRecruiterOfThisFunding ? ' Vous pouvez continuer à l\'éditer avant de la soumettre.' : ''}
+                      <strong>Brouillon :</strong> Cette offre n'est pas encore soumise pour approbation.
                     </p>
                   </div>
                 )}
@@ -379,253 +385,144 @@ const DetailFinancement = () => {
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                     <p className="text-sm text-red-700">
                       <i className="fas fa-info-circle mr-2"></i>
-                      <strong>Rejetée :</strong> Cette offre de financement n'a pas été approuvée par notre équipe.
-                      {isRecruiterOfThisFunding ? ' Vous pouvez la modifier et la soumettre à nouveau.' : ''}
+                      <strong>Rejetée :</strong> Cette offre n'a pas été approuvée par notre équipe.
                     </p>
-          </div>
+                  </div>
                 )}
                 
                 {isPubliclyAccessible && (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                     <p className="text-sm text-green-700">
                       <i className="fas fa-check-circle mr-2"></i>
-                      <strong>Offre active :</strong> Cette offre de financement est visible publiquement et les candidats peuvent postuler.
+                      <strong>Offre active :</strong> Cette offre est visible publiquement.
                     </p>
                   </div>
                 )}
-          </div>
-        </div>
-
-            {/* Description du financement */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Description du financement</h2>
-              <div className="prose max-w-none text-gray-600">
-                {funding.description ? (
-                  <p>{funding.description}</p>
-                ) : (
-                  <p>Aucune description disponible pour ce financement.</p>
-                )}
               </div>
             </div>
 
-            {/* Conditions d'éligibilité */}
-            {funding.eligibility_conditions && (
+            {/* Objectif du financement */}
+            {funding.objective && (
               <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Conditions d'éligibilité</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Objectif</h2>
                 <div className="prose max-w-none text-gray-600">
-                  <p>{funding.eligibility_conditions}</p>
+                  <p>{funding.objective}</p>
                 </div>
               </div>
             )}
 
-            {/* Processus de candidature */}
-            {funding.application_process && (
+            {/* Critères d'éligibilité */}
+            {funding.eligibility_criteria && (
               <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Processus de candidature</h2>
-                <div className="prose max-w-none text-gray-600">
-                  <p>{funding.application_process}</p>
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Critères d'éligibilité</h2>
+                <div className="prose max-w-none text-gray-600 whitespace-pre-wrap">
+                  <p>{funding.eligibility_criteria}</p>
                 </div>
               </div>
             )}
 
-            {/* Caractéristiques du financement */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Caractéristiques du financement</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <span className="font-medium text-gray-900">Montant maximum :</span>
-                  <p className="text-gray-600">{formatAmount(funding.max_amount)}</p>
+            {/* Pays et régions couverts */}
+            {funding.countries_covered && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Pays et régions couverts</h2>
+                <div className="prose max-w-none text-gray-600">
+                  <p>{funding.countries_covered}</p>
                 </div>
-                {funding.annual_interest_rate && (
-                  <div>
-                    <span className="font-medium text-gray-900">Taux d'intérêt :</span>
-                    <p className="text-gray-600">{funding.annual_interest_rate}%</p>
-                  </div>
-                )}
-                {funding.repayment_duration && (
-                  <div>
-                    <span className="font-medium text-gray-900">Durée de remboursement :</span>
-                    <p className="text-gray-600">{funding.repayment_duration}</p>
-                  </div>
-                )}
-                {funding.max_applications && (
-                  <div>
-                    <span className="font-medium text-gray-900">Nombre max de candidatures :</span>
-                    <p className="text-gray-600">{funding.max_applications}</p>
-                  </div>
-                )}
-                <div>
-                  <span className="font-medium text-gray-900">Garantie requise :</span>
-                  <p className="text-gray-600">
-                    {funding.no_guarantee ? 'Non' : 'Oui'}
-                  </p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-900">Période de grâce :</span>
-                  <p className="text-gray-600">
-                    {funding.grace_period_available ? 'Disponible' : 'Non disponible'}
-                  </p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-900">Business plan requis :</span>
-                  <p className="text-gray-600">
-                    {funding.business_plan_required ? 'Oui' : 'Non'}
-                  </p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-900">États financiers requis :</span>
-                  <p className="text-gray-600">
-                    {funding.financial_statements_required ? 'Oui' : 'Non'}
-                  </p>
               </div>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Barre latérale */}
           <div className="space-y-6">
-            {/* À propos de l'entreprise */}
+            {/* À propos du recruteur */}
             {funding.recruiter && (
-          <div className="bg-white rounded-lg shadow-sm p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">À propos de l'entreprise</h3>
-            <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    {funding.recruiter.logo && (
-                      <img
-                        src={`http://localhost:8000${funding.recruiter.logo}`}
-                        alt={`Logo ${funding.recruiter.company_name || 'Entreprise'}`}
-                        className="w-12 h-12 rounded-lg object-cover"
-                        onError={(e) => {
-                          console.error('Erreur de chargement du logo:', e.target.src);
-                          e.target.style.display = 'none';
-                        }}
-                        onLoad={() => {
-                          console.log('Logo chargé avec succès:', funding.recruiter.logo);
-                        }}
-                      />
-                    )}
-                    <div>
-                      <h4 className="font-medium text-gray-900">
-                        {funding.recruiter.company_name || 'Entreprise'}
-                      </h4>
-                      {funding.recruiter.sector && (
-                        <p className="text-sm text-gray-600">{funding.recruiter.sector}</p>
-                      )}
-                    </div>
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">À propos du recruteur</h3>
+                <div className="space-y-3">
+                  <div>
+                    <h4 className="font-medium text-gray-900">{funding.recruiter.first_name} {funding.recruiter.last_name}</h4>
+                    <p className="text-sm text-gray-600">{funding.recruiter.username}</p>
                   </div>
                   
-                  {funding.recruiter.description && (
-                    <p className="text-sm text-gray-700">{funding.recruiter.description}</p>
-                  )}
-                  
                   <div className="space-y-2 text-sm">
-                    {funding.recruiter.company_size && (
+                    {funding.recruiter.email && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Taille :</span>
-                        <span className="text-gray-900 font-medium">{funding.recruiter.company_size}</span>
-                      </div>
-                    )}
-                    {funding.recruiter.website && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Site web :</span>
+                        <span className="text-gray-600">Email :</span>
                         <a 
-                          href={funding.recruiter.website} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
+                          href={`mailto:${funding.recruiter.email}`}
                           className="text-fuchsia-600 hover:text-fuchsia-800 font-medium"
                         >
-                          Visiter
-              </a>
-            </div>
-                    )}
-                    {funding.recruiter.country && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Pays :</span>
-                        <span className="text-gray-900 font-medium">
-                          {funding.recruiter.country.name}
-                        </span>
+                          {funding.recruiter.email}
+                        </a>
                       </div>
                     )}
-                    {funding.recruiter.region && (
+                    {funding.recruiter.phone && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Région :</span>
-                        <span className="text-gray-900 font-medium">
-                          {funding.recruiter.region.name}
-                        </span>
-          </div>
+                        <span className="text-gray-600">Téléphone :</span>
+                        <a 
+                          href={`tel:${funding.recruiter.phone}`}
+                          className="text-fuchsia-600 hover:text-fuchsia-800 font-medium"
+                        >
+                          {funding.recruiter.phone}
+                        </a>
+                      </div>
                     )}
-                    
-                    {/* Lien vers le profil public du recruteur */}
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Profil :</span>
-                      <Link 
-                        to={`/recruteur/profil-public/${funding.recruiter.user.id}`}
-                        className="text-blue-600 hover:text-blue-800 font-medium flex items-center"
-                      >
-                        <i className="fas fa-user mr-1"></i>
-                        Voir le profil du recruteur
-                      </Link>
-        </div>
-      </div>
-
-                  {/* Informations du recruteur */}
-                  {funding.recruiter.user && (
-                    <div className="pt-3 border-t border-gray-200">
-                      <h5 className="font-medium text-gray-900 mb-2">Recruteur</h5>
-                      <div className="text-sm text-gray-600">
-                        <p>{funding.recruiter.user.first_name} {funding.recruiter.user.last_name}</p>
-                        <p className="text-xs text-gray-500">
-                          Membre depuis {new Date(funding.recruiter.user.created_at).toLocaleDateString('fr-FR')}
-                        </p>
-                      </div>
+                      <span className="text-gray-600">Statut :</span>
+                      <span className="text-gray-900 font-medium">
+                        {funding.recruiter.is_approved ? '✓ Approuvé' : 'En attente'}
+                      </span>
                     </div>
+                    {funding.recruiter.created_at && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Membre depuis :</span>
+                        <span className="text-gray-900 font-medium">
+                          {formatDate(funding.recruiter.created_at)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Lien vers le profil public */}
+                  {funding.recruiter && funding.recruiter.id && (
+                    <Link 
+                      to={`/recruteur/profil-public/${funding.recruiter.id}`}
+                      className="block w-full text-center mt-3 px-4 py-2 bg-fuchsia-600 text-white rounded-md hover:bg-fuchsia-700 transition duration-200"
+                    >
+                      <i className="fas fa-user mr-1"></i>
+                      Voir le profil
+                    </Link>
                   )}
                 </div>
               </div>
             )}
 
-            {/* Informations du financement */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Détails du financement</h3>
+            {/* Détails du financement */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Détails</h3>
               <div className="space-y-3 text-sm text-gray-600">
-                {funding.sector && (
+                {funding.organization_name && (
                   <div>
-                    <span className="font-medium text-gray-900">Secteur :</span>
-                    <p>{getSectorText(funding.sector)}</p>
+                    <span className="font-medium text-gray-900">Organisation :</span>
+                    <p>{funding.organization_name}</p>
                   </div>
                 )}
-                {funding.target && (
+                {funding.montant && (
                   <div>
-                    <span className="font-medium text-gray-900">Cible :</span>
-                    <p>{getTargetText(funding.target)}</p>
+                    <span className="font-medium text-gray-900">Montant :</span>
+                    <p>{formatAmount(funding.montant)}</p>
                   </div>
                 )}
-                {funding.funding_type && (
+                {funding.project_duration && (
                   <div>
-                    <span className="font-medium text-gray-900">Type de financement :</span>
-                    <p>{funding.funding_type}</p>
+                    <span className="font-medium text-gray-900">Durée du projet :</span>
+                    <p>{funding.project_duration}</p>
                   </div>
                 )}
-                <div>
-                  <span className="font-medium text-gray-900">Montant maximum :</span>
-                  <p>{formatAmount(funding.max_amount)}</p>
-                </div>
-                {funding.annual_interest_rate && (
+                {funding.date_limite && (
                   <div>
-                    <span className="font-medium text-gray-900">Taux d'intérêt :</span>
-                    <p>{funding.annual_interest_rate}%</p>
-                  </div>
-                )}
-                {funding.repayment_duration && (
-                  <div>
-                    <span className="font-medium text-gray-900">Durée de remboursement :</span>
-                    <p>{funding.repayment_duration}</p>
-                  </div>
-                )}
-                {funding.max_applications && (
-                  <div>
-                    <span className="font-medium text-gray-900">Candidatures max :</span>
-                    <p>{funding.max_applications}</p>
+                    <span className="font-medium text-gray-900">Date limite :</span>
+                    <p>{formatDate(funding.date_limite)}</p>
                   </div>
                 )}
                 {funding.country && (
@@ -643,29 +540,32 @@ const DetailFinancement = () => {
               </div>
             </div>
 
-            {/* Date limite */}
-            {funding.application_deadline && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Date limite</h3>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600">
-                    {formatDate(funding.application_deadline)}
-                  </div>
-                  <div className="text-sm text-gray-500">Date limite de candidature</div>
-                </div>
-              </div>
-            )}
-
             {/* Informations de contact */}
             {funding.contact_info && (
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Informations de contact</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <i className="fas fa-envelope text-gray-400"></i>
-                    <span className="text-gray-700">{funding.contact_info}</span>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-start space-x-3">
+                    <i className="fas fa-envelope text-gray-400 mt-1"></i>
+                    <div className="text-gray-700 whitespace-pre-wrap">{funding.contact_info}</div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Source d'informations */}
+            {funding.more_info_source && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Plus d'informations</h3>
+                <a 
+                  href={funding.more_info_source}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-4 py-2 bg-fuchsia-600 text-white rounded-md hover:bg-fuchsia-700 transition duration-200"
+                >
+                  <i className="fas fa-external-link-alt mr-2"></i>
+                  Visiter le site
+                </a>
               </div>
             )}
           </div>
@@ -683,4 +583,4 @@ const DetailFinancement = () => {
   );
 };
 
-export default DetailFinancement; 
+export default DetailFinancement;

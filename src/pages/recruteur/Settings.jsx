@@ -33,7 +33,8 @@ const Settings = () => {
     first_name: '',
     last_name: '',
     email: '',
-    phone: ''
+    phone: '',
+    user_type: ''
   });
 
   // Données de localisation
@@ -133,7 +134,8 @@ const Settings = () => {
         first_name: userData.first_name || '',
         last_name: userData.last_name || '',
         email: userData.email || '',
-        phone: userData.phone || ''
+        phone: userData.phone || '',
+        user_type: userData.user_type || ''
       });
 
       // Mettre à jour le statut de vérification de l'email

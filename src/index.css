@@ -134,13 +134,23 @@
 
 /* Mobile menu slide animation */
 .mobile-menu-slide {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease-in-out;
+  display: none;
 }
 
 .mobile-menu-slide.show {
-  max-height: 500px;
+  display: block;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Ensure minimum touch targets on mobile */
