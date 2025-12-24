@@ -32,13 +32,37 @@ const IACompatibilityCheck = () => {
   const [candidatureErrors, setCandidatureErrors] = useState([]);
   const [isCreatingCandidature, setIsCreatingCandidature] = useState(false);
 
-  // Vérifier l'authentification
+  // Vérifier l'authentification et les autorisations
   useEffect(() => {
     if (!isAuthenticated || !user) {
       navigate('/login', { replace: true });
       return;
     }
-  }, [isAuthenticated, user, navigate]);
+
+    const userType = user?.user_type?.toLowerCase();
+
+    // Les recruteurs ne sont pas autorisés à accéder à cette page
+    if (userType === 'recruiter' || userType === 'recruteur') {
+      console.warn('⚠️ Accès refusé : Les recruteurs ne peuvent pas utiliser la vérification de compatibilité IA');
+      navigate('/', { replace: true });
+      return;
+    }
+
+    // Vérifier les autorisations selon le type d'utilisateur
+    const offerTypeNorm = offerType?.toLowerCase();
+
+    // Les candidats ne peuvent postuler qu'aux emplois et financements
+    if (userType === 'candidat' && (offerTypeNorm === 'consultation' || offerTypeNorm === 'bourse')) {
+      setError(`❌ Vous n'êtes pas autorisé à postuler à cette offre de ${offerTypeNorm}. Les candidats peuvent postuler aux offres d'emploi et de financement uniquement.`);
+      return;
+    }
+
+    // Les prestataires ne peuvent postuler qu'aux consultations
+    if (userType === 'prestataire' && (offerTypeNorm === 'emploi' || offerTypeNorm === 'financement' || offerTypeNorm === 'bourse')) {
+      setError(`❌ Vous n'êtes pas autorisé à postuler à cette offre. Les prestataires peuvent postuler aux offres de consultation uniquement.`);
+      return;
+    }
+  }, [isAuthenticated, user, offerType, navigate]);
 
   // Charger les détails de l'offre selon le type
   useEffect(() => {
@@ -70,7 +94,7 @@ const IACompatibilityCheck = () => {
         console.log('✅ Détails de l\'offre chargés:', offerData);
         
         // Validation intelligente : détecter automatiquement le type d'offre basé sur les données
-        const detectedOfferType = detectOfferType(offerData);
+        const detectedOfferType = detectOfferType(offerData, offerType);
         console.log('🔍 Type d\'offre détecté:', detectedOfferType);
         console.log('🔍 Type d\'offre depuis l\'URL:', offerType);
         
@@ -82,9 +106,6 @@ const IACompatibilityCheck = () => {
           // Mettre à jour l'URL sans recharger la page
           const newPath = window.location.pathname.replace(`/${offerType}/`, `/${detectedOfferType}/`);
           window.history.replaceState({}, '', newPath);
-          
-          // Mettre à jour l'état local
-          offerType = detectedOfferType;
         }
         
         // Effectuer l'analyse de compatibilité IA
@@ -141,6 +162,38 @@ const IACompatibilityCheck = () => {
   };
 
   // Obtenir les poids selon le type d'offre
+  // Vérifier si l'utilisateur peut postuler à cette offre
+  const canApplyForOffer = () => {
+    const userType = user?.user_type?.toLowerCase();
+    const offerTypeNorm = offerType?.toLowerCase();
+
+    if (userType === 'candidat' && (offerTypeNorm === 'consultation' || offerTypeNorm === 'bourse')) {
+      return false;
+    }
+
+    if (userType === 'prestataire' && (offerTypeNorm === 'emploi' || offerTypeNorm === 'financement' || offerTypeNorm === 'bourse')) {
+      return false;
+    }
+
+    return true;
+  };
+
+  // Obtenir le message d'erreur d'autorisation
+  const getAuthorizationErrorMessage = () => {
+    const userType = user?.user_type?.toLowerCase();
+    const offerTypeNorm = offerType?.toLowerCase();
+
+    if (userType === 'candidat' && (offerTypeNorm === 'consultation' || offerTypeNorm === 'bourse')) {
+      return `Vous n'êtes pas autorisé à postuler à cette offre de ${offerTypeNorm}. Les candidats peuvent postuler aux offres d'emploi et de financement uniquement.`;
+    }
+
+    if (userType === 'prestataire' && (offerTypeNorm === 'emploi' || offerTypeNorm === 'financement' || offerTypeNorm === 'bourse')) {
+      return `Vous n'êtes pas autorisé à postuler à cette offre. Les prestataires peuvent postuler aux offres de consultation uniquement.`;
+    }
+
+    return '';
+  };
+
   const getWeightsByOfferType = (type) => {
     switch (type) {
       case 'emploi':
@@ -434,6 +487,20 @@ const IACompatibilityCheck = () => {
     setCandidatureErrors([]);
     let hasError = false;
 
+    // Vérifier les autorisations
+    const userType = user?.user_type?.toLowerCase();
+    const offerTypeNorm = offerType?.toLowerCase();
+
+    if (userType === 'candidat' && (offerTypeNorm === 'consultation' || offerTypeNorm === 'bourse')) {
+      setCandidatureErrors([`❌ Vous n'êtes pas autorisé à postuler à cette offre de ${offerTypeNorm}. Les candidats peuvent postuler aux offres d'emploi et de financement uniquement.`]);
+      return;
+    }
+
+    if (userType === 'prestataire' && (offerTypeNorm === 'emploi' || offerTypeNorm === 'financement' || offerTypeNorm === 'bourse')) {
+      setCandidatureErrors([`❌ Vous n'êtes pas autorisé à postuler à cette offre. Les prestataires peuvent postuler aux offres de consultation uniquement.`]);
+      return;
+    }
+
     // Debug: Afficher toutes les informations importantes
     console.log('🔍 DEBUG - Informations de candidature:');
     console.log('  - offerId (de useParams):', offerId);
@@ -495,7 +562,7 @@ const IACompatibilityCheck = () => {
     }
 
     // Vérifier la cohérence du type d'offre avec les données reçues
-    const detectedType = detectOfferType(offer);
+    const detectedType = detectOfferType(offer, offerType);
     if (detectedType !== offerType) {
       console.error('❌ Incohérence de type d\'offre:', { offerType, detectedType, offer });
       setCandidatureErrors([
@@ -609,20 +676,8 @@ const IACompatibilityCheck = () => {
       setCandidatureForm({ motivation_letter: '', proposed_methodology: '', requested_amount: '' });
       setCandidatureFiles({});
       
-      // Rediriger selon le type d'offre
-      switch (offerType) {
-        case 'emploi':
-          navigate('/candidat/emploi-candidature');
-          break;
-        case 'consultation':
-          navigate('/candidat/consultation-candidature');
-          break;
-        case 'financement':
-          navigate('/candidat/financement-candidature');
-          break;
-        default:
-          navigate('/candidat');
-      }
+      // Rediriger vers la page d'accueil
+      navigate('/');
       
     } catch (error) {
       console.error('❌ Erreur lors de la création de la candidature:', error);
@@ -1023,24 +1078,35 @@ const IACompatibilityCheck = () => {
               
               {!showMotivationForm ? (
                 <div className="text-center">
-                  <p className="text-gray-600 text-sm mb-4">
-                    Votre score de compatibilité IA : <span className="font-semibold text-fuchsia-600">{compatibilityScore}%</span>
-                  </p>
-                  {analysis.scoreSaved && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-                      <p className="text-sm text-green-700">
-                        <i className="fas fa-check-circle mr-2"></i>
-                        Score sauvegardé automatiquement
+                  {canApplyForOffer() ? (
+                    <>
+                      <p className="text-gray-600 text-sm mb-4">
+                        Votre score de compatibilité IA : <span className="font-semibold text-fuchsia-600">{compatibilityScore}%</span>
+                      </p>
+                      {analysis.scoreSaved && (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                          <p className="text-sm text-green-700">
+                            <i className="fas fa-check-circle mr-2"></i>
+                            Score sauvegardé automatiquement
+                          </p>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => setShowCandidatureForm(true)}
+                        className="w-full bg-fuchsia-600 text-white py-3 px-4 rounded-lg hover:bg-fuchsia-700 transition duration-200 font-medium"
+                      >
+                        <i className="fas fa-edit mr-2"></i>
+                        Rédiger ma candidature
+                      </button>
+                    </>
+                  ) : (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <p className="text-sm text-red-700">
+                        <i className="fas fa-exclamation-circle mr-2"></i>
+                        {getAuthorizationErrorMessage()}
                       </p>
                     </div>
                   )}
-                  <button
-                    onClick={() => setShowCandidatureForm(true)}
-                    className="w-full bg-fuchsia-600 text-white py-3 px-4 rounded-lg hover:bg-fuchsia-700 transition duration-200 font-medium"
-                  >
-                    <i className="fas fa-edit mr-2"></i>
-                    Rédiger ma candidature
-                  </button>
                 </div>
               ) : (
                 <div>
@@ -1435,8 +1501,8 @@ const getDisplayName = (key, offerType) => {
 };
 
 // Détecter automatiquement le type d'offre basé sur les données
-const detectOfferType = (offerData) => {
-  if (!offerData) return offerType;
+const detectOfferType = (offerData, fallbackType = 'consultation') => {
+  if (!offerData) return fallbackType;
   
   console.log('🔍 Analyse des données pour détecter le type d\'offre:', offerData);
   
@@ -1461,9 +1527,9 @@ const detectOfferType = (offerData) => {
     return 'bourse';
   }
   
-  // Si aucun attribut spécifique n'est trouvé, retourner le type de l'URL
-  console.log('❓ Type d\'offre non détecté, utilisation du type de l\'URL:', offerType);
-  return offerType;
+  // Si aucun attribut spécifique n'est trouvé, retourner le type par défaut
+  console.log('❓ Type d\'offre non détecté, utilisation du type par défaut:', fallbackType);
+  return fallbackType;
 };
 
 export default IACompatibilityCheck; 

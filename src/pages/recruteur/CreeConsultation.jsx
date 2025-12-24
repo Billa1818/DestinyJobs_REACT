@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import consultationService from '../../services/consultationService';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const CreeConsultation = () => {
     const navigate = useNavigate();
@@ -178,19 +179,12 @@ const CreeConsultation = () => {
         }
     };
 
-    if (loading && !countries.length) {
-        return (
-            <div className="w-full flex items-center justify-center h-64">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Chargement des données...</p>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="w-full">
+            {loading && !countries.length ? (
+                <LoadingSpinner variant="inline" size="lg" text="Chargement des données..." />
+            ) : (
+            <div>
             {/* Header Section */}
             <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm mb-4 sm:mb-6">
                 <div className="flex items-center justify-between">
@@ -399,6 +393,8 @@ const CreeConsultation = () => {
                     </p>
                 </div>
             </form>
+            </div>
+            )}
         </div>
     );
 };

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ProviderNotificationService from '../../services/ProviderNotificationService';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const Notifications = () => {
   // États pour les notifications
@@ -231,19 +232,6 @@ const Notifications = () => {
     return iconMap[type] || 'fas fa-bell';
   };
 
-  if (loading) {
-    return (
-      <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Chargement des notifications...</p>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
       <div className="max-w-6xl mx-auto">
@@ -413,7 +401,9 @@ const Notifications = () => {
               </div>
 
                 {/* Liste des notifications */}
-                {notifications.length > 0 ? (
+                {loading ? (
+                  <LoadingSpinner variant="inline" size="lg" text="Chargement des notifications..." />
+                ) : notifications.length > 0 ? (
               <div className="space-y-4">
                     {/* En-tête avec sélection */}
                     <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">

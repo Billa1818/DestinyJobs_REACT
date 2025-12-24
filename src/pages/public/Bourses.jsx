@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import SidebarFilter from '../../components/SidebarFilter';
 import BoursePagination from '../../components/BoursePagination';
 import bourseService from '../../services/bourseService';
-import Loader from '../../components/Loader';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { useAuth } from '../../contexts/AuthContext';
+import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
 const Bourses = () => {
   const { isAuthenticated } = useAuth();
@@ -88,13 +89,13 @@ const Bourses = () => {
       logo: (() => {
         // Essayer plusieurs sources pour le logo
         if (apiBourse.logo) {
-          return apiBourse.logo.startsWith('http') ? apiBourse.logo : `http://localhost:8000${apiBourse.logo}`;
+          return apiBourse.logo.startsWith('http') ? apiBourse.logo : buildImageUrl(apiBourse.logo);
         }
         if (apiBourse.recruiter?.logo) {
-          return apiBourse.recruiter.logo.startsWith('http') ? apiBourse.recruiter.logo : `http://localhost:8000${apiBourse.recruiter.logo}`;
+          return apiBourse.recruiter.logo.startsWith('http') ? apiBourse.recruiter.logo : buildImageUrl(apiBourse.recruiter.logo);
         }
         if (apiBourse.organization_logo) {
-          return apiBourse.organization_logo.startsWith('http') ? apiBourse.organization_logo : `http://localhost:8000${apiBourse.organization_logo}`;
+          return apiBourse.organization_logo.startsWith('http') ? apiBourse.organization_logo : buildImageUrl(apiBourse.organization_logo);
         }
         // Fallback vers une image par défaut
         return "https://via.placeholder.com/60x60/6366f1/ffffff?text=B";
@@ -339,9 +340,7 @@ const Bourses = () => {
 
             {/* Bourses List */}
             {loading ? (
-              <div className="flex justify-center items-center py-20">
-                <Loader />
-              </div>
+              <LoadingSpinner variant="page" size="lg" text="Chargement des bourses..." />
             ) : error ? (
               <div className="text-center py-12 bg-white rounded-xl shadow-sm">
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">

@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import SidebarFilter from '../../components/SidebarFilter';
 import FinancementPagination from '../../components/FinancementPagination';
 import financementService from '../../services/financementService';
-import Loader from '../../components/Loader';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { useAuth } from '../../contexts/AuthContext';
+import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
 const Financements = () => {
   // États existants conservés
@@ -77,24 +78,24 @@ const Financements = () => {
       if (apiFinancement.admin_company_logo) {
         return apiFinancement.admin_company_logo.startsWith('http') 
           ? apiFinancement.admin_company_logo 
-          : `http://localhost:8000${apiFinancement.admin_company_logo}`;
+          : buildImageUrl(apiFinancement.admin_company_logo);
       }
       if (apiFinancement.company_logo) {
         return apiFinancement.company_logo.startsWith('http') 
           ? apiFinancement.company_logo 
-          : `http://localhost:8000${apiFinancement.company_logo}`;
+          : buildImageUrl(apiFinancement.company_logo);
       }
     } else {
       // Priorité: company_logo > admin_company_logo > null
       if (apiFinancement.company_logo) {
         return apiFinancement.company_logo.startsWith('http') 
           ? apiFinancement.company_logo 
-          : `http://localhost:8000${apiFinancement.company_logo}`;
+          : buildImageUrl(apiFinancement.company_logo);
       }
       if (apiFinancement.admin_company_logo) {
         return apiFinancement.admin_company_logo.startsWith('http') 
           ? apiFinancement.admin_company_logo 
-          : `http://localhost:8000${apiFinancement.admin_company_logo}`;
+          : buildImageUrl(apiFinancement.admin_company_logo);
       }
     }
     return null;
@@ -382,9 +383,7 @@ const Financements = () => {
 
             {/* Financements List */}
             {loading ? (
-              <div className="flex justify-center items-center py-20">
-                <Loader />
-              </div>
+              <LoadingSpinner variant="page" size="lg" text="Chargement des financements..." />
             ) : error ? (
               <div className="text-center py-12 bg-white rounded-xl shadow-sm">
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import RecruteurNotificationService from '../../services/RecruteurNotificationService';
-import Loader from '../../components/Loader';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -280,10 +280,6 @@ const Notifications = () => {
   const tabCounts = getTabCounts();
   const displayedStats = getDisplayedStats();
 
-  if (loading && notifications.length === 0) {
-    return <Loader />;
-  }
-
   return (
     <div className="bg-gray-50 min-h-screen">
       <style jsx>{`
@@ -295,6 +291,9 @@ const Notifications = () => {
           display: none;
         }
       `}</style>
+      {loading && notifications.length === 0 ? (
+        <LoadingSpinner variant="page" size="lg" text="Chargement des notifications..." />
+      ) : (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header */}
         <div className="mb-8">
@@ -487,6 +486,7 @@ const Notifications = () => {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 };

@@ -25,7 +25,8 @@ import {
     faThumbsDown
 } from '@fortawesome/free-solid-svg-icons';
 import EmploiCandidatureRecentService from '../../services/EmploiCandidatureRecentService';
-import Loader from '../../components/Loader';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
 const EmploiCandidature = () => {
     const navigate = useNavigate();
@@ -66,7 +67,7 @@ const EmploiCandidature = () => {
     const getImageUrl = (imagePath) => {
         if (!imagePath) return null;
         if (imagePath.startsWith('http')) return imagePath;
-        return `http://localhost:8000${imagePath}`;
+        return buildImageUrl(imagePath);
     };
 
     // Filtrer les candidatures
@@ -145,11 +146,6 @@ const EmploiCandidature = () => {
         setTimeout(() => loadApplications(), 0);
     };
 
-    // Afficher le loader
-    if (loading) {
-        return <Loader />;
-    }
-
     return (
         <div className="w-full">
             {/* Header */}
@@ -159,12 +155,6 @@ const EmploiCandidature = () => {
                         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Mes candidatures</h1>
                         <p className="text-gray-600">Suivez l'état de vos candidatures aux offres d'emploi</p>
                     </div>
-                    <Link
-                        to="/candidat/offre"
-                        className="px-4 py-2 bg-fuchsia-600 text-white rounded-lg hover:bg-fuchsia-700 transition duration-200"
-                    >
-                        <FontAwesomeIcon icon={faPlus} className="mr-2" />Nouvelle candidature
-                    </Link>
                 </div>
             </div>
 
@@ -181,7 +171,7 @@ const EmploiCandidature = () => {
             )}
 
             {/* Statistiques */}
-            {applications && applications.length > 0 && (
+            {!loading && applications && applications.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
                         <div className="flex items-center">
@@ -260,7 +250,7 @@ const EmploiCandidature = () => {
                                 />
                                 <input
                                     type="text"
-                                    placeholder="Titre, entreprise..."
+                                    placeholder="Recherche..."
                                     value={filters.search}
                                     onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
                                     className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-fuchsia-500 focus:border-transparent"
@@ -326,7 +316,11 @@ const EmploiCandidature = () => {
             </div>
 
             {/* Liste des candidatures */}
-            {filteredApplications.length > 0 ? (
+            {loading ? (
+                <div className="py-12">
+                    <LoadingSpinner variant="inline" size="lg" text="Chargement de vos candidatures..." />
+                </div>
+            ) : filteredApplications.length > 0 ? (
                 <div className="space-y-4">
                     {filteredApplications.map((application) => {
                         const aiAnalysis = application.ai_analysis;
@@ -539,7 +533,7 @@ const EmploiCandidature = () => {
 
                                         {/* Actions */}
                                         <Link
-                                            to={`/candidat/detail-offre/${application.job_offer?.id}`}
+                                            to={`/jobs/${application.job_offer?.id}`}
                                             className="w-full inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 text-sm font-medium text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fuchsia-500 transition duration-200"
                                         >
                                             <FontAwesomeIcon icon={faEye} className="mr-2" />

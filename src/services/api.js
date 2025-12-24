@@ -43,6 +43,19 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Gestion de l'erreur 402 (Payment Required)
+    if (error.response?.status === 402) {
+      const paymentErrorEvent = new CustomEvent('payment-required', {
+        detail: {
+          status: 402,
+          message: error.response?.data?.detail || 'Vous devez souscrire à un plan pour accéder à cette fonctionnalité.',
+          error: error
+        }
+      });
+      window.dispatchEvent(paymentErrorEvent);
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 

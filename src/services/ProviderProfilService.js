@@ -1,4 +1,5 @@
 import api from './api';
+import { buildImageUrl, getApiBaseUrl } from '../utils/urlHelper';
 
 /**
  * Service pour la gestion des profils prestataires
@@ -10,7 +11,7 @@ class ProviderProfilService {
    * @returns {Object} - Données avec URLs complètes
    */
   convertFileUrls(profileData) {
-    const baseUrl = 'http://localhost:8000';
+    const baseUrl = getApiBaseUrl();
     const fileFields = ['image', 'cv', 'portfolio', 'organization_logo'];
     
     const convertedData = { ...profileData };
@@ -350,6 +351,74 @@ class ProviderProfilService {
       console.error('Erreur lors de la récupération du profil utilisateur:', error);
       throw error;
     }
+  }
+
+  /**
+   * Mettre à jour les infos de base de l'utilisateur
+   * Modifie: username, email, first_name, last_name, phone
+   * @param {Object} userData - Données utilisateur à mettre à jour
+   * @returns {Promise} - Promesse contenant les données mises à jour
+   */
+  async updateUserProfile(userData) {
+    try {
+      const response = await api.put('/api/auth/profile/', userData);
+      console.log('✅ Profil utilisateur mis à jour:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ Erreur lors de la mise à jour du profil utilisateur:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Préparer les données utilisateur pour l'envoi
+   * @param {Object} userProfileData - Données de l'utilisateur
+   * @returns {Object} - Données préparées pour l'envoi
+   */
+  prepareUserProfileData(userProfileData) {
+    const updateData = {};
+
+    // Champs modifiables (username EXCLU - non modifiable)
+    const editableFields = ['email', 'first_name', 'last_name', 'phone'];
+
+    editableFields.forEach(field => {
+      if (userProfileData[field] !== undefined && userProfileData[field] !== null) {
+        updateData[field] = userProfileData[field];
+      }
+    });
+
+    console.log('📤 Données utilisateur préparées:', updateData);
+    return updateData;
+  }
+
+  /**
+   * Valider les données de l'utilisateur avant envoi
+   * @param {Object} userData - Données à valider
+   * @returns {Object} - Résultat de la validation
+   */
+  validateUserData(userData) {
+    const errors = [];
+
+    // Validation de l'email
+    if (userData.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(userData.email)) {
+        errors.push('L\'adresse email est invalide');
+      }
+    }
+
+    // Validation du téléphone (format basique)
+    if (userData.phone) {
+      const phoneRegex = /^\+?[0-9\s\-\.()]{7,}$/;
+      if (!phoneRegex.test(userData.phone)) {
+        errors.push('Le numéro de téléphone est invalide');
+      }
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
   }
 }
 

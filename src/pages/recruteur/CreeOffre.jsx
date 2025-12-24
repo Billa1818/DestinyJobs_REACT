@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import authService from '../../services/authService';
+import jobService from '../../services/jobService';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const CreeOffre = () => {
   const location = useLocation();
@@ -79,26 +81,20 @@ const CreeOffre = () => {
   // Récupérer les départements
   const fetchDepartments = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/jobs/departments/');
-      if (response.ok) {
-        const data = await response.json();
-        setDepartments(data);
-      }
+      const data = await jobService.getDepartments();
+      setDepartments(data);
     } catch (error) {
-      // Erreur réseau
+      console.error('Erreur lors de la récupération des départements:', error);
     }
   };
 
   // Récupérer les catégories d'un département
   const fetchCategories = async (departmentId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/jobs/categories/?department=${departmentId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setCategories(data);
-      }
+      const data = await jobService.getCategories(departmentId);
+      setCategories(data);
     } catch (error) {
-      // Erreur réseau
+      console.error('Erreur lors de la récupération des catégories:', error);
     }
   };
 
@@ -107,90 +103,73 @@ const CreeOffre = () => {
     try {
       setLoading(true);
       setError(null);
+
+      const jobData = await jobService.getJobOfferDetail(jobId);
       
-      // Récupérer le token d'authentification
-      const token = authService.getAccessToken();
-      if (!token) {
-        setError('Token d\'authentification manquant. Veuillez vous reconnecter.');
+      // Vérifier si l'offre est modifiable selon la documentation
+      const editableStatuses = ['DRAFT', 'PENDING_APPROVAL', 'REJECTED', 'APPROVED', 'PUBLISHED'];
+      const isEditable = editableStatuses.includes(jobData.status);
+      
+      if (!isEditable) {
+        setError(`Cette offre ne peut pas être modifiée car son statut est "${jobData.status}". Seules les offres en brouillon, en attente d'approbation, refusées, approuvées ou publiées peuvent être modifiées.`);
         return;
       }
 
-      const response = await fetch(`http://localhost:8000/api/jobs/job-offers/${jobId}/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      // Vérifier que l'utilisateur est bien le créateur de l'offre
+      if (jobData.recruiter?.user?.id !== user.id) {
+        setError('Vous n\'êtes pas autorisé à modifier cette offre.');
+        return;
+      }
 
-      if (response.ok) {
-        const jobData = await response.json();
-        
-        // Vérifier si l'offre est modifiable selon la documentation
-        const editableStatuses = ['DRAFT', 'PENDING_APPROVAL', 'REJECTED', 'APPROVED', 'PUBLISHED'];
-        const isEditable = editableStatuses.includes(jobData.status);
-        
-        if (!isEditable) {
-          setError(`Cette offre ne peut pas être modifiée car son statut est "${jobData.status}". Seules les offres en brouillon, en attente d'approbation, refusées, approuvées ou publiées peuvent être modifiées.`);
-          return;
-        }
-
-        // Vérifier que l'utilisateur est bien le créateur de l'offre
-        if (jobData.recruiter?.user?.id !== user.id) {
-          setError('Vous n\'êtes pas autorisé à modifier cette offre.');
-          return;
-        }
-
-        // Stocker les informations de l'offre pour l'affichage
-        setCurrentOffre(jobData);
-        
-        // Afficher un avertissement pour les offres approuvées
-        if (jobData.status === 'APPROVED' || jobData.status === 'PUBLISHED') {
-          setSuccessMessage(`Mode édition activé pour l'offre "${jobData.title}". ⚠️ Attention : Toute modification nécessitera une nouvelle approbation.`);
-        } else {
-          setSuccessMessage(`Mode édition activé pour l'offre "${jobData.title}"`);
-        }
-        
-        // Mettre à jour le formulaire avec les données de l'offre
-        setFormData({
-          title: jobData.title || '',
-          description: jobData.description || '',
-          department: jobData.department?.id || jobData.department || '',
-          category: jobData.category?.id || jobData.category || '',
-          contract_type: jobData.contract_type || '',
-          experience_required: jobData.experience_required || '',
-          work_mode: jobData.work_mode || '',
-          salary_type: jobData.salary_type || '',
-          salary_min: jobData.salary_min || '',
-          salary_max: jobData.salary_max || '',
-          location: jobData.location || '',
-          company_size: jobData.company_size || '',
-          profile_sought: jobData.profile_sought || '',
-          additional_info: jobData.additional_info || '',
-          application_deadline: jobData.application_deadline || '',
-          position_name: jobData.position_name || '',
-          cv_required: jobData.cv_required ?? true,
-          motivation_letter_required: jobData.motivation_letter_required ?? false,
-          is_urgent: jobData.is_urgent ?? false,
-          country: jobData.country?.id || jobData.country || null,
-          region: jobData.region?.id || jobData.region || null
-        });
-        
-        // Mettre à jour le département sélectionné pour charger les catégories
-        const departmentId = jobData.department?.id || jobData.department;
-        if (departmentId) {
-          setSelectedDepartment(departmentId);
-        }
-        
-      } else if (response.status === 403) {
-        setError('Vous n\'êtes pas autorisé à modifier cette offre. Seul le créateur peut la modifier.');
-      } else if (response.status === 404) {
-        setError('Offre non trouvée. Elle a peut-être été supprimée.');
+      // Stocker les informations de l'offre pour l'affichage
+      setCurrentOffre(jobData);
+      
+      // Afficher un avertissement pour les offres approuvées
+      if (jobData.status === 'APPROVED' || jobData.status === 'PUBLISHED') {
+        setSuccessMessage(`Mode édition activé pour l'offre "${jobData.title}". ⚠️ Attention : Toute modification nécessitera une nouvelle approbation.`);
       } else {
-        const errorData = await response.json();
-        setError(errorData.message || `Erreur ${response.status}: ${response.statusText}`);
+        setSuccessMessage(`Mode édition activé pour l'offre "${jobData.title}"`);
+      }
+      
+      // Mettre à jour le formulaire avec les données de l'offre
+      setFormData({
+        title: jobData.title || '',
+        description: jobData.description || '',
+        department: jobData.department?.id || jobData.department || '',
+        category: jobData.category?.id || jobData.category || '',
+        contract_type: jobData.contract_type || '',
+        experience_required: jobData.experience_required || '',
+        work_mode: jobData.work_mode || '',
+        salary_type: jobData.salary_type || '',
+        salary_min: jobData.salary_min || '',
+        salary_max: jobData.salary_max || '',
+        location: jobData.location || '',
+        company_size: jobData.company_size || '',
+        profile_sought: jobData.profile_sought || '',
+        additional_info: jobData.additional_info || '',
+        application_deadline: jobData.application_deadline || '',
+        position_name: jobData.position_name || '',
+        cv_required: jobData.cv_required ?? true,
+        motivation_letter_required: jobData.motivation_letter_required ?? false,
+        is_urgent: jobData.is_urgent ?? false,
+        country: jobData.country?.id || jobData.country || null,
+        region: jobData.region?.id || jobData.region || null
+      });
+      
+      // Mettre à jour le département sélectionné pour charger les catégories
+      const departmentId = jobData.department?.id || jobData.department;
+      if (departmentId) {
+        setSelectedDepartment(departmentId);
       }
     } catch (error) {
-      setError('Erreur de connexion lors du chargement de l\'offre. Veuillez réessayer.');
+      // Gestion des erreurs spécifiques
+      if (error.response?.status === 403) {
+        setError('Vous n\'êtes pas autorisé à modifier cette offre. Seul le créateur peut la modifier.');
+      } else if (error.response?.status === 404) {
+        setError('Offre non trouvée. Elle a peut-être été supprimée.');
+      } else {
+        setError('Erreur de connexion lors du chargement de l\'offre. Veuillez réessayer.');
+      }
     } finally {
       setLoading(false);
     }
@@ -226,95 +205,61 @@ const CreeOffre = () => {
         category: parseInt(formData.category)
       };
 
-      // Utiliser les bons endpoints selon la documentation
-      const url = isEditing 
-        ? `http://localhost:8000/api/jobs/job-offers/${editId}/`
-        : 'http://localhost:8000/api/jobs/job-offers/';
-      
-      // Utiliser PATCH pour la modification (recommandé selon la documentation)
-      const method = isEditing ? 'PATCH' : 'POST';
-      
-      // Récupérer le token d'authentification via authService
-      const token = authService.getAccessToken();
-      
-      if (!token) {
-        setError('Token d\'authentification manquant. Veuillez vous reconnecter.');
-        setLoading(false);
-        return;
+      let result;
+      if (isEditing) {
+        result = await jobService.updateJobOffer(editId, apiData);
+      } else {
+        result = await jobService.createJobOffer(apiData);
       }
 
-      const response = await fetch(url, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(apiData)
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        
-        setSuccessMessage(
-          isEditing 
-            ? `Offre d'emploi "${result.title}" modifiée avec succès ! Statut: ${result.status}` 
-            : 'Offre d\'emploi créée avec succès !'
-        );
-        
-        // Rediriger après un délai
-        setTimeout(() => {
-          navigate('/recruteur/gestion-offres', { replace: true });
-        }, 2000);
-    } else {
-        // Gérer les erreurs selon la documentation
-        const errorData = await response.json();
-        
-        if (response.status === 403) {
-          setError('Vous n\'êtes pas autorisé à modifier cette offre. Seul le créateur peut la modifier.');
-        } else if (response.status === 400) {
-          // Gérer les erreurs de validation
-          const validationErrors = [];
-          Object.keys(errorData).forEach(field => {
-            if (Array.isArray(errorData[field])) {
-              validationErrors.push(`${field}: ${errorData[field].join(', ')}`);
-            } else {
-              validationErrors.push(`${field}: ${errorData[field]}`);
-            }
-          });
-          setError(`Erreurs de validation: ${validationErrors.join(' | ')}`);
-        } else if (response.status === 401) {
-          setError('Session expirée. Veuillez vous reconnecter.');
-        } else if (response.status === 404) {
-          setError('Offre non trouvée. Elle a peut-être été supprimée.');
-        } else {
-        setError(errorData.message || `Erreur ${response.status}: ${response.statusText}`);
-        }
-      }
+      setSuccessMessage(
+        isEditing 
+          ? `Offre d'emploi "${result.title}" modifiée avec succès ! Statut: ${result.status}` 
+          : 'Offre d\'emploi créée avec succès !'
+      );
+      
+      // Rediriger après un délai
+      setTimeout(() => {
+        navigate('/recruteur/gestion-offres', { replace: true });
+      }, 2000);
     } catch (error) {
-      setError('Erreur de connexion. Veuillez vérifier votre connexion et réessayer.');
+      // Gérer les erreurs selon la documentation
+      if (error.response?.status === 403) {
+        setError('Vous n\'êtes pas autorisé à modifier cette offre. Seul le créateur peut la modifier.');
+      } else if (error.response?.status === 400) {
+        // Gérer les erreurs de validation
+        const errorData = error.response.data;
+        const validationErrors = [];
+        Object.keys(errorData).forEach(field => {
+          if (Array.isArray(errorData[field])) {
+            validationErrors.push(`${field}: ${errorData[field].join(', ')}`);
+          } else {
+            validationErrors.push(`${field}: ${errorData[field]}`);
+          }
+        });
+        setError(`Erreurs de validation: ${validationErrors.join(' | ')}`);
+      } else if (error.response?.status === 401) {
+        setError('Session expirée. Veuillez vous reconnecter.');
+      } else if (error.response?.status === 404) {
+        setError('Offre non trouvée. Elle a peut-être été supprimée.');
+      } else {
+        setError(error.message || 'Erreur de connexion. Veuillez vérifier votre connexion et réessayer.');
+      }
     } finally {
       setLoading(false);
     }
   };
-
   const handleCancel = (e) => {
     e.preventDefault();
     navigate('/recruteur/gestion-offres', { replace: true });
   };
 
-  if (loading && isEditing) {
-    return (
-      <div className="w-full flex items-center justify-center h-64">
-        <div className="text-center">
-          <i className="fas fa-spinner fa-spin text-4xl text-fuchsia-600 mb-4"></i>
-          <p className="text-gray-600">Chargement de l'offre...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full">
+      {loading && isEditing ? (
+        <LoadingSpinner variant="inline" size="lg" text="Chargement de l'offre..." />
+      ) : (
+      <div>
       {/* Header Section */}
       <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm mb-4 sm:mb-6">
         <div className="flex items-center justify-between">
@@ -793,8 +738,10 @@ const CreeOffre = () => {
                     </div>
         </div>
       </form>
-    </div>
-  );
-};
+      </div>
+      )}
+      </div>
+      );
+      };
 
-export default CreeOffre;
+      export default CreeOffre;

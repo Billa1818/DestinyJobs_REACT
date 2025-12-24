@@ -298,7 +298,7 @@ const BlogArticle = () => {
           </div>
 
           {/* Newsletter */}
-          <div className="bg-gradient-to-r from-fuchsia-600 to-purple-600 rounded-lg p-6 text-white">
+          <div className="bg-fuchsia-600 rounded-lg p-6 text-white">
             <h3 className="text-lg font-bold mb-2">Newsletter</h3>
             <p className="text-sm mb-4 text-fuchsia-100">Recevez les derniers articles directement dans votre boîte mail</p>
             <div className="space-y-3">

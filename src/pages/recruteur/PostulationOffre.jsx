@@ -3,8 +3,9 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import candidatureService from '../../services/candidatureService';
 import jobService from '../../services/jobService';
 import validationService from '../../services/validationService';
-import Loader from '../../components/Loader';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import CandidaturePagination from '../../components/CandidaturePagination';
+import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
 const PostulationOffre = () => { 
   const [searchParams] = useSearchParams();
@@ -212,11 +213,11 @@ const PostulationOffre = () => {
     if (imageProfil && !imageProfil.startsWith('http')) {
       // Si l'URL commence par /media, ajouter le port 8000
       if (imageProfil.startsWith('/media')) {
-        imageProfil = `http://localhost:8000${imageProfil}`;
+        imageProfil = buildImageUrl(imageProfil);
       }
       // Si l'URL ne commence pas par http, ajouter le port 8000
       else if (!imageProfil.startsWith('http://localhost:8000')) {
-        imageProfil = `http://localhost:8000${imageProfil.startsWith('/') ? '' : '/'}${imageProfil}`;
+        imageProfil = buildImageUrl("${imageProfil.startsWith('/') ? '' : '/'}${imageProfil}");
       }
     }
     
@@ -244,7 +245,7 @@ const PostulationOffre = () => {
     // Extraire l'expérience avec fallback
     const experience = applicantProfile.years_experience || apiCandidature.candidate_experience
       ? `${applicantProfile.years_experience || apiCandidature.candidate_experience} an(s) d'expérience`
-      : 'Expérience non spécifiée';
+      : '';
     
     // Extraire les compétences avec fallback
     const competences = (applicantProfile.skills || apiCandidature.candidate_skills)
@@ -259,12 +260,12 @@ const PostulationOffre = () => {
     // Extraire la localisation avec fallback
     const localisation = apiCandidature.candidate_city && apiCandidature.candidate_region
       ? `${apiCandidature.candidate_city}, ${apiCandidature.candidate_region}`
-      : applicantProfile.region?.name || applicantProfile.country?.name || 'Localisation non spécifiée';
+      : applicantProfile.region?.name || applicantProfile.country?.name || '';
     
     // Extraire le niveau d'expérience avec fallback
     const niveauExperience = (applicantProfile.years_experience || apiCandidature.candidate_experience)
       ? (applicantProfile.years_experience || apiCandidature.candidate_experience) >= 5 ? 'Senior' : (applicantProfile.years_experience || apiCandidature.candidate_experience) >= 2 ? 'Confirmé' : 'Junior'
-      : 'Niveau non spécifié';
+      : '';
     
     // Extraire le téléphone avec fallback
     const telephone = applicant.phone || apiCandidature.candidate_phone || 'Téléphone non spécifié';
@@ -643,7 +644,7 @@ const PostulationOffre = () => {
           
           {offreLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader />
+              <LoadingSpinner />
             </div>
           ) : offreDetails ? (
             <div className="space-y-4">
@@ -1190,7 +1191,7 @@ const PostulationOffre = () => {
       <div className="space-y-4">
         {loading ? (
           <div className="text-center py-12">
-            <Loader />
+            <LoadingSpinner />
             <p className="text-gray-600 mt-4">Chargement des candidatures...</p>
           </div>
         ) : error ? (
@@ -1263,7 +1264,7 @@ const PostulationOffre = () => {
                     <div className="flex items-start space-x-4">
                       {candidature.apiData?.candidate_profile?.image ? (
                         <img 
-                          src={`http://localhost:8000${candidature.apiData.candidate_profile.image}`}
+                          src={buildImageUrl(candidature.apiData.candidate_profile.image)}
                           alt={`Photo de ${candidature.nom}`}
                           className="w-12 h-12 rounded-full object-cover shadow-sm"
                           onError={(e) => {
@@ -1288,20 +1289,7 @@ const PostulationOffre = () => {
                               : candidature.localisation
                             }
                           </span>
-                          <span className="text-sm text-gray-500">
-                            <i className="fas fa-briefcase mr-1"></i>
-                            {candidature.apiData?.candidate_profile?.years_experience 
-                              ? `${candidature.apiData.candidate_profile.years_experience} an(s) d'expérience`
-                              : candidature.experience
-                            }
-                          </span>
-                          <span className="text-sm text-gray-500">
-                            <i className="fas fa-graduation-cap mr-1"></i>
-                            {candidature.apiData?.candidate_profile?.years_experience 
-                              ? (candidature.apiData.candidate_profile.years_experience >= 5 ? 'Senior' : candidature.apiData.candidate_profile.years_experience >= 2 ? 'Confirmé' : 'Junior')
-                              : candidature.niveauExperience
-                            }
-                          </span>
+
                         </div>
                       </div>
                     </div>
@@ -1405,12 +1393,6 @@ const PostulationOffre = () => {
                   )}
                   
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-3">
-                    <div className="text-center">
-                      <div className="text-sm font-bold text-gray-900">
-                        {candidature.apiData?.candidate_profile?.years_experience || 'N/A'}
-                      </div>
-                      <div className="text-xs text-gray-500">Années d'expérience</div>
-                    </div>
                     <div className="text-center">
                       <div className="text-sm font-bold text-blue-600">{candidature.cv ? 'Oui' : 'Non'}</div>
                       <div className="text-xs text-gray-500">CV</div>
@@ -1671,7 +1653,7 @@ const PostulationOffre = () => {
               <div className="flex items-center space-x-4 mb-4">
                 {selectedCandidateDocuments.apiData?.candidate_profile?.image ? (
                   <img 
-                    src={`http://localhost:8000${selectedCandidateDocuments.apiData.candidate_profile.image}`}
+                    src={buildImageUrl(selectedCandidateDocuments.apiData.candidate_profile.image)}
                     alt={`Photo de ${selectedCandidateDocuments.nom}`}
                     className="w-16 h-16 rounded-full object-cover shadow-sm"
                     onError={(e) => {

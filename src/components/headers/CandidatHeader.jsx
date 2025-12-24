@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import profileService from '../../services/profileService';
 import CandidatNotificationService from '../../services/CandidatNotificationService';
+import { buildImageUrl } from '../../utils/urlHelper';
 
 const CandidatHeader = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -42,24 +43,7 @@ const CandidatHeader = () => {
 
   // Fonction pour corriger l'URL de l'image
   const getCorrectImageUrl = (imageUrl) => {
-    if (!imageUrl) return null;
-    
-    // Si l'URL est déjà complète avec http://localhost:8000, la retourner telle quelle
-    if (imageUrl.startsWith('http://localhost:8000')) {
-      return imageUrl;
-    }
-    
-    // Si c'est une URL relative (commence par /media/), ajouter le base URL
-    if (imageUrl.startsWith('/media/')) {
-      return `http://localhost:8000${imageUrl}`;
-    }
-    
-    // Si c'est juste le nom du fichier, construire l'URL complète
-    if (imageUrl.includes('.')) {
-      return `http://localhost:8000/media/candidates/images/${imageUrl}`;
-    }
-    
-    return imageUrl;
+    return buildImageUrl(imageUrl);
   };
 
   // Récupérer le profil candidat
@@ -356,6 +340,9 @@ const CandidatHeader = () => {
                   <Link to="/candidat/favoris" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
                     <i className="fas fa-heart mr-2"></i>Favoris
                   </Link>
+                  <Link to="/plan-manager" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
+                    <i className="fas fa-layer-group mr-2"></i>Abonnement
+                  </Link>
                   <div className="border-t border-gray-100"></div>
                   <Link to="/candidat/parametre" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
                     <i className="fas fa-cog mr-2"></i>Paramètres
@@ -431,8 +418,8 @@ const CandidatHeader = () => {
           <Link to="/candidat/favoris" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
             <i className="fas fa-heart mr-2"></i>Favoris
           </Link>
-          <Link to="/candidat/postuler" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-            <i className="fas fa-paper-plane mr-2"></i>Postuler
+          <Link to="/plan-manager" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
+            <i className="fas fa-layer-group mr-2"></i>Abonnement
           </Link>
           <Link to="/candidat/parametre" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
             <i className="fas fa-cog mr-2"></i>Paramètres

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import bourseService from '../../services/bourseService';
-import { PageLoader } from '../../components';
+import { LoadingSpinner } from '../../components';
 const CreeBourse = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -185,12 +185,11 @@ const CreeBourse = () => {
     navigate('/recruteur/gestion-bourses');
   };
 
-  if (loading) {
-    return <PageLoader text="Chargement des données..." />;
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      {loading ? (
+        <LoadingSpinner variant="page" size="lg" text="Chargement des données..." />
+      ) : (
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header */}
         <div className="mb-8">
@@ -675,6 +674,7 @@ const CreeBourse = () => {
             </div>
         </form>
       </div>
+      )}
     </div>
   );
 };

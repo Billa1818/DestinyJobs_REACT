@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import profileService from '../../services/profileService';
+import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
 const CandidatePublicProfile = () => {
   const { userId } = useParams();
@@ -96,7 +97,7 @@ const CandidatePublicProfile = () => {
     }
     
     if (imageUrl.startsWith('/media/')) {
-      return `http://localhost:8000${imageUrl}`;
+      return buildImageUrl(imageUrl);
     }
     
     return imageUrl;
@@ -111,7 +112,7 @@ const CandidatePublicProfile = () => {
     }
     
     if (cvUrl.startsWith('/media/')) {
-      return `http://localhost:8000${cvUrl}`;
+      return buildImageUrl(cvUrl);
     }
     
     return cvUrl;

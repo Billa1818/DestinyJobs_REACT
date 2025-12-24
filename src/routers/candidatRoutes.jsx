@@ -5,14 +5,12 @@ import Jobs from '../pages/public/Jobs';
 import DetailOffre from '../pages/candidat/DetailOffre';
 import EmploiCandidature from '../pages/candidat/EmploiCandidature';
 import EditerProfil from '../pages/candidat/EditerProfil';
-import Postuler from '../pages/candidat/Postuler';
 import Parametre from '../pages/candidat/Parametre';
 import Notification from '../pages/candidat/Notification';
 import Finacement from '../pages/candidat/Finacement';
 import DetailFinacement from '../pages/candidat/DetailFinacement';
 import Bourse from '../pages/candidat/Bourse';
 import DetailBourse from '../pages/candidat/DetailBourse';
-import IACompatibilityCheck from '../pages/candidat/IACompatibilityCheck';
 import FinancementCandidature from '../pages/candidat/FinancementCandidature';
 import Favoris from '../pages/candidat/Favoris';
 
@@ -50,10 +48,6 @@ const candidatRoutes = [
     element: <EditerProfil />
   },
   {
-    path: 'postuler',
-    element: <Postuler />
-  },
-  {
     path: 'parametre',
     element: <Parametre />
   },
@@ -76,10 +70,6 @@ const candidatRoutes = [
   {
     path: 'detail-bourse',
     element: <DetailBourse />
-  },
-  {
-    path: 'ia-compatibility/:offerId/:offerType',
-    element: <IACompatibilityCheck />
   },
   {
     path: 'favoris',

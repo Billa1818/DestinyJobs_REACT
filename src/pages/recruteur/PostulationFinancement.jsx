@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import candidatureService from '../../services/candidatureService';
 import financementService from '../../services/financementService';
 import validationService from '../../services/validationService';
-import Loader from '../../components/Loader';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import CandidaturePagination from '../../components/CandidaturePagination';
+import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
 const PostulationFinancement = () => {
-  const [searchParams] = useSearchParams(); 
-  const financementIdParam = searchParams.get('financement');
+  const { financementId } = useParams();
+  const financementIdParam = financementId;
   
   // États pour l'API
   const [candidatures, setCandidatures] = useState([]);
@@ -210,11 +211,11 @@ const PostulationFinancement = () => {
     if (imageProfil && !imageProfil.startsWith('http')) {
       // Si l'URL commence par /media, ajouter le port 8000
       if (imageProfil.startsWith('/media')) {
-        imageProfil = `http://localhost:8000${imageProfil}`;
+        imageProfil = buildImageUrl(imageProfil);
       }
       // Si l'URL ne commence pas par http, ajouter le port 8000
       else if (!imageProfil.startsWith('http://localhost:8000')) {
-        imageProfil = `http://localhost:8000${imageProfil.startsWith('/') ? '' : '/'}${imageProfil}`;
+        imageProfil = buildImageUrl("${imageProfil.startsWith('/') ? '' : '/'}${imageProfil}");
       }
     }
     
@@ -590,7 +591,7 @@ const PostulationFinancement = () => {
           
           {financementLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader />
+              <LoadingSpinner />
             </div>
           ) : financementDetails ? (
             <div className="space-y-4">
@@ -608,16 +609,16 @@ const PostulationFinancement = () => {
                   
                   {/* Informations de base */}
                   <div className="flex flex-wrap gap-4 mt-4">
-                    {financementDetails.sector && (
+                    {financementDetails.organization_name && (
                       <div className="flex items-center text-sm text-gray-600">
-                        <i className="fas fa-industry mr-2"></i>
-                        <span>{financementDetails.sector.name || financementDetails.sector}</span>
+                        <i className="fas fa-building mr-2"></i>
+                        <span>{financementDetails.organization_name}</span>
                       </div>
                     )}
-                    {financementDetails.target && (
+                    {financementDetails.country && (
                       <div className="flex items-center text-sm text-gray-600">
-                        <i className="fas fa-bullseye mr-2"></i>
-                        <span>{financementDetails.target.name || financementDetails.target}</span>
+                        <i className="fas fa-globe mr-2"></i>
+                        <span>{financementDetails.country.name}</span>
                       </div>
                     )}
                     {financementDetails.created_at && (
@@ -645,42 +646,14 @@ const PostulationFinancement = () => {
                 </div>
               </div>
 
-              {/* Statistiques de l'offre */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                {financementDetails.amount && (
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <div className="text-lg font-bold text-blue-600 mb-1">
-                      {financementDetails.amount} FCFA
-                    </div>
-                    <div className="text-sm text-gray-600">Montant du financement</div>
-                  </div>
-                )}
-                {financementDetails.interest_rate && (
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <div className="text-lg font-bold text-green-600 mb-1">
-                      {financementDetails.interest_rate}%
-                    </div>
-                    <div className="text-sm text-gray-600">Taux d'intérêt</div>
-                  </div>
-                )}
-                {financementDetails.duration && (
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <div className="text-lg font-bold text-purple-600 mb-1">
-                      {financementDetails.duration} mois
-                    </div>
-                    <div className="text-sm text-gray-600">Durée du prêt</div>
-                  </div>
-                )}
-              </div>
-
-              {/* Description courte */}
-              {financementDetails.description && (
+              {/* Objectif */}
+              {financementDetails.objective && (
                 <div className="mt-4">
-                  <h5 className="text-md font-semibold text-gray-900 mb-2">Description :</h5>
+                  <h5 className="text-md font-semibold text-gray-900 mb-2">Objectif :</h5>
                   <p className="text-gray-700 text-sm leading-relaxed">
-                    {financementDetails.description.length > 200 
-                      ? `${financementDetails.description.substring(0, 200)}...` 
-                      : financementDetails.description
+                    {financementDetails.objective.length > 200 
+                      ? `${financementDetails.objective.substring(0, 200)}...` 
+                      : financementDetails.objective
                     }
                   </p>
                 </div>
@@ -696,46 +669,50 @@ const PostulationFinancement = () => {
                     Conditions et exigences
                   </h5>
                   
-                  {/* Garantie */}
-                  {financementDetails.no_guarantee !== undefined && (
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm text-gray-700">Garantie requise</span>
-                      <span className={`px-2 py-1 text-xs rounded-full font-medium ${
-                        financementDetails.no_guarantee ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                      }`}>
-                        {financementDetails.no_guarantee ? 'Non requise' : 'Requis'}
-                      </span>
+                  {/* Critères d'éligibilité */}
+                  {financementDetails.eligibility_criteria && (
+                    <div className="flex items-start p-3 bg-gray-50 rounded-lg">
+                      <i className="fas fa-check-circle text-green-600 mr-3 mt-0.5"></i>
+                      <div>
+                        <span className="text-sm font-medium text-gray-700">Critères d'éligibilité</span>
+                        <p className="text-xs text-gray-600 mt-1">{financementDetails.eligibility_criteria}</p>
+                      </div>
                     </div>
                   )}
 
-                  {/* Période de grâce */}
-                  {financementDetails.grace_period_available !== undefined && (
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm text-gray-700">Période de grâce</span>
-                      <span className={`px-2 py-1 text-xs rounded-full font-medium ${
-                        financementDetails.grace_period_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {financementDetails.grace_period_available ? 'Disponible' : 'Non disponible'}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Expérience requise */}
-                  {financementDetails.required_experience_years && (
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm text-gray-700">Expérience minimale</span>
+                  {/* Application externe */}
+                  {financementDetails.is_external_application && (
+                    <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <span className="text-sm text-blue-700">Application externe</span>
                       <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
-                        {financementDetails.required_experience_years} an(s)
+                        Oui
                       </span>
                     </div>
                   )}
 
-                  {/* Taille de l'entreprise */}
-                  {financementDetails.company_size && (
+                  {/* Durée du projet */}
+                  {financementDetails.project_duration && (
+                    <div className="flex items-start p-3 bg-gray-50 rounded-lg">
+                      <i className="fas fa-clock text-blue-600 mr-3 mt-0.5"></i>
+                      <div>
+                        <span className="text-sm font-medium text-gray-700">Durée du projet</span>
+                        <p className="text-xs text-gray-600 mt-1">{financementDetails.project_duration}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Statut */}
+                  {financementDetails.status && (
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm text-gray-700">Taille d'entreprise</span>
-                      <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-medium">
-                        {financementDetails.company_size}
+                      <span className="text-sm text-gray-700">Statut</span>
+                      <span className={`px-2 py-1 text-xs rounded-full font-medium ${
+                        financementDetails.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                        financementDetails.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {financementDetails.status === 'APPROVED' ? 'Approuvé' : 
+                         financementDetails.status === 'PENDING' ? 'En attente' : 
+                         financementDetails.status}
                       </span>
                     </div>
                   )}
@@ -768,70 +745,28 @@ const PostulationFinancement = () => {
                     </div>
                   )}
 
-                  {/* Zone géographique */}
-                  {financementDetails.geographic_zone && (
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm text-gray-700">Zone géographique</span>
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
-                        {financementDetails.geographic_zone}
-                      </span>
+                  {/* Pays couverts */}
+                  {financementDetails.countries_covered && (
+                    <div className="flex items-start p-3 bg-gray-50 rounded-lg">
+                      <i className="fas fa-globe text-blue-600 mr-3 mt-0.5"></i>
+                      <div>
+                        <span className="text-sm font-medium text-gray-700">Pays couverts</span>
+                        <p className="text-xs text-gray-600 mt-1">{financementDetails.countries_covered}</p>
+                      </div>
                     </div>
                   )}
 
-                  {/* Informations de contact */}
-                  {financementDetails.contact_info && (
+                  {/* Email de contact */}
+                  {financementDetails.contact_email && (
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm text-gray-700">Contact</span>
-                      <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full font-medium">
-                        {financementDetails.contact_info}
-                      </span>
+                      <span className="text-sm text-gray-700">Email</span>
+                      <a href={`mailto:${financementDetails.contact_email}`} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium hover:bg-blue-200">
+                        {financementDetails.contact_email}
+                      </a>
                     </div>
                   )}
                 </div>
               </div>
-
-              {/* Informations sur le recruteur */}
-              {financementDetails.recruiter && (
-                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                  <h5 className="text-md font-semibold text-gray-900 mb-3">
-                    <i className="fas fa-building mr-2 text-blue-600"></i>
-                    Informations sur l'entreprise
-                  </h5>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {financementDetails.recruiter.company_name && (
-                      <div className="flex items-center">
-                        <i className="fas fa-building mr-2 text-blue-600"></i>
-                        <span className="text-sm text-gray-700">{financementDetails.recruiter.company_name}</span>
-                      </div>
-                    )}
-                    {financementDetails.recruiter.sector && (
-                      <div className="flex items-center">
-                        <i className="fas fa-industry mr-2 text-blue-600"></i>
-                        <span className="text-sm text-gray-700">{financementDetails.recruiter.sector}</span>
-                      </div>
-                    )}
-                    {financementDetails.recruiter.company_size && (
-                      <div className="flex items-center">
-                        <i className="fas fa-users mr-2 text-blue-600"></i>
-                        <span className="text-sm text-gray-700">{financementDetails.recruiter.company_size}</span>
-                      </div>
-                    )}
-                    {financementDetails.recruiter.website && (
-                      <div className="flex items-center">
-                        <i className="fas fa-globe mr-2 text-blue-600"></i>
-                        <a 
-                          href={financementDetails.recruiter.website} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-sm text-blue-600 hover:underline"
-                        >
-                          {financementDetails.recruiter.website}
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
 
               {/* Détails techniques */}
               {financementDetails.pricing_type && (
@@ -915,10 +850,6 @@ const PostulationFinancement = () => {
             <div className="bg-white rounded-lg p-4 shadow-sm text-center">
               <div className="text-2xl font-bold text-purple-600">{financementDetails.views_count || 0}</div>
               <div className="text-xs text-gray-500">Vues de l'offre</div>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm text-center">
-              <div className="text-2xl font-bold text-orange-600">{financementDetails.max_applications || '∞'}</div>
-              <div className="text-xs text-gray-500">Candidatures max</div>
             </div>
           </>
         )}
@@ -1075,7 +1006,7 @@ const PostulationFinancement = () => {
 
         {loading ? (
           <div className="text-center py-12">
-            <Loader />
+            <LoadingSpinner />
             <p className="text-gray-600 mt-4">Chargement des candidatures...</p>
           </div>
         ) : error ? (
@@ -1149,7 +1080,7 @@ const PostulationFinancement = () => {
                     <div className="flex items-start space-x-4">
                       {candidature.apiData?.candidate_profile?.image ? (
                         <img 
-                          src={`http://localhost:8000${candidature.apiData.candidate_profile.image}`}
+                          src={buildImageUrl(candidature.apiData.candidate_profile.image)}
                           alt={`Photo de ${candidature.nom}`}
                           className="w-12 h-12 rounded-full object-cover shadow-sm"
                           onError={(e) => {
@@ -1172,21 +1103,6 @@ const PostulationFinancement = () => {
                             {candidature.apiData?.candidate_profile?.region?.name && candidature.apiData?.candidate_profile?.country?.name 
                               ? `${candidature.apiData.candidate_profile.region.name}, ${candidature.apiData.candidate_profile.country.name}`
                               : candidature.localisation
-                            }
-                          </span>
-                          <span className="text-sm text-gray-500">
-                            <i className="fas fa-briefcase mr-1"></i>
-                            {candidature.apiData?.candidate_profile?.years_experience 
-                              ? `${candidature.apiData.candidate_profile.years_experience} an(s) d'expérience`
-                              : candidature.experience
-                            }
-                          </span>
-                          <span className="text-sm text-gray-500">
-                            <i className="fas fa-graduation-cap mr-1"></i>
-                            {candidature.apiData?.candidate_profile?.years_experience 
-                              ? (candidature.apiData.candidate_profile.years_experience >= 5 ? 'Senior' : 
-                                 candidature.apiData.candidate_profile.years_experience >= 2 ? 'Confirmé' : 'Junior')
-                              : candidature.niveauExperience
                             }
                           </span>
                         </div>
@@ -1295,12 +1211,6 @@ const PostulationFinancement = () => {
                   )}
                   
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-3">
-                    <div className="text-center">
-                      <div className="text-sm font-bold text-gray-900">
-                        {candidature.apiData?.candidate_profile?.years_experience || 'N/A'}
-                      </div>
-                      <div className="text-xs text-gray-500">Années d'expérience</div>
-                    </div>
                     <div className="text-center">
                       <div className="text-sm font-bold text-blue-600">{candidature.cv ? 'Oui' : 'Non'}</div>
                       <div className="text-xs text-gray-500">CV</div>
@@ -1802,25 +1712,6 @@ const PostulationFinancement = () => {
                   <i className="fas fa-address-card mr-2"></i>
                   Informations de Contact
                 </h4>
-                <div className="space-y-3 text-sm text-orange-700">
-                  <div className="flex items-center">
-                    <i className="fas fa-envelope mr-3 text-orange-600 w-5"></i>
-                    <span className="font-medium">Email:</span>
-                    <span className="ml-2">{selectedContactCandidate.email}</span>
-                  </div>
-                  {selectedContactCandidate.telephone && (
-                    <div className="flex items-center">
-                      <i className="fas fa-phone mr-3 text-orange-600 w-5"></i>
-                      <span className="font-medium">Téléphone:</span>
-                      <span className="ml-2">{selectedContactCandidate.telephone}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center">
-                    <i className="fas fa-map-marker-alt mr-3 text-orange-600 w-5"></i>
-                    <span className="font-medium">Localisation:</span>
-                    <span className="ml-2">{selectedContactCandidate.localisation}</span>
-                  </div>
-                </div>
               </div>
 
               {/* Actions de contact */}

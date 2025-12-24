@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import consultationService from '../../services/consultationService';
 import ShareModal from '../../components/ShareModal';
 import SavedOfferButton from '../../components/SavedOfferButton';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const DetailConsultation = () => {
   const { id } = useParams();
@@ -91,10 +92,7 @@ const DetailConsultation = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement de la consultation...</p>
-        </div>
+        <LoadingSpinner variant="page" size="lg" text="Chargement de la consultation..." />
       </div>
     );
   }
@@ -122,10 +120,7 @@ const DetailConsultation = () => {
   if (!consultation || !consultation.id) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement des données de la consultation...</p>
-        </div>
+        <LoadingSpinner variant="page" size="lg" text="Chargement des données de la consultation..." />
       </div>
     );
   }

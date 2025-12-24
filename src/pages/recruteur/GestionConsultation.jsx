@@ -5,6 +5,7 @@ import consultationService from '../../services/consultationService';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 import ConsultationStats from '../../components/ConsultationStats';
 import ConsultationPagination from '../../components/ConsultationPagination';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 
 const GestionConsultation = () => {
@@ -210,12 +211,11 @@ const GestionConsultation = () => {
   // États de chargement et d'erreur
   if (loading && consultations.length === 0) {
     return (
-      <div className="w-full flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement des consultations...</p>
-        </div>
-      </div>
+      <LoadingSpinner 
+        variant="page" 
+        size="lg" 
+        text="Chargement des consultations..."
+      />
     );
   }
 
@@ -382,7 +382,7 @@ const GestionConsultation = () => {
                  to={`/recruteur/postulations-consultations?consultation=${consultation.id}`}
                  className="flex items-center px-4 py-2 bg-fuchsia-600 text-white rounded-md hover:bg-fuchsia-700 transition duration-200"
                >
-                 <i className="fas fa-users mr-2"></i>Voir candidatures
+                 <i className="fas fa-users mr-2"></i>Voir candidatures ({consultation.applications_count || 0})
                </Link>
                <button 
                  onClick={() => handleModifier(consultation.id)}

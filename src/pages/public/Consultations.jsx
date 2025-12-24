@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import SidebarFilter from '../../components/SidebarFilter';
 import ConsultationPagination from '../../components/ConsultationPagination';
 import consultationService from '../../services/consultationService';
-import Loader from '../../components/Loader';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { useAuth } from '../../contexts/AuthContext';
+import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
 const Consultations = () => {
   const { isAuthenticated } = useAuth();
@@ -76,7 +77,7 @@ const Consultations = () => {
       postedDate: apiConsultation.created_at ? new Date(apiConsultation.created_at).toLocaleDateString('fr-FR') : 'Date non spécifiée',
       description: apiConsultation.description || 'Description non disponible',
       logo: apiConsultation.company_logo ? 
-        (apiConsultation.company_logo.startsWith('http') ? apiConsultation.company_logo : `http://localhost:8000${apiConsultation.company_logo}`) : 
+        (apiConsultation.company_logo.startsWith('http') ? apiConsultation.company_logo : buildImageUrl(apiConsultation.company_logo)) : 
         null,
       recruiterName: apiConsultation.recruiter?.first_name && apiConsultation.recruiter?.last_name 
         ? `${apiConsultation.recruiter.first_name} ${apiConsultation.recruiter.last_name}`
@@ -151,26 +152,6 @@ const Consultations = () => {
     
     return matchesSearch && matchesCategory && matchesLocation;
   });
-
-  if (loading) {
-    return <Loader />;
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-12">
-        <i className="fas fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Erreur de chargement</h3>
-        <p className="text-gray-600 mb-4">{error}</p>
-        <button 
-          onClick={loadConsultations}
-          className="bg-fuchsia-600 text-white px-4 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200"
-        >
-          Réessayer
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -316,7 +297,23 @@ const Consultations = () => {
             </div>
 
             {/* Consultations List */}
-            {filteredConsultations.length === 0 ? (
+            {loading ? (
+              <LoadingSpinner variant="inline" size="lg" text="Chargement des consultations..." className="py-20" />
+            ) : error ? (
+              <div className="text-center py-12 bg-white rounded-xl shadow-sm">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i className="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Erreur de chargement</h3>
+                <p className="text-gray-600 text-sm mb-4">{error}</p>
+                <button 
+                  onClick={loadConsultations}
+                  className="bg-fuchsia-600 text-white px-4 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200 text-sm"
+                >
+                  Réessayer
+                </button>
+              </div>
+            ) : filteredConsultations.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-xl shadow-sm">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <i className="fas fa-search text-gray-400 text-xl"></i>

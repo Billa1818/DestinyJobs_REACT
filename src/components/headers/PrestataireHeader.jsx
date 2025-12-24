@@ -231,7 +231,9 @@ const PrestataireHeader = () => {
                   <Link to="/prestataire/favoris" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
                     <i className="fas fa-heart mr-2"></i>Favoris
                   </Link>
-                  
+                  <Link to="/plan-manager" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
+                    <i className="fas fa-layer-group mr-2"></i>Abonnement
+                  </Link>
                   <Link to="/prestataire/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
                     <i className="fas fa-cog mr-2"></i>Paramètres
                   </Link>
@@ -299,7 +301,9 @@ const PrestataireHeader = () => {
             <Link to="/prestataire/favoris" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
               <i className="fas fa-heart mr-2"></i>Favoris
             </Link>
-
+            <Link to="/plan-manager" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+              <i className="fas fa-layer-group mr-2"></i>Abonnement
+            </Link>
             <Link to="/prestataire/settings" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md">
               <i className="fas fa-cog mr-2"></i>Paramètres
             </Link>
@@ -349,7 +353,7 @@ const PrestataireHeader = () => {
               Mon Portfolio
             </Link>
             
-            <Link to="/formation" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+            <Link to="/formations" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
               <i className="fas fa-graduation-cap mr-2"></i>
               Formation
             </Link>

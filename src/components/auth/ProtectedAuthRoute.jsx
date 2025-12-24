@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import LoadingSpinner from '../LoadingSpinner';
 
 /**
  * Composant qui protège les routes d'authentification (login, signup)
@@ -27,11 +28,7 @@ const ProtectedAuthRoute = ({ children }) => {
 
   // Afficher un loader pendant la vérification de l'authentification
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-fuchsia-600"></div>
-      </div>
-    );
+    return <LoadingSpinner variant="page" size="lg" text="Vérification..." />;
   }
 
   // Si l'utilisateur est connecté, ne rien afficher (redirection en cours)

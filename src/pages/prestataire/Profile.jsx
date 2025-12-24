@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import ProviderProfilService from '../../services/ProviderProfilService';
+import EditUserInfoModal from '../../components/prestataire/EditUserInfoModal';
+import UserInfoSection from '../../components/prestataire/UserInfoSection';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
 const PrestataireProfile = () => {
   const navigate = useNavigate();
+  const { updateProfile: updateAuthProfile } = useAuth();
   
   // États pour les données du profil
   const [profileData, setProfileData] = useState({
@@ -53,6 +59,9 @@ const PrestataireProfile = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [loadingUserProfile, setLoadingUserProfile] = useState(false);
 
+  // État pour le modal d'édition des infos utilisateur
+  const [isEditUserInfoOpen, setIsEditUserInfoOpen] = useState(false);
+
   // Charger le profil au montage du composant
   useEffect(() => {
     loadProfile();
@@ -72,6 +81,31 @@ const PrestataireProfile = () => {
     } finally {
       setLoadingUserProfile(false);
     }
+  };
+
+  // Gérer le succès de la mise à jour des infos utilisateur
+  const handleUserInfoSaved = (updatedData) => {
+    // Mettre à jour le profil utilisateur dans l'état local
+    setUserProfile(updatedData);
+    
+    // Aussi mettre à jour le contexte d'authentification global
+    try {
+      updateAuthProfile({
+        first_name: updatedData.first_name,
+        last_name: updatedData.last_name,
+        email: updatedData.email,
+        username: updatedData.username,
+        phone: updatedData.phone
+      });
+      console.log('✅ Contexte d\'authentification mis à jour');
+    } catch (error) {
+      console.error('⚠️ Erreur lors de la mise à jour du contexte:', error);
+    }
+    
+    // Afficher un message de succès
+    setSuccess('Vos informations ont été mises à jour avec succès');
+    // Cacher le message après 3 secondes
+    setTimeout(() => setSuccess(false), 3000);
   };
 
   // Charger le profil depuis l'API
@@ -153,7 +187,7 @@ const PrestataireProfile = () => {
       // Construire l'URL complète si elle est relative
       const imageUrl = profileData.image.startsWith('http') 
         ? profileData.image 
-        : `http://localhost:8000${profileData.image}`;
+        : buildImageUrl(profileData.image);
       existingFiles.image = imageUrl;
       console.log('📸 Image existante chargée:', imageUrl);
     }
@@ -161,7 +195,7 @@ const PrestataireProfile = () => {
     if (profileData.cv) {
       const cvUrl = profileData.cv.startsWith('http') 
         ? profileData.cv 
-        : `http://localhost:8000${profileData.cv}`;
+        : buildImageUrl(profileData.cv);
       existingFiles.cv = cvUrl;
       console.log('📄 CV existant chargé:', cvUrl);
     }
@@ -169,7 +203,7 @@ const PrestataireProfile = () => {
     if (profileData.portfolio) {
       const portfolioUrl = profileData.portfolio.startsWith('http') 
         ? profileData.portfolio 
-        : `http://localhost:8000${profileData.portfolio}`;
+        : buildImageUrl(profileData.portfolio);
       existingFiles.portfolio = portfolioUrl;
       console.log('📁 Portfolio existant chargé:', portfolioUrl);
     }
@@ -177,7 +211,7 @@ const PrestataireProfile = () => {
     if (profileData.organization_logo) {
       const logoUrl = profileData.organization_logo.startsWith('http') 
         ? profileData.organization_logo 
-        : `http://localhost:8000${profileData.organization_logo}`;
+        : buildImageUrl(profileData.organization_logo);
       existingFiles.organization_logo = logoUrl;
       console.log('🏢 Logo organisation existant chargé:', logoUrl);
     }
@@ -329,7 +363,7 @@ const PrestataireProfile = () => {
       return {
         url: profileData.user.image.startsWith('http') 
           ? profileData.user.image 
-          : `http://localhost:8000${profileData.user.image}`,
+          : buildImageUrl(profileData.user.image),
         type: 'image/jpeg',
         isUserImage: true
       };
@@ -731,21 +765,11 @@ const PrestataireProfile = () => {
     }
   }, [files, profileData, loading]);
 
-  if (loading) {
-    return (
-      <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Chargement du profil...</p>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
+      {loading ? (
+        <LoadingSpinner variant="inline" size="lg" text="Chargement du profil..." />
+      ) : (
       <div className="flex flex-col xl:flex-row gap-3 sm:px-4 lg:gap-6">
         {/* Main Content Column */}
         <div className="xl:w-2/3">
@@ -841,146 +865,38 @@ const PrestataireProfile = () => {
 
               
               {/* Informations de base de l'utilisateur */}
-              {loadingUserProfile ? (
-                <div className="mb-8 text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Chargement des informations utilisateur...</p>
-                </div>
-              ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                {/* Prénom */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Prénom *
-                  </label>
-                  <input
-                    type="text"
-                    value={userProfile?.first_name || ''}
-                    onChange={(e) => {
-                      if (userProfile) {
-                        setUserProfile(prev => ({ ...prev, first_name: e.target.value }));
-                      }
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    placeholder="Votre prénom"
-                    readOnly={!userProfile}
-                  />
-                </div>
+              <UserInfoSection
+                userProfile={userProfile}
+                onEditClick={() => setIsEditUserInfoOpen(true)}
+                loading={loadingUserProfile}
+              />
 
-                {/* Nom de famille */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nom de famille *
-                  </label>
-                  <input
-                    type="text"
-                    value={userProfile?.last_name || ''}
-                    onChange={(e) => {
-                      if (userProfile) {
-                        setUserProfile(prev => ({ ...prev, last_name: e.target.value }));
-                      }
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    placeholder="Votre nom de famille"
-                    readOnly={!userProfile}
-                  />
-                </div>
-
-                {/* Nom d'utilisateur */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nom d'utilisateur *
-                  </label>
-                  <input
-                    type="text"
-                    value={userProfile?.username || ''}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
-                    placeholder="Votre nom d'utilisateur"
-                    readOnly
-                    disabled
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Ce champ ne peut pas être modifié</p>
-                </div>
-
-                {/* Email */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email *
-                  </label>
-                  <div className="flex space-x-2">
-                    <input
-                      type="email"
-                      value={userProfile?.email || ''}
-                      onChange={(e) => {
-                        if (userProfile && userProfile.email_verified) {
-                          setUserProfile(prev => ({ ...prev, email: e.target.value }));
-                        }
-                      }}
-                      className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
-                        userProfile?.email_verified 
-                          ? 'border-gray-300 bg-white' 
-                          : 'border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed'
-                      }`}
-                      placeholder="votre.email@exemple.com"
-                      readOnly={!userProfile || !userProfile?.email_verified}
-                      disabled={!userProfile || !userProfile?.email_verified}
-                    />
-                    {!userProfile?.email_verified && (
-                      <button
-                        onClick={requestEmailVerification}
-                        disabled={saving}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 disabled:opacity-50 text-sm whitespace-nowrap"
-                        title="Demander la vérification de l'email"
-                      >
-                        <i className="fas fa-envelope mr-2"></i>
-                        {saving ? 'Envoi...' : 'Vérifier'}
-                      </button>
-                    )}
+              {/* Bouton de vérification d'email si nécessaire */}
+              {userProfile && !userProfile.email_verified && (
+                <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-orange-800 mb-2">
+                        <i className="fas fa-exclamation-circle mr-2"></i>
+                        Email non vérifié
+                      </p>
+                      <p className="text-xs text-orange-700">
+                        Veuillez vérifier votre email pour confirmer votre adresse.
+                      </p>
+                    </div>
+                    <button
+                      onClick={requestEmailVerification}
+                      disabled={saving}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 disabled:opacity-50 text-sm whitespace-nowrap ml-4"
+                      title="Demander la vérification de l'email"
+                    >
+                      <i className="fas fa-envelope mr-2"></i>
+                      {saving ? 'Envoi...' : 'Renvoyer'}
+                    </button>
                   </div>
-                  {!userProfile?.email_verified && (
-                    <p className="text-xs text-orange-600 mt-1">
-                      <i className="fas fa-exclamation-triangle mr-1"></i>
-                      Email non vérifié - Le champ est désactivé jusqu'à la vérification
-                    </p>
-                  )}
                 </div>
-
-                {/* Téléphone */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Téléphone
-                  </label>
-                  <input
-                    type="tel"
-                    value={userProfile?.phone || ''}
-                    onChange={(e) => {
-                      if (userProfile) {
-                        setUserProfile(prev => ({ ...prev, phone: e.target.value }));
-                      }
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    placeholder="+229 90 12 34 56"
-                    readOnly={!userProfile}
-                  />
-
-                </div>
-
-                {/* Type de compte (lecture seule) */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Type de compte
-                  </label>
-                  <input
-                    type="text"
-                    value={userProfile?.user_type || ''}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
-                    disabled
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Ce champ ne peut pas être modifié</p>
-                </div>
-              </div>
               )}
-              
+
               <div className="border-t border-gray-200 pt-6 mb-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
                   <i className="fas fa-briefcase mr-2 text-blue-600"></i>
@@ -1656,7 +1572,18 @@ const PrestataireProfile = () => {
                   </div>
                 </div>
               )}
-            </div>
+
+              {/* Bouton d'édition des infos personnelles */}
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => setIsEditUserInfoOpen(true)}
+                  className="w-full py-2 px-3 bg-orange-50 hover:bg-orange-100 text-orange-600 font-medium rounded-lg transition duration-200 flex items-center justify-center"
+                >
+                  <i className="fas fa-edit mr-2"></i>
+                  Modifier mes infos personnelles
+                </button>
+              </div>
+              </div>
             
             <div className="space-y-4">
               <div className="flex items-center">
@@ -1758,9 +1685,18 @@ const PrestataireProfile = () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </main>
+          </div>
+          </div>
+          )}
+
+          {/* Modal d'édition des infos utilisateur */}
+          <EditUserInfoModal
+          isOpen={isEditUserInfoOpen}
+          onClose={() => setIsEditUserInfoOpen(false)}
+          onSaved={handleUserInfoSaved}
+          userProfile={userProfile}
+          />
+          </main>
   );
 };
 

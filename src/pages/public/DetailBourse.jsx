@@ -5,6 +5,7 @@ import bourseService from '../../services/bourseService';
 import NotFound from './NotFound';
 import ShareModal from '../../components/ShareModal';
 import SavedOfferButton from '../../components/SavedOfferButton';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const DetailBourse = () => {
   const { id } = useParams();
@@ -89,10 +90,7 @@ const DetailBourse = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement de la bourse...</p>
-        </div>
+        <LoadingSpinner variant="page" size="lg" text="Chargement de la bourse..." />
       </div>
     );
   }
@@ -107,31 +105,6 @@ const DetailBourse = () => {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex mb-4" aria-label="Breadcrumb">
-        <ol className="inline-flex items-center space-x-1 md:space-x-3">
-          <li className="inline-flex items-center">
-            <Link to="/" className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-fuchsia-600">
-              <i className="fas fa-home mr-2"></i>
-              Accueil
-            </Link>
-          </li>
-          <li>
-            <div className="flex items-center">
-              <i className="fas fa-chevron-right text-gray-400 mx-2"></i>
-              <Link to="/bourses" className="text-sm font-medium text-gray-700 hover:text-fuchsia-600">
-                Bourses
-              </Link>
-            </div>
-          </li>
-          <li>
-            <div className="flex items-center">
-              <i className="fas fa-chevron-right text-gray-400 mx-2"></i>
-              <span className="text-sm font-medium text-gray-500">Détail de la bourse</span>
-            </div>
-          </li>
-        </ol>
-      </nav>
 
       {/* Header de la bourse */}
       <div className="bg-white rounded-lg shadow-sm p-6">

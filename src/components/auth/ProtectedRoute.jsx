@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import LoadingSpinner from '../LoadingSpinner';
 
 /**
  * Composant de protection des routes
@@ -20,7 +21,7 @@ const ProtectedRoute = ({
   requireApproval = false,
   requireEmailVerification = false,
   redirectTo = '/login',
-  fallback = <LoadingSpinner />
+  fallback = <LoadingSpinner variant="page" size="lg" text="Vérification de l'authentification..." />
 }) => {
   const { user, loading, isAuthenticated, hasUserType, hasAnyUserType, isApproved, isEmailVerified } = useAuth();
   const location = useLocation();
@@ -74,15 +75,6 @@ const ProtectedRoute = ({
   // Rendre les composants enfants si toutes les conditions sont remplies
   return children;
 };
-
-/**
- * Composant de chargement simple
- */
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600"></div>
-  </div>
-);
 
 /**
  * Composant pour les routes publiques uniquement (redirections si connecté)

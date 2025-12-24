@@ -19,7 +19,9 @@ import {
     faThumbsDown
 } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../contexts/AuthContext';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import financementCandidatureService from '../../services/FinancementCandidatureService';
+import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
 const FinancementCandidature = () => {
     const { user } = useAuth();
@@ -167,21 +169,8 @@ const FinancementCandidature = () => {
     const getImageUrl = (imagePath) => {
         if (!imagePath) return null;
         if (imagePath.startsWith('http')) return imagePath;
-        return `http://localhost:8000${imagePath}`;
+        return buildImageUrl(imagePath);
     };
-
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gray-50 py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto"></div>
-                        <p className="mt-4 text-gray-600">Chargement des candidatures...</p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     if (error) {
         return (
@@ -354,6 +343,11 @@ const FinancementCandidature = () => {
                 </div>
 
                 {/* Liste des candidatures */}
+                {loading ? (
+                    <div className="py-12">
+                        <LoadingSpinner variant="inline" size="lg" text="Chargement de vos candidatures..." />
+                    </div>
+                ) : (
                 <div className="space-y-6">
                     {applications && applications.length > 0 ? (
                         applications.map((candidature) => {
@@ -542,7 +536,7 @@ const FinancementCandidature = () => {
 
                                             {/* Action */}
                                             <Link
-                                                to={`/public/detail-financement/${offer?.id}`}
+                                                to={`/financements/${offer?.id}`}
                                                 className="w-full inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 text-sm font-medium text-gray-700 bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fuchsia-500 transition duration-200"
                                             >
                                                 <FontAwesomeIcon icon={faEye} className="mr-2" />
@@ -587,6 +581,7 @@ const FinancementCandidature = () => {
                         </div>
                     )}
                 </div>
+                )}
             </div>
         </div>
     );

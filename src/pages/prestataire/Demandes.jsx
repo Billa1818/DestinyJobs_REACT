@@ -24,7 +24,9 @@ import {
   faTag,
   faGlobe
 } from '@fortawesome/free-solid-svg-icons';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import consultationDemandesService from '../../services/consultationDemandesService';
+import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
 const Demandes = () => {
   const navigate = useNavigate();
@@ -72,7 +74,7 @@ const Demandes = () => {
   const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
     if (imagePath.startsWith('http')) return imagePath;
-    return `http://localhost:8000${imagePath}`;
+    return buildImageUrl(imagePath);
   };
 
   // Filtrer les demandes
@@ -171,18 +173,6 @@ const Demandes = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-600 mx-auto mb-6"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Chargement des demandes...</h2>
-          <p className="text-gray-600">Récupération des candidatures reçues</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full">
       {/* Header */}
@@ -194,13 +184,6 @@ const Demandes = () => {
             </h1>
             <p className="text-gray-600">Gérez les candidatures pour vos consultations</p>
           </div>
-          <button
-            onClick={loadDemandes}
-            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition duration-200"
-          >
-            <FontAwesomeIcon icon={faSyncAlt} className="mr-2" />
-            Actualiser
-          </button>
         </div>
       </div>
 
@@ -217,7 +200,7 @@ const Demandes = () => {
       )}
 
       {/* Statistiques */}
-      {demandes.length > 0 && (
+      {!loading && demandes.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center">
@@ -355,7 +338,11 @@ const Demandes = () => {
       </div>
 
       {/* Liste des demandes */}
-      {filteredDemandes.length > 0 ? (
+      {loading ? (
+        <div className="py-12">
+          <LoadingSpinner variant="inline" size="lg" text="Chargement de vos demandes..." />
+        </div>
+      ) : filteredDemandes.length > 0 ? (
         <div className="space-y-4">
           {filteredDemandes.map((demande) => {
             const aiAnalysis = demande.ai_analysis;
@@ -374,9 +361,9 @@ const Demandes = () => {
                   <div className="flex items-start space-x-4 mb-4">
                     {/* Photo du candidat */}
                     <div className="flex-shrink-0">
-                      {demande.candidate_profile?.profile_picture ? (
+                      {consultation.company_logo ? (
                         <img
-                          src={getImageUrl(demande.candidate_profile.profile_picture)}
+                          src={getImageUrl(consultation.company_logo)}
                           alt={candidateName}
                           className="w-20 h-20 rounded-lg object-cover border border-gray-200"
                         />
@@ -392,21 +379,12 @@ const Demandes = () => {
                       <h3 className="text-lg font-bold text-gray-900 mb-1">
                         {consultation?.title || 'Titre non disponible'}
                       </h3>
-                      <p className="text-sm text-gray-600 mb-2">
-                        <FontAwesomeIcon icon={faUser} className="mr-2 text-gray-400" />
-                        {candidateName} • {applicant?.user_type || 'Type non spécifié'}
-                      </p>
 
                       {/* Badges de statut et score */}
                       <div className="flex flex-wrap gap-2 items-center">
                         <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(demande.application?.status)}`}>
                           {getStatusText(demande.application?.status)}
                         </span>
-                        {!demande.application?.viewed_at && (
-                          <span className="px-3 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
-                            Nouveau
-                          </span>
-                        )}
                         {aiAnalysis && (
                           <span className={`px-3 py-1 text-xs font-semibold rounded-full ${scoreColors.bg} ${scoreColors.text}`}>
                             <FontAwesomeIcon icon={faChartLine} className="mr-1" />
@@ -421,7 +399,7 @@ const Demandes = () => {
                   <div className="border-t border-gray-100 my-4"></div>
 
                   {/* Grille d'informations - VISIBLE TOUJOURS */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                     <div className="p-3 bg-gray-50 rounded-lg">
                       <p className="text-xs text-gray-500 font-medium mb-1">Localisation</p>
                       <p className="text-sm font-semibold text-gray-900 flex items-center">
@@ -443,14 +421,6 @@ const Demandes = () => {
                       <p className="text-sm font-semibold text-gray-900 flex items-center">
                         <FontAwesomeIcon icon={faBuilding} className="mr-2 text-gray-400" />
                         {consultation?.company_details?.company_name || 'N/A'}
-                      </p>
-                    </div>
-
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-xs text-gray-500 font-medium mb-1">Vues</p>
-                      <p className="text-sm font-semibold text-gray-900 flex items-center">
-                        <FontAwesomeIcon icon={faEye} className="mr-2 text-gray-400" />
-                        {consultation?.views_count || 0}
                       </p>
                     </div>
                   </div>
@@ -600,10 +570,10 @@ const Demandes = () => {
               : "Aucune demande ne correspond à vos critères de recherche."
             }
           </p>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default Demandes;
+          </div>
+          )}
+          </div>
+          );
+          };
+          
+          export default Demandes;

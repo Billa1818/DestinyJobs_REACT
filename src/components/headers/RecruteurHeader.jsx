@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import profileService from '../../services/profileService';
 import RecruteurNotificationService from '../../services/RecruteurNotificationService';
 import authService from '../../services/authService';
+import { buildImageUrl } from '../../utils/urlHelper';
 
 const RecruteurHeader = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -188,9 +189,7 @@ const RecruteurHeader = () => {
 
   // Fonction pour corriger l'URL de l'image
   const getCorrectImageUrl = (imageUrl) => {
-    if (!imageUrl) return null;
-    if (imageUrl.startsWith('http')) return imageUrl;
-    return `http://localhost:8000${imageUrl}`;
+    return buildImageUrl(imageUrl);
   };
 
   // Fonction pour obtenir le nom complet de l'utilisateur
@@ -422,6 +421,9 @@ const RecruteurHeader = () => {
                   <Link to="/recruteur/notifications" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
                     <i className="fas fa-bell mr-2"></i>Notifications
                   </Link>
+                  <Link to="/plan-manager" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
+                    <i className="fas fa-layer-group mr-2"></i>Abonnement
+                  </Link>
                   <Link to="/recruteur/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
                     <i className="fas fa-cog mr-2"></i>Paramètres
                   </Link>
@@ -498,6 +500,9 @@ const RecruteurHeader = () => {
           </Link>
           <Link to="/recruteur/notifications" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
             <i className="fas fa-bell mr-2"></i>Notifications
+          </Link>
+          <Link to="/plan-manager" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
+            <i className="fas fa-layer-group mr-2"></i>Abonnement
           </Link>
           <Link to="/recruteur/settings" className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
             <i className="fas fa-cog mr-2"></i>Paramètres

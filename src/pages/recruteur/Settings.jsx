@@ -4,6 +4,8 @@ import profileService from '../../services/profileService';
 import authService from '../../services/authService';
 import PasswordManagement from '../../components/auth/PasswordManagement';
 import SessionManagement from '../../components/auth/SessionManagement';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { getApiBaseUrl } from '../../utils/urlHelper';
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -163,9 +165,13 @@ const Settings = () => {
         });
 
         // Logo preview
-        if (recruiterResponse.logo) {
-          setLogoPreview(recruiterResponse.logo);
-        }
+         if (recruiterResponse.logo) {
+           // Ensure the logo URL points to the correct backend port
+           const logoUrl = recruiterResponse.logo.startsWith('http') 
+             ? recruiterResponse.logo 
+             : `${getApiBaseUrl()}${recruiterResponse.logo}`;
+           setLogoPreview(logoUrl);
+         }
       } catch (err) {
         console.log('Profil recruteur non configuré');
       }
@@ -465,10 +471,11 @@ const Settings = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <i className="fas fa-spinner fa-spin text-4xl text-fuchsia-600 mb-4"></i>
-          <p className="text-gray-600">Chargement des paramètres...</p>
-        </div>
+        <LoadingSpinner 
+          variant="page" 
+          size="xl" 
+          text="Chargement des paramètres..."
+        />
       </div>
     );
   }
@@ -1363,15 +1370,6 @@ const Settings = () => {
                     <p className="text-xs text-gray-500">Comment les autres me voient</p>
                   </div>
                 </Link>
-                
-                <Link to="/recruteur/profil-public" className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-fuchsia-50 hover:border-fuchsia-300 transition duration-200">
-                  <i className="fas fa-globe text-green-600 mr-3"></i>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-900">Profil public</h4>
-                    <p className="text-xs text-gray-500">Voir mon profil public</p>
-                  </div>
-                </Link>
-                
                 <Link to="/recruteur/dashboard" className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-fuchsia-50 hover:border-fuchsia-300 transition duration-200">
                   <i className="fas fa-chart-bar text-purple-600 mr-3"></i>
                   <div>

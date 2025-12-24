@@ -1,4 +1,5 @@
 import api from './api';
+import { buildImageUrl, getApiBaseUrl } from '../utils/urlHelper';
 
 /**
  * Service pour la gestion du profil public du prestataire
@@ -65,10 +66,10 @@ class ProviderPublicProfileService {
       
       // URLs complètes pour les fichiers
       fullImageUrl: provider.image_url 
-        ? (provider.image_url.startsWith('http') ? provider.image_url : `http://localhost:8000${provider.image_url}`)
+        ? (provider.image_url.startsWith('http') ? provider.image_url : buildImageUrl(provider.image_url))
         : null,
       fullPortfolioUrl: provider.portfolio_url
-        ? (provider.portfolio_url.startsWith('http') ? provider.portfolio_url : `http://localhost:8000${provider.portfolio_url}`)
+        ? (provider.portfolio_url.startsWith('http') ? provider.portfolio_url : buildImageUrl(provider.portfolio_url))
         : null,
       
       // Statuts formatés

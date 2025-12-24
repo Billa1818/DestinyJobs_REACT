@@ -3,6 +3,7 @@ import Settings from '../pages/user/Settings';
 import CandidatsSettings from '../pages/user/settings/Candidats';
 import RecruteurSettings from '../pages/user/settings/Recruteur';
 import PrestataireSettings from '../pages/user/settings/Prestataire';
+import PlanManager from '../pages/user/PlanManager';
 
 const userRoutes = [
   {
@@ -20,6 +21,10 @@ const userRoutes = [
   {
     path: '/settings/prestataire',
     element: <PrestataireSettings />
+  },
+  {
+    path: '/plan-manager',
+    element: <PlanManager />
   }
 ];
 

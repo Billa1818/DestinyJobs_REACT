@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import ProviderPublicProfileService from '../../services/ProviderPublicProfileService';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const PrestataireServices = () => {
   const { providerId } = useParams();
@@ -125,20 +126,6 @@ const PrestataireServices = () => {
     }
   };
 
-  // Affichage du chargement
-  if (loading) {
-  return (
-      <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Chargement du profil...</p>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
   // Affichage de l'erreur
   if (error) {
     return (
@@ -167,7 +154,7 @@ const PrestataireServices = () => {
   }
 
   // Affichage du profil
-  if (!profileData) {
+  if (!loading && !profileData) {
     return (
       <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
         <div className="text-center py-8">
@@ -183,6 +170,9 @@ const PrestataireServices = () => {
 
   return (
     <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
+      {loading ? (
+        <LoadingSpinner variant="inline" size="lg" text="Chargement du profil..." />
+      ) : (
       <div className="flex flex-col xl:flex-row gap-3 sm:px-4 lg:gap-6">
         {/* Main Content Column */}
         <div className="xl:w-2/3">
@@ -219,14 +209,6 @@ const PrestataireServices = () => {
                 <p className="text-gray-900 font-medium">
                   {profileData.displayName}
                 </p>
-              </div>
-
-              {/* Nom d'utilisateur */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nom d'utilisateur
-                </label>
-                <p className="text-gray-900">@{profileData.username}</p>
               </div>
 
               {/* Type de prestataire */}
@@ -474,6 +456,7 @@ const PrestataireServices = () => {
           </div>
         </div>
       </div>
+      )}
     </main>
   );
 };

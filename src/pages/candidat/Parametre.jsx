@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import profileService from '../../services/profileService';
 import authService from '../../services/authService';
 import conversionService from '../../services/conversionService';
@@ -256,21 +257,6 @@ const Parametre = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Chargement des paramètres...</p>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
-
-
   return (
     <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
       <div className="flex flex-col xl:flex-row gap-3 sm:gap-4 lg:gap-6">
@@ -356,6 +342,13 @@ const Parametre = () => {
             </div>
           </div>
 
+          {/* Loading */}
+          {loading ? (
+            <div className="py-12">
+              <LoadingSpinner variant="inline" size="lg" text="Chargement de vos paramètres..." />
+            </div>
+          ) : (
+          <>
           {/* Profile Settings */}
           {activeTab === 'profile' && (
             <div className="bg-white rounded-lg p-6 shadow-sm">
@@ -480,10 +473,12 @@ const Parametre = () => {
               {/* Session Management */}
               <SessionManagement />
             </div>
-          )}
-        </div>
+            )}
+            </>
+            )}
+            </div>
 
-        {/* Sidebar */}
+            {/* Sidebar */}
         <div className="xl:w-1/3">
           {/* Account Summary */}
           <div className="bg-white rounded-lg p-6 shadow-sm mb-6">

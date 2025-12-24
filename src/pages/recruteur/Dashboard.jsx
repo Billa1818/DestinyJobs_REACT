@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardService from '../../services/DashboardService';
 import RecruteurNotificationService from '../../services/RecruteurNotificationService';
-import Loader from '../../components/Loader';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const Dashboard = () => {
     const [dashboardData, setDashboardData] = useState(null);
@@ -73,10 +73,6 @@ const Dashboard = () => {
         return num.toLocaleString('fr-FR');
     };
 
-    if (loading) {
-        return <Loader />;
-    }
-
     if (error) {
         return (
             <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
@@ -95,7 +91,7 @@ const Dashboard = () => {
         );
     }
 
-    if (!dashboardData) {
+    if (!loading && !dashboardData) {
         return (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
                 <div className="text-yellow-600 text-xl font-semibold">
@@ -108,16 +104,19 @@ const Dashboard = () => {
 
     // Extraire les données du dashboard
     const {
-        applicationStats,
-        jobOffers,
-        fundingOffers,
-        consultationOffers,
-        scholarships,
-        recentApplications
-    } = dashboardData;
+        applicationStats = {},
+        jobOffers = [],
+        fundingOffers = [],
+        consultationOffers = [],
+        scholarships = [],
+        recentApplications = []
+    } = dashboardData || {};
 
     return (
         <div className="bg-gray-50 min-h-screen">
+            {loading ? (
+                <LoadingSpinner variant="page" size="lg" text="Chargement du tableau de bord..." />
+            ) : (
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 {/* Header */}
                 <div className="mb-8">
@@ -262,7 +261,7 @@ const Dashboard = () => {
                                                         {formatNumber(offer.applications_count || 0)}
                                                     </span>
                                                 </div>
-                                                <Link to={`/public/detail-offre/${offer.id}`} className="text-gray-600 hover:text-gray-900 font-medium">
+                                                <Link to={`/jobs/${offer.id}`} className="text-gray-600 hover:text-gray-900 font-medium">
                                                     Voir →
                                                 </Link>
                                             </div>
@@ -343,7 +342,7 @@ const Dashboard = () => {
                                                     <i className="fas fa-eye text-gray-400"></i>
                                                     {formatNumber(offer.views_count || 0)}
                                                 </span>
-                                                <Link to={`/public/detail-consultation/${offer.id}`} className="text-gray-600 hover:text-gray-900 font-medium">
+                                                <Link to={`consultations/${offer.id}`} className="text-gray-600 hover:text-gray-900 font-medium">
                                                     Voir →
                                                 </Link>
                                             </div>
@@ -435,7 +434,7 @@ const Dashboard = () => {
                                                     <i className="fas fa-eye text-gray-400"></i>
                                                     {formatNumber(offer.views_count || 0)}
                                                 </span>
-                                                <Link to={`/public/detail-financement/${offer.id}`} className="text-gray-600 hover:text-gray-900 font-medium">
+                                                <Link to={`financements/${offer.id}`} className="text-gray-600 hover:text-gray-900 font-medium">
                                                     Voir →
                                                 </Link>
                                             </div>
@@ -467,7 +466,7 @@ const Dashboard = () => {
                         <div className="space-y-3">
                             {notifications.map((notification) => {
                                 const meta = notification.metadata || {};
-                                const metaEntries = Object.entries(meta).slice(0, 2);
+                                const metaEntries = Object.entries(meta).slice(0, 3);
                                 const priorityClass = notification.priority === 'HIGH'
                                     ? 'bg-red-100 text-red-800'
                                     : notification.priority === 'URGENT'
@@ -542,6 +541,7 @@ const Dashboard = () => {
                     )}
                 </div>
             </div>
+            )}
         </div>
     );
 };

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import LoadingSpinner from '../LoadingSpinner';
 
 const ProtectedRecruteurRoute = ({ children }) => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -24,11 +25,7 @@ const ProtectedRecruteurRoute = ({ children }) => {
 
   // Afficher un loader pendant la vérification
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-fuchsia-600"></div>
-      </div>
-    );
+    return <LoadingSpinner variant="page" size="lg" text="Vérification..." />;
   }
 
   // Si l'utilisateur n'est pas connecté ou n'est pas un recruteur, ne rien afficher

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import blogService from '../../services/blogService';
-import { Loader } from '../../components';
+import { LoadingSpinner } from '../../components';
 import NotFound from './NotFound';
 
 const BlogDetail = () => {
@@ -61,11 +61,7 @@ const BlogDetail = () => {
 
   // Affichage du loader
   if (loading) {
-    return (
-      <div className="w-full flex items-center justify-center h-64">
-        <Loader />
-      </div>
-    );
+    return <LoadingSpinner variant="page" size="lg" text="Chargement..." />;
   }
 
   // Affichage de l'erreur 404

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import SavedOffersService from '../../services/SavedOffersService';
 
 const Favoris = () => {
@@ -160,11 +161,8 @@ const Favoris = () => {
 
             {/* Loading State */}
             {loading && (
-                <div className="text-center py-12">
-                    <div className="inline-flex items-center gap-3">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fuchsia-600"></div>
-                        <span className="text-gray-600">Chargement des favoris...</span>
-                    </div>
+                <div className="py-12">
+                    <LoadingSpinner variant="inline" size="lg" text="Chargement de vos favoris..." />
                 </div>
             )}
 

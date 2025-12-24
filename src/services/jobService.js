@@ -280,6 +280,33 @@ class JobService {
   }
 
   /**
+   * Récupération de la liste des départements
+   * @returns {Promise} - Promesse contenant les départements
+   */
+  async getDepartments() {
+    try {
+      const response = await api.get('/api/jobs/departments/');
+      return response.data;
+    } catch (error) {
+      throw this.handleJobError(error, 'Erreur lors de la récupération des départements');
+    }
+  }
+
+  /**
+   * Récupération de la liste des catégories d'un département
+   * @param {number} departmentId - ID du département
+   * @returns {Promise} - Promesse contenant les catégories
+   */
+  async getCategories(departmentId) {
+    try {
+      const response = await api.get(`/api/jobs/categories/`, { params: { department: departmentId } });
+      return response.data;
+    } catch (error) {
+      throw this.handleJobError(error, 'Erreur lors de la récupération des catégories');
+    }
+  }
+
+  /**
    * Filtrage par département
    * @param {number} departmentId - ID du département
    * @param {number} page - Numéro de page

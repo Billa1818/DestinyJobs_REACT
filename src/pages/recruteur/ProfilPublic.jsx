@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import profileService from '../../services/profileService';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
 const ProfilPublic = () => {
   const { id } = useParams(); // Utiliser 'id' au lieu de 'userId'
@@ -261,7 +263,7 @@ const ProfilPublic = () => {
     }
     
     if (imageUrl.startsWith('/media/')) {
-      return `http://localhost:8000${imageUrl}`;
+      return buildImageUrl(imageUrl);
     }
     
     return imageUrl;
@@ -299,11 +301,12 @@ const ProfilPublic = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <i className="fas fa-spinner fa-spin text-4xl text-fuchsia-600 mb-4"></i>
-          <p className="text-gray-600">Chargement du profil...</p>
-                            </div>
-                        </div>
+        <LoadingSpinner 
+          variant="page" 
+          size="xl" 
+          text="Chargement du profil..."
+        />
+      </div>
     );
   }
 

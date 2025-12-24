@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import profileService from '../../services/profileService';
 import authService from '../../services/authService';
 import FileUpload from './FileUpload';
+import { buildImageUrl } from '../../utils/urlHelper';
 
 const CandidateProfileSection = () => {
   const [profileData, setProfileData] = useState(null);
@@ -16,24 +17,7 @@ const CandidateProfileSection = () => {
 
   // Fonction pour corriger l'URL de l'image
   const getCorrectImageUrl = (imageUrl) => {
-    if (!imageUrl) return null;
-    
-    // Si l'URL est déjà complète avec http://localhost:8000, la retourner telle quelle
-    if (imageUrl.startsWith('http://localhost:8000')) {
-      return imageUrl;
-    }
-    
-    // Si c'est une URL relative (commence par /media/), ajouter le base URL
-    if (imageUrl.startsWith('/media/')) {
-      return `http://localhost:8000${imageUrl}`;
-    }
-    
-    // Si c'est juste le nom du fichier, construire l'URL complète
-    if (imageUrl.includes('.')) {
-      return `http://localhost:8000/media/candidates/images/${imageUrl}`;
-    }
-    
-    return imageUrl;
+    return buildImageUrl(imageUrl);
   };
 
   // Fonction pour demander la vérification de l'email

@@ -5,6 +5,7 @@ import consultationService from '../../services/consultationService';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 import FinancementStats from '../../components/FinancementStats';
 import FinancementPagination from '../../components/FinancementPagination';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const GestionFinancement = () => {
   const navigate = useNavigate();
@@ -249,12 +250,11 @@ const GestionFinancement = () => {
 
   if (loading && fundings.length === 0) {
     return (
-      <div className="w-full flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement de vos offres de financement...</p>
-        </div>
-      </div>
+      <LoadingSpinner 
+        variant="page" 
+        size="lg" 
+        text="Chargement de vos offres de financement..."
+      />
     );
   }
 
@@ -436,7 +436,7 @@ const GestionFinancement = () => {
                 className="flex items-center px-4 py-2 bg-fuchsia-600 text-white rounded-md hover:bg-fuchsia-700 transition duration-200 text-sm"
               >
                 <i className="fas fa-users mr-2"></i>
-                Voir candidatures
+                Voir candidatures ({funding.applications_count || 0})
               </Link>
 
               <button 

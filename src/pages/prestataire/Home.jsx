@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PrestataireDashboardService from '../../services/PrestataireDashboardService';
 import consultationDemandesService from '../../services/consultationDemandesService';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 import {
   faSearch,
   faEye,
@@ -122,7 +124,7 @@ const PrestataireHome = () => {
   const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
     if (imagePath.startsWith('http')) return imagePath;
-    return `http://localhost:8000${imagePath}`;
+    return buildImageUrl(imagePath);
   };
 
   const getStatusDisplay = (status) => {
@@ -180,19 +182,6 @@ const PrestataireHome = () => {
     };
     return colors[offerType] || 'text-gray-600';
   };
-
-  if (loading) {
-    return (
-      <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Chargement du tableau de bord...</p>
-          </div>
-        </div>
-      </main>
-    );
-  }
 
   if (error) {
     return (
@@ -337,7 +326,9 @@ const PrestataireHome = () => {
           </div>
           
           <div className="p-6">
-            {recentApplications.length > 0 ? (
+            {loading ? (
+              <LoadingSpinner variant="inline" size="lg" text="Chargement des candidatures..." />
+            ) : recentApplications.length > 0 ? (
               <div className="space-y-4">
                 {recentApplications.map((application) => {
                   const scoreColors = getScoreColor(application.aiCompatibilityScore);
@@ -579,7 +570,9 @@ const PrestataireHome = () => {
           </div>
           
           <div className="p-6">
-            {recentOffers.length > 0 ? (
+            {loading ? (
+              <LoadingSpinner variant="inline" size="lg" text="Chargement des offres..." />
+            ) : recentOffers.length > 0 ? (
               <div className="space-y-4">
                 {recentOffers.map((offer) => (
                   <div key={offer.id} className="border border-gray-200 rounded-lg p-4 hover:border-orange-300 transition-colors">

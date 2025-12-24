@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import profileService from '../../services/profileService';
 import authService from '../../services/authService';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { buildImageUrl } from '../../utils/urlHelper';
 
 const Profil = () => {
   // État principal du profil
@@ -27,10 +29,11 @@ const Profil = () => {
   });
 
   // États de l'interface
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [loadingLogo, setLoadingLogo] = useState(false);
   
   // États des fichiers
   const [logoFile, setLogoFile] = useState(null);
@@ -158,7 +161,7 @@ const Profil = () => {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        setLoading(true);
+        setInitialLoading(true);
         setError(null);
         
         // Récupérer le profil utilisateur de base
@@ -206,7 +209,7 @@ const Profil = () => {
         console.error('Erreur lors du chargement du profil:', error);
         setError('Erreur lors du chargement du profil. Veuillez réessayer.');
       } finally {
-        setLoading(false);
+        setInitialLoading(false);
       }
     };
 
@@ -373,10 +376,14 @@ const Profil = () => {
     }
   }, [successMessage]);
 
-  if (loading) {
+  if (initialLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-fuchsia-600"></div>
+      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+        <LoadingSpinner 
+          variant="page" 
+          size="xl" 
+          text="Chargement des données..."
+        />
       </div>
     );
   }
@@ -483,10 +490,10 @@ const Profil = () => {
                     {(logoPreview || recruiterProfile?.logo) ? (
                       <div className="w-32 h-32 rounded-xl overflow-hidden border-2 border-gray-200 shadow-lg bg-white">
                         <img
-                          src={logoPreview || `http://localhost:8000${recruiterProfile?.logo}`}
-                          alt="Logo entreprise"
-                          className="w-full h-full object-cover"
-                        />
+                            src={logoPreview || buildImageUrl(recruiterProfile?.logo)}
+                            alt="Logo entreprise"
+                            className="w-full h-full object-cover"
+                          />
                       </div>
                     ) : (
                       <div className="w-32 h-32 rounded-xl border-2 border-dashed border-gray-300 bg-white flex items-center justify-center">
@@ -846,7 +853,7 @@ const Profil = () => {
                         
                         <div className="flex space-x-2">
                           <a 
-                            href={`http://localhost:8000${recruiterProfile.company_documents}`}
+                            href={buildImageUrl(recruiterProfile.company_documents)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-md hover:bg-blue-200 transition-colors duration-200"
@@ -855,7 +862,7 @@ const Profil = () => {
                             Voir
                           </a>
                           <a 
-                            href={`http://localhost:8000${recruiterProfile.company_documents}`}
+                            href={buildImageUrl(recruiterProfile.company_documents)}
                             download
                             className="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 text-xs rounded-md hover:bg-green-200 transition-colors duration-200"
                           >

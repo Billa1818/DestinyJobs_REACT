@@ -4,6 +4,8 @@ import ShareModal from '../../components/ShareModal';
 import SavedOfferButton from '../../components/SavedOfferButton';
 import jobService from '../../services/jobService';
 import { useAuth } from '../../contexts/AuthContext';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
 const DetailOffre = () => {
     const { id } = useParams();
@@ -180,10 +182,7 @@ const DetailOffre = () => {
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Chargement de l'offre...</p>
-                </div>
+                <LoadingSpinner variant="page" size="lg" text="Chargement de l'offre..." />
             </div>
         );
     }
@@ -210,10 +209,7 @@ const DetailOffre = () => {
     if (!offre || !offre.id) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Chargement des données de l'offre...</p>
-                </div>
+                <LoadingSpinner variant="page" size="lg" text="Chargement des données de l'offre..." />
             </div>
         );
     }
@@ -250,7 +246,7 @@ const DetailOffre = () => {
                                     {offre.recruiter.logo && (
                                         <div className="mr-3">
                                             <img
-                                                src={`http://localhost:8000${offre.recruiter.logo}`}
+                                                src={buildImageUrl(offre.recruiter.logo)}
                                                 alt={offre.recruiter.company_name}
                                                 className="w-16 h-16 rounded-lg object-cover border-2 border-gray-200"
                                                 onError={(e) => {
@@ -544,7 +540,7 @@ const DetailOffre = () => {
                                         {offre.recruiter.logo ? (
                                             <div className="mr-3">
                                                 <img
-                                                    src={`http://localhost:8000${offre.recruiter.logo}`}
+                                                    src={buildImageUrl(offre.recruiter.logo)}
                                                     alt={offre.recruiter.company_name}
                                                     className="w-20 h-20 rounded-lg object-cover border-2 border-gray-200 shadow-sm"
                                                     onError={(e) => {

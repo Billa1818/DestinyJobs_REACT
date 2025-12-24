@@ -7,6 +7,7 @@ import financementService from '../../services/financementService';
 import bourseService from '../../services/bourseService';
 import blogService from '../../services/blogService';
 import HomeStatService from '../../services/HomeStatService';
+import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
 const Home = () => {
     const { isAuthenticated } = useAuth();
@@ -221,7 +222,7 @@ const Home = () => {
         if (!imageUrl) return 'https://via.placeholder.com/60x60';
 
         if (imageUrl.startsWith('http')) return imageUrl;
-        if (imageUrl.startsWith('/media/')) return `http://localhost:8000${imageUrl}`;
+        if (imageUrl.startsWith('/media/')) return buildImageUrl(imageUrl);
 
         return 'https://via.placeholder.com/60x60';
     };
@@ -234,7 +235,7 @@ const Home = () => {
         const logo = logoUrl
             ? (logoUrl.startsWith('http')
                 ? logoUrl
-                : `http://localhost:8000${logoUrl}`)
+                : buildImageUrl(logoUrl))
             : "https://via.placeholder.com/60x60";
 
         return {
@@ -279,7 +280,7 @@ const Home = () => {
         const logo = logoUrl
             ? (logoUrl.startsWith('http')
                 ? logoUrl
-                : `http://localhost:8000${logoUrl}`)
+                : buildImageUrl(logoUrl))
             : "https://via.placeholder.com/60x60";
 
         return {
@@ -303,7 +304,7 @@ const Home = () => {
         const logo = logoUrl
             ? (logoUrl.startsWith('http')
                 ? logoUrl
-                : `http://localhost:8000${logoUrl}`)
+                : buildImageUrl(logoUrl))
             : "https://via.placeholder.com/60x60";
 
         return {

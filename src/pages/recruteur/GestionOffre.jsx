@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 import JobStats from '../../components/JobStats';
 import Pagination from '../../components/Pagination';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import jobService from '../../services/jobService';
 
 const GestionOffre = () => {
@@ -287,14 +288,13 @@ const GestionOffre = () => {
 
   if (loading) {
     return (
-      <div className="w-full flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement de vos offres...</p>
-        </div>
-      </div>
+      <LoadingSpinner 
+        variant="page" 
+        size="lg" 
+        text="Chargement de vos offres..."
+      />
     );
-    }
+  }
 
   if (error && offres.length === 0) {
     return (

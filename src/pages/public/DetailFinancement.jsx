@@ -4,6 +4,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import consultationService from '../../services/consultationService';
 import ShareModal from '../../components/ShareModal';
 import SavedOfferButton from '../../components/SavedOfferButton';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
 const DetailFinancement = () => {
   const { id } = useParams();
@@ -105,24 +107,24 @@ const DetailFinancement = () => {
       if (fundingData.admin_company_logo) {
         return fundingData.admin_company_logo.startsWith('http') 
           ? fundingData.admin_company_logo 
-          : `http://localhost:8000${fundingData.admin_company_logo}`;
+          : buildImageUrl(fundingData.admin_company_logo);
       }
       if (fundingData.company_logo) {
         return fundingData.company_logo.startsWith('http') 
           ? fundingData.company_logo 
-          : `http://localhost:8000${fundingData.company_logo}`;
+          : buildImageUrl(fundingData.company_logo);
       }
     } else {
       // Priorité: company_logo > admin_company_logo > null
       if (fundingData.company_logo) {
         return fundingData.company_logo.startsWith('http') 
           ? fundingData.company_logo 
-          : `http://localhost:8000${fundingData.company_logo}`;
+          : buildImageUrl(fundingData.company_logo);
       }
       if (fundingData.admin_company_logo) {
         return fundingData.admin_company_logo.startsWith('http') 
           ? fundingData.admin_company_logo 
-          : `http://localhost:8000${fundingData.admin_company_logo}`;
+          : buildImageUrl(fundingData.admin_company_logo);
       }
     }
     return null;
@@ -152,10 +154,7 @@ const DetailFinancement = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement de l'offre de financement...</p>
-        </div>
+        <LoadingSpinner variant="page" size="lg" text="Chargement de l'offre de financement..." />
       </div>
     );
   }
@@ -183,10 +182,7 @@ const DetailFinancement = () => {
   if (!funding || !funding.id) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement des données du financement...</p>
-        </div>
+        <LoadingSpinner variant="page" size="lg" text="Chargement des données du financement..." />
       </div>
     );
   }

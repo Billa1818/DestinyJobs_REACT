@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import consultationService from '../../services/consultationService';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const GestionConsultations = () => {
   const navigate = useNavigate();
@@ -96,12 +97,11 @@ const GestionConsultations = () => {
 
   if (loading && !consultations.length) {
     return (
-      <div className="w-full flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement des offres...</p>
-        </div>
-      </div>
+      <LoadingSpinner 
+        variant="page" 
+        size="lg" 
+        text="Chargement des offres..."
+      />
     );
   }
 

@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import SidebarFilter from '../../components/SidebarFilter';
 import JobPagination from '../../components/JobPagination';
 import jobService from '../../services/jobService';
-import Loader from '../../components/Loader';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { useAuth } from '../../contexts/AuthContext';
+import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
 const Jobs = () => {
     // États existants conservés
@@ -155,7 +156,7 @@ const Jobs = () => {
         const logo = logoUrl
             ? (logoUrl.startsWith('http')
                 ? logoUrl
-                : `http://localhost:8000${logoUrl}`)
+                : buildImageUrl(logoUrl))
             : "https://via.placeholder.com/60x60";
 
         return {
@@ -188,32 +189,6 @@ const Jobs = () => {
 
     // Utiliser les données formatées de l'API
     const displayJobs = jobs.map(formatJobData);
-
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center py-20">
-                <Loader size="lg" text="Chargement des offres d'emploi..." />
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="text-center py-20">
-                <div className="text-red-600 text-4xl mb-4">
-                    <i className="fas fa-exclamation-triangle"></i>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Erreur de chargement</h3>
-                <p className="text-gray-600 mb-4">{error}</p>
-                <button
-                    onClick={() => loadJobs(1, apiFilters)}
-                    className="bg-fuchsia-600 text-white px-4 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200"
-                >
-                    Réessayer
-                </button>
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -346,7 +321,23 @@ const Jobs = () => {
                         </div>
 
                         {/* Jobs List */}
-                        {displayJobs.length === 0 ? (
+                        {loading ? (
+                            <LoadingSpinner variant="inline" size="lg" text="Chargement des offres d'emploi..." className="py-20" />
+                        ) : error ? (
+                            <div className="text-center py-12 bg-white rounded-xl shadow-sm">
+                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i className="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+                                </div>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">Erreur de chargement</h3>
+                                <p className="text-gray-600 text-sm mb-4">{error}</p>
+                                <button 
+                                    onClick={() => loadJobs(1, apiFilters)}
+                                    className="bg-fuchsia-600 text-white px-4 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200 text-sm"
+                                >
+                                    Réessayer
+                                </button>
+                            </div>
+                        ) : displayJobs.length === 0 ? (
                             <div className="text-center py-12 bg-white rounded-xl shadow-sm">
                                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <i className="fas fa-search text-gray-400 text-xl"></i>
