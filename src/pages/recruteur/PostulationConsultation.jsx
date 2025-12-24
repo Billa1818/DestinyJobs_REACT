@@ -32,6 +32,10 @@ const PostulationConsultation = () => {
         ordering: '-created_at'
     });
 
+    // État pour le filtre d'affichage (masquer les sélectionnés)
+    const [hideSelected, setHideSelected] = useState(false);
+    const [sortByCompatibility, setSortByCompatibility] = useState(false);
+
     // États d'affichage (conservés pour la compatibilité)
     const [showCVModal, setShowCVModal] = useState(false);
     const [selectedCandidate, setSelectedCandidate] = useState(null);
@@ -409,6 +413,23 @@ const PostulationConsultation = () => {
         }
     };
 
+    // Fonction pour appliquer les filtres et tri locaux
+    const getDisplayedCandidatures = () => {
+        let displayed = [...candidatures];
+
+        // Masquer les candidatures déjà sélectionnées
+        if (hideSelected) {
+            displayed = displayed.filter(c => c.statut !== 'shortlisted' && c.statut !== 'accepted');
+        }
+
+        // Trier par compatibilité IA si activé
+        if (sortByCompatibility) {
+            displayed.sort((a, b) => b.note - a.note);
+        }
+
+        return displayed;
+    };
+
     // Fonction pour afficher les documents
     const viewDocuments = (candidature) => {
         // Afficher le modal avec tous les documents du candidat
@@ -445,7 +466,7 @@ const PostulationConsultation = () => {
         });
 
         if (candidateId) {
-            const profileUrl = `/profile/candidat/${candidateId}`;
+            const profileUrl = `/prestataire/profil-public/${candidateId}`;
             console.log('🚀 Redirection vers:', profileUrl);
             window.open(profileUrl, '_blank');
         } else {
@@ -827,6 +848,39 @@ const PostulationConsultation = () => {
                     )}
                 </div>
 
+                {/* Actions rapides - Tri et Filtres d'affichage */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
+                    <div className="flex items-center space-x-3">
+                        <label className="flex items-center space-x-3 cursor-pointer flex-1">
+                            <input
+                                type="checkbox"
+                                checked={sortByCompatibility}
+                                onChange={(e) => setSortByCompatibility(e.target.checked)}
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <div>
+                                <span className="text-sm font-medium text-gray-900">Trier par Compatibilité IA</span>
+                                <p className="text-xs text-gray-500">Affiche les meilleurs scores en premier</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div className="flex items-center space-x-3">
+                        <label className="flex items-center space-x-3 cursor-pointer flex-1">
+                            <input
+                                type="checkbox"
+                                checked={hideSelected}
+                                onChange={(e) => setHideSelected(e.target.checked)}
+                                className="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500"
+                            />
+                            <div>
+                                <span className="text-sm font-medium text-gray-900">Masquer les Sélectionnés</span>
+                                <p className="text-xs text-gray-500">Exclut les candidatures déjà présélectionnées</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 {/* Première ligne de filtres */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                     <div>
@@ -946,13 +1000,24 @@ const PostulationConsultation = () => {
                 <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600">
-                            {candidatures.length} candidature(s) trouvée(s)
+                            {getDisplayedCandidatures().length} candidature(s) affichée(s)
+                            {getDisplayedCandidatures().length < candidatures.length && (
+                                <span className="text-xs text-gray-500 ml-2">
+                                    ({candidatures.length - getDisplayedCandidatures().length} masquée(s))
+                                </span>
+                            )}
                         </span>
                         <div className="flex space-x-2">
                             <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                                 <i className="fas fa-filter mr-1"></i>
                                 Filtres actifs
                             </span>
+                            {(hideSelected || sortByCompatibility) && (
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                    <i className="fas fa-sort mr-1"></i>
+                                    Tri/Affichage
+                                </span>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -995,21 +1060,35 @@ const PostulationConsultation = () => {
                             </button>
                         </div>
                     </div>
-                ) : candidatures.length === 0 ? (
+                ) : getDisplayedCandidatures().length === 0 ? (
                     <div className="text-center py-12">
                         <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i className="fas fa-users text-3xl text-gray-400"></i>
                         </div>
                         <h3 className="text-lg font-medium text-gray-900 mb-2">
-                            {initialLoad ? 'Aucune candidature trouvée' : 'Aucune candidature correspond aux critères'}
+                            {candidatures.length === 0 && initialLoad ? 'Aucune candidature trouvée' : 'Aucune candidature correspond aux critères'}
                         </h3>
                         <p className="text-gray-600 mb-4">
-                            {initialLoad
+                            {candidatures.length === 0 && initialLoad
                                 ? 'Il semble qu\'il n\'y ait pas encore de candidatures pour cette consultation ou que l\'API ne soit pas accessible.'
-                                : 'Aucune candidature ne correspond aux critères de recherche actuels.'
+                                : hideSelected
+                                    ? 'Toutes les candidatures restantes ont été sélectionnées.'
+                                    : 'Aucune candidature ne correspond aux critères de recherche actuels.'
                             }
                         </p>
                         <div className="space-y-2">
+                            {hideSelected || sortByCompatibility ? (
+                                <button
+                                    onClick={() => {
+                                        setHideSelected(false);
+                                        setSortByCompatibility(false);
+                                    }}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200 mr-2"
+                                >
+                                    <i className="fas fa-undo mr-2"></i>
+                                    Réinitialiser les filtres d'affichage
+                                </button>
+                            ) : null}
                             <button
                                 onClick={loadCandidatures}
                                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200 mr-2"
@@ -1027,7 +1106,7 @@ const PostulationConsultation = () => {
                         </div>
                     </div>
                 ) : (
-                    candidatures.map((candidature) => (
+                    getDisplayedCandidatures().map((candidature) => (
                         <div key={candidature.id} className="bg-white rounded-lg p-4 sm:p-6 shadow-sm border-l-4 border-fuchsia-500">
                             <div className="flex flex-col lg:flex-row justify-between">
                                 <div className="flex-1">

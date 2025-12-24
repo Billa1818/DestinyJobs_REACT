@@ -109,7 +109,7 @@ const DetailOffre = () => {
         }
 
         if (!isAuthenticated) {
-            setShowShareModal(true);
+            navigate('/login');
             return;
         }
         // Rediriger vers la page d'analyse IA publique

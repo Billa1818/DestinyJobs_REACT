@@ -8,10 +8,6 @@ import Settings from '../pages/prestataire/Settings';
 import Demandes from '../pages/prestataire/Demandes';
 import Services from '../pages/prestataire/Services';
 import Notifications from '../pages/prestataire/Notifications';
-import OffresPrestation from '../pages/prestataire/OffresPrestation';
-import TestProfile from '../pages/prestataire/TestProfile';
-import DebugProfile from '../pages/prestataire/DebugProfile';
-import FilePreviewDemo from '../pages/prestataire/FilePreviewDemo';
 
 const prestataireRoutes = [
   {
@@ -33,18 +29,6 @@ const prestataireRoutes = [
   {
     path: 'profile',
     element: <PrestataireProfile />
-  },
-  {
-    path: 'test-profile',
-    element: <TestProfile />
-  },
-  {
-    path: 'debug-profile',
-    element: <DebugProfile />
-  },
-  {
-    path: 'file-preview-demo',
-    element: <FilePreviewDemo />
   },
   {
     path: 'candidatures',
@@ -69,10 +53,6 @@ const prestataireRoutes = [
   {
     path: 'notifications',
     element: <Notifications />
-  },
-  {
-    path: 'offres-prestation',
-    element: <OffresPrestation />
   }
 ];
 

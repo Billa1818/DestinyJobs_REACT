@@ -225,6 +225,9 @@ const PrestataireHeader = () => {
                   <Link to="/prestataire/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
                     <i className="fas fa-user mr-2"></i>Mon profil
                   </Link>
+                  <Link to={user?.id ? `/prestataire/${user.id}` : '#'} className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
+                    <i className="fas fa-eye mr-2"></i>Voir mon profil public
+                  </Link>
                   <Link to={getPortfolioLink()} className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
                     <i className="fas fa-briefcase mr-2"></i>Mon portfolio
                   </Link>
@@ -348,6 +351,11 @@ const PrestataireHeader = () => {
               )}
             </div>
             
+            <Link to={user?.id ? `/prestataire/${user.id}` : '#'} className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+              <i className="fas fa-eye mr-2"></i>
+              Voir mon profil public
+            </Link>
+            
             <Link to={getPortfolioLink()} className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
               <i className="fas fa-briefcase mr-2"></i>
               Mon Portfolio
@@ -356,11 +364,6 @@ const PrestataireHeader = () => {
             <Link to="/formations" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
               <i className="fas fa-graduation-cap mr-2"></i>
               Formation
-            </Link>
-            
-            <Link to="/prestataire/offres-prestation" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
-              <i className="fas fa-handshake mr-2"></i>
-              Offres de prestation
             </Link>
             
             <Link to="/blog" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">

@@ -27,6 +27,7 @@ import Paiement from '../pages/public/Paiement';
 import IACompatibilityCheck from '../pages/public/IACompatibilityCheck';
 import NotFound from '../pages/public/NotFound';
 import ProfilPublic from '../pages/recruteur/ProfilPublic';
+import PrestatairePublicProfil from '../pages/prestataire/PublicProfil';
 import CandidatePublicProfile from '../pages/public/CandidatePublicProfile';
 import NosUtilisateur from '../pages/public/NosUtilisateur';
 import SolutionsRh from '../pages/public/SolutionRh';
@@ -157,6 +158,14 @@ const publicRoutes = [
     path: '/profile/candidat/:userId',
     element: <CandidatePublicProfile />
 
+  },
+  {
+    path: '/prestataire/:id',
+    element: <PrestatairePublicProfil />
+  },
+  {
+    path: '/prestataire/profil-public/:id',
+    element: <PrestatairePublicProfil />
   },
   {
     path: '/solutions-rh',

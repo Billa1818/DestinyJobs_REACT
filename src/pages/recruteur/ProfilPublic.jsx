@@ -27,71 +27,41 @@ const ProfilPublic = () => {
     consultations: false,
     stats: false
   });
+  
+  // État pour l'affichage des offres
+  const [showAllOffers, setShowAllOffers] = useState(false);
+  const [showAllFinancements, setShowAllFinancements] = useState(false);
+  const [showAllBourses, setShowAllBourses] = useState(false);
+  const [showAllConsultations, setShowAllConsultations] = useState(false);
 
   // Récupérer l'ID de l'entreprise depuis l'URL
   const companyId = id;
 
-  // Fonction pour récupérer les offres actives
-  const fetchActiveOffers = async () => {
-    try {
-      setLoadingData(prev => ({ ...prev, offers: true }));
-      const response = await fetch(`/api/offres/?recruteur=${companyId}&statut=active&limit=5`);
-      if (response.ok) {
-        const data = await response.json();
-        setActiveOffers(data.results || data);
-      }
-    } catch (error) {
-      console.log('Offres non disponibles:', error.message);
-    } finally {
-      setLoadingData(prev => ({ ...prev, offers: false }));
+  // Fonction pour extraire les offres du profil
+  const extractOffersFromProfile = () => {
+    if (profile?.published_offers?.job_offers) {
+      setActiveOffers(profile.published_offers.job_offers);
     }
   };
 
-  // Fonction pour récupérer les financements actifs
-  const fetchActiveFinancements = async () => {
-    try {
-      setLoadingData(prev => ({ ...prev, financements: true }));
-      const response = await fetch(`/api/financements/?recruteur=${companyId}&statut=active&limit=5`);
-      if (response.ok) {
-        const data = await response.json();
-        setActiveFinancements(data.results || data);
-      }
-    } catch (error) {
-      console.log('Financements non disponibles:', error.message);
-    } finally {
-      setLoadingData(prev => ({ ...prev, financements: false }));
+  // Fonction pour extraire les financements du profil
+  const extractFinancementsFromProfile = () => {
+    if (profile?.published_offers?.funding_offers) {
+      setActiveFinancements(profile.published_offers.funding_offers);
     }
   };
 
-  // Fonction pour récupérer les bourses actives
-  const fetchActiveBourses = async () => {
-    try {
-      setLoadingData(prev => ({ ...prev, bourses: true }));
-      const response = await fetch(`/api/bourses/?recruteur=${companyId}&statut=active&limit=5`);
-      if (response.ok) {
-        const data = await response.json();
-        setActiveBourses(data.results || data);
-      }
-    } catch (error) {
-      console.log('Bourses non disponibles:', error.message);
-    } finally {
-      setLoadingData(prev => ({ ...prev, bourses: false }));
+  // Fonction pour extraire les bourses du profil
+  const extractBourcesFromProfile = () => {
+    if (profile?.published_offers?.scholarships) {
+      setActiveBourses(profile.published_offers.scholarships);
     }
   };
 
-  // Fonction pour récupérer les consultations actives
-  const fetchActiveConsultations = async () => {
-    try {
-      setLoadingData(prev => ({ ...prev, consultations: true }));
-      const response = await fetch(`/api/consultations/?recruteur=${companyId}&statut=active&limit=5`);
-      if (response.ok) {
-        const data = await response.json();
-        setActiveConsultations(data.results || data);
-      }
-    } catch (error) {
-      console.log('Consultations non disponibles:', error.message);
-    } finally {
-      setLoadingData(prev => ({ ...prev, consultations: false }));
+  // Fonction pour extraire les consultations du profil
+  const extractConsultationsFromProfile = () => {
+    if (profile?.published_offers?.consultation_offers) {
+      setActiveConsultations(profile.published_offers.consultation_offers);
     }
   };
 
@@ -239,13 +209,13 @@ const ProfilPublic = () => {
 
   // Charger les données dynamiques une fois le profil chargé
   useEffect(() => {
-    if (profile && companyId) {
-      fetchActiveOffers();
-      fetchActiveFinancements();
-      fetchActiveBourses();
-      fetchActiveConsultations();
+    if (profile) {
+      extractOffersFromProfile();
+      extractFinancementsFromProfile();
+      extractBourcesFromProfile();
+      extractConsultationsFromProfile();
     }
-  }, [profile, companyId]);
+  }, [profile]);
 
   // Mettre à jour les statistiques quand les données changent
   useEffect(() => {
@@ -430,53 +400,41 @@ const ProfilPublic = () => {
         
         {/* En-tête du profil */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
-          {/* Indicateur de mode démo */}
-          {demoMode && (
-            <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-3">
-              <div className="flex items-center justify-center text-yellow-800">
-                <i className="fas fa-info-circle mr-2"></i>
-                <span className="text-sm font-medium">
-                  Mode démonstration - Données fictives (l'API n'est pas encore disponible)
-                </span>
-                                </div>
-                            </div>
-          )}
           
           <div className="relative">
             {/* Image de couverture */}
-            <div className="h-48 bg-gradient-to-r from-fuchsia-600 via-purple-600 to-blue-600">
-              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+            <div className="h-32 bg-white border-b border-gray-100">
                                     </div>
                                     
             {/* Logo et informations principales */}
-            <div className="relative px-6 pb-6">
-              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between">
-                <div className="flex items-end space-x-4 -mt-16">
+            <div className="relative px-6 py-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                <div className="flex items-center space-x-6">
                   {/* Logo de l'entreprise */}
-                  <div className="w-32 h-32 bg-white rounded-lg shadow-lg border-4 border-white flex items-center justify-center">
+                  <div className="w-28 h-28 bg-gray-100 rounded-xl shadow-md flex items-center justify-center flex-shrink-0">
                     {profile.logo ? (
                       <img 
                         src={getCorrectImageUrl(profile.logo)} 
                         alt={`Logo ${profile.company_name}`}
-                        className="w-full h-full object-cover rounded-lg"
+                        className="w-full h-full object-cover rounded-xl"
                       />
                     ) : (
-                      <i className="fas fa-building text-4xl text-gray-400"></i>
+                       <i className="fas fa-building text-4xl text-gray-400"></i>
                     )}
                                     </div>
                                     
                   {/* Informations principales */}
-                  <div className="flex-1 mb-4 sm:mb-0">
-                    <h1 className="text-3xl font-bold mb-2">
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
                       {profile.company_name}
                     </h1>
                     {profile.sector && (
-                      <p className="text-xl opacity-90 mb-2">
+                      <p className="text-lg text-fuchsia-600 font-medium mb-1">
                         {profile.sector}
                       </p>
                     )}
                     {profile.company_size && (
-                      <p className="text-lg opacity-80">
+                      <p className="text-sm text-gray-600">
                         {formatCompanySize(profile.company_size)}
                       </p>
                     )}
@@ -484,16 +442,16 @@ const ProfilPublic = () => {
                                     </div>
                                     
                 {/* Actions */}
-                <div className="flex flex-col sm:flex-row gap-3 mt-4 sm:mt-0">
+                <div className="flex flex-col sm:flex-row gap-3">
                   {isAuthenticated && user?.user_type === 'CANDIDAT' && (
-                    <button className="bg-fuchsia-600 text-white px-6 py-3 rounded-lg hover:bg-fuchsia-700 transition duration-200 font-medium">
+                    <button className="bg-fuchsia-600 text-white px-6 py-2.5 rounded-lg hover:bg-fuchsia-700 transition duration-200 font-medium text-sm">
                       <i className="fas fa-briefcase mr-2"></i>
                       Voir les offres
                     </button>
                   )}
                   <Link 
                     to="/" 
-                    className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition duration-200 font-medium text-center"
+                    className="bg-gray-100 text-gray-700 px-6 py-2.5 rounded-lg hover:bg-gray-200 transition duration-200 font-medium text-center text-sm"
                   >
                     <i className="fas fa-search mr-2"></i>
                     Voir d'autres entreprises
@@ -538,50 +496,100 @@ const ProfilPublic = () => {
                 </Link>
                                 </div>
                                 
-              {loadingData.offers ? (
-                <div className="flex items-center justify-center py-8">
-                  <i className="fas fa-spinner fa-spin text-fuchsia-600 text-xl"></i>
-                  <span className="ml-2 text-gray-600">Chargement des offres...</span>
-                </div>
-              ) : activeOffers.length > 0 ? (
-                                <div className="space-y-4">
-                  {activeOffers.slice(0, 3).map((offer, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition duration-200">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900 mb-1">{offer.title || `Offre ${index + 1}`}</h4>
-                          <p className="text-sm text-gray-600 mb-2">
-                            {truncateText(offer.description || 'Description non disponible', 80)}
-                          </p>
+              {activeOffers.length > 0 ? (
+                <div className="space-y-4">
+                  {activeOffers.slice(0, showAllOffers ? activeOffers.length : 2).map((offer) => (
+                    <Link key={offer.id} to={`/jobs/${offer.id}`} className="block border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-fuchsia-300 transition duration-200 bg-white">
+                      <div className="flex items-start space-x-3">
+                        {/* Logo entreprise */}
+                        <div className="flex-shrink-0">
+                          {offer.recruiter?.logo ? (
+                            <img
+                              src={getCorrectImageUrl(offer.recruiter.logo)}
+                              alt={offer.recruiter?.company_name}
+                              className="w-12 h-12 rounded-lg object-cover border border-gray-200"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <div className={`w-12 h-12 rounded-lg bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center ${offer.recruiter?.logo ? 'hidden' : 'flex'}`}>
+                            <i className="fas fa-building text-white text-lg"></i>
+                          </div>
+                        </div>
+
+                        {/* Contenu */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-900 text-lg mb-1 line-clamp-1">{offer.title}</h4>
+                          <p className="text-sm text-gray-600 mb-2 line-clamp-2">{offer.description}</p>
+                          
+                          {/* Tags */}
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {offer.contract_type && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                {offer.contract_type}
+                              </span>
+                            )}
+                            {offer.experience_required && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                                {offer.experience_required}
+                              </span>
+                            )}
+                            {offer.work_mode && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
+                                {offer.work_mode}
+                              </span>
+                            )}
+                            {offer.is_urgent && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+                                <i className="fas fa-exclamation-circle mr-1"></i>Urgent
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Meta info */}
                           <div className="flex items-center space-x-4 text-xs text-gray-500">
                             {offer.location && (
                               <span><i className="fas fa-map-marker-alt mr-1"></i>{offer.location}</span>
                             )}
-                            {offer.type_contrat && (
-                              <span><i className="fas fa-file-contract mr-1"></i>{offer.type_contrat}</span>
+                            {offer.salary_range && (
+                              <span><i className="fas fa-money-bill-wave mr-1"></i>{offer.salary_range}</span>
                             )}
-                            {offer.salary && (
-                              <span><i className="fas fa-money-bill-wave mr-1"></i>{offer.salary}</span>
-                            )}
-                                            </div>
-                                        </div>
-                        <Link 
-                          to={`/jobs/${offer.id || index}`}
-                          className="ml-4 px-3 py-1 bg-fuchsia-100 text-fuchsia-700 rounded-full text-xs font-medium hover:bg-fuchsia-200 transition duration-200"
-                        >
-                          Voir
-                        </Link>
-                                        </div>
-                                    </div>
+                          </div>
+                        </div>
+
+                        {/* Badge expired */}
+                        {offer.is_expired && (
+                          <div className="flex-shrink-0">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                              Expirée
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </Link>
                   ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
+                  </div>
+                  ) : (
+                  <div className="text-center py-8 text-gray-500">
                   <i className="fas fa-briefcase text-4xl mb-3 text-gray-300"></i>
                   <p>Aucune offre d'emploi active pour le moment</p>
-                </div>
-              )}
-                                            </div>
+                  </div>
+                  )}
+                  
+                  {/* Bouton Voir plus */}
+                  {activeOffers.length > 2 && (
+                  <div className="mt-4 text-center">
+                  <button 
+                  onClick={() => setShowAllOffers(!showAllOffers)}
+                  className="px-6 py-2 bg-fuchsia-600 text-white rounded-lg hover:bg-fuchsia-700 transition duration-200 font-medium"
+                  >
+                  {showAllOffers ? 'Voir moins' : 'Voir plus'}
+                  </button>
+                  </div>
+                  )}
+                                          </div>
 
             {/* NOUVELLE SECTION : Financements disponibles */}
             <div className="bg-white rounded-lg shadow-sm p-6">
@@ -598,50 +606,80 @@ const ProfilPublic = () => {
                 </Link>
                                         </div>
               
-              {loadingData.financements ? (
-                <div className="flex items-center justify-center py-8">
-                  <i className="fas fa-spinner fa-spin text-fuchsia-600 text-xl"></i>
-                  <span className="ml-2 text-gray-600">Chargement des financements...</span>
-                                            </div>
-              ) : activeFinancements.length > 0 ? (
-                <div className="space-y-4">
-                  {activeFinancements.slice(0, 3).map((financement, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition duration-200">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900 mb-1">{financement.title || `Financement ${index + 1}`}</h4>
-                          <p className="text-sm text-gray-600 mb-2">
-                            {truncateText(financement.description || 'Description non disponible', 80)}
-                          </p>
+              {activeFinancements.length > 0 ? (
+                  <div className="space-y-4">
+                    {activeFinancements.slice(0, showAllFinancements ? activeFinancements.length : 2).map((financement) => (
+                     <Link key={financement.id} to={`/financements/${financement.id}`} className="block border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-fuchsia-300 transition duration-200 bg-white">
+                       <div className="flex items-start space-x-3">
+                         {/* Logo */}
+                         <div className="flex-shrink-0">
+                           {financement.company_logo ? (
+                             <img
+                               src={getCorrectImageUrl(financement.company_logo)}
+                               alt="Logo financement"
+                               className="w-12 h-12 rounded-lg object-cover border border-gray-200"
+                               onError={(e) => {
+                                 e.target.style.display = 'none';
+                                 e.target.nextSibling.style.display = 'flex';
+                               }}
+                             />
+                           ) : null}
+                           <div className={`w-12 h-12 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center ${financement.company_logo ? 'hidden' : 'flex'}`}>
+                             <i className="fas fa-money-bill-wave text-white text-lg"></i>
+                           </div>
+                         </div>
+
+                        {/* Contenu */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-900 text-lg mb-1 line-clamp-1">{financement.title}</h4>
+                          <p className="text-sm text-gray-600 mb-2 line-clamp-2">{financement.objective}</p>
+                          
+                          {/* Montant badge */}
+                          {financement.montant && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-50 text-green-700 border border-green-200 mb-2">
+                              <i className="fas fa-euro-sign mr-1"></i>{parseFloat(financement.montant).toLocaleString()} €
+                            </span>
+                          )}
+
+                          {/* Meta info */}
                           <div className="flex items-center space-x-4 text-xs text-gray-500">
-                            {financement.montant && (
-                              <span><i className="fas fa-euro-sign mr-1"></i>{financement.montant}</span>
+                            {financement.project_duration && (
+                              <span><i className="fas fa-calendar mr-1"></i>Durée: {financement.project_duration} mois</span>
                             )}
-                            {financement.type_financement && (
-                              <span><i className="fas fa-tag mr-1"></i>{financement.type_financement}</span>
-                            )}
-                            {financement.secteur && (
-                              <span><i className="fas fa-industry mr-1"></i>{financement.secteur}</span>
-                            )}
-                                        </div>
-                                    </div>
-                        <Link 
-                          to={`/financements/${financement.id || index}`}
-                          className="ml-4 px-3 py-1 bg-fuchsia-100 text-fuchsia-700 rounded-full text-xs font-medium hover:bg-fuchsia-200 transition duration-200"
-                        >
-                          Voir
-                        </Link>
-                                </div>
-                            </div>
+                          </div>
+                        </div>
+
+                        {/* Badge expired */}
+                        {financement.is_expired && (
+                          <div className="flex-shrink-0">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                              Expirée
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </Link>
                   ))}
-                                    </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
+                  </div>
+                  ) : (
+                  <div className="text-center py-8 text-gray-500">
                   <i className="fas fa-money-bill-wave text-4xl mb-3 text-gray-300"></i>
                   <p>Aucun financement disponible pour le moment</p>
-                                    </div>
-              )}
-                                    </div>
+                  </div>
+                  )}
+                  
+                  {/* Bouton Voir plus */}
+                  {activeFinancements.length > 2 && (
+                  <div className="mt-4 text-center">
+                  <button 
+                   onClick={() => setShowAllFinancements(!showAllFinancements)}
+                   className="px-6 py-2 bg-fuchsia-600 text-white rounded-lg hover:bg-fuchsia-700 transition duration-200 font-medium"
+                  >
+                   {showAllFinancements ? 'Voir moins' : 'Voir plus'}
+                  </button>
+                  </div>
+                  )}
+                                   </div>
 
             {/* NOUVELLE SECTION : Bourses actives */}
             <div className="bg-white rounded-lg shadow-sm p-6">
@@ -658,48 +696,84 @@ const ProfilPublic = () => {
                 </Link>
                                 </div>
                                 
-              {loadingData.bourses ? (
-                <div className="flex items-center justify-center py-8">
-                  <i className="fas fa-spinner fa-spin text-fuchsia-600 text-xl"></i>
-                  <span className="ml-2 text-gray-600">Chargement des bourses...</span>
-                </div>
-              ) : activeBourses.length > 0 ? (
+              {activeBourses.length > 0 ? (
                 <div className="space-y-4">
-                  {activeBourses.slice(0, 3).map((bourse, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition duration-200">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900 mb-1">{bourse.title || `Bourse ${index + 1}`}</h4>
-                          <p className="text-sm text-gray-600 mb-2">
-                            {truncateText(bourse.description || 'Description non disponible', 80)}
-                          </p>
+                  {activeBourses.slice(0, showAllBourses ? activeBourses.length : 2).map((bourse) => (
+                    <Link key={bourse.id} to={`/bourses/${bourse.id}`} className="block border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-fuchsia-300 transition duration-200 bg-white">
+                      <div className="flex items-start space-x-3">
+                        {/* Logo */}
+                        <div className="flex-shrink-0">
+                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                            <i className="fas fa-graduation-cap text-white text-lg"></i>
+                          </div>
+                        </div>
+
+                        {/* Contenu */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-900 text-lg mb-1 line-clamp-1">{bourse.title}</h4>
+                          <p className="text-sm text-gray-600 mb-2 line-clamp-2">{bourse.description}</p>
+                          
+                          {/* Tags */}
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {bourse.scholarship_amount && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                <i className="fas fa-euro-sign mr-1"></i>{parseFloat(bourse.scholarship_amount).toLocaleString()} €
+                              </span>
+                            )}
+                            {bourse.required_level && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
+                                {bourse.required_level}
+                              </span>
+                            )}
+                            {bourse.duration && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                                <i className="fas fa-calendar mr-1"></i>{bourse.duration} ans
+                              </span>
+                            )}
+                            {bourse.full_funding && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-200">
+                                Financement complet
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Meta info */}
                           <div className="flex items-center space-x-4 text-xs text-gray-500">
-                            {bourse.montant && (
-                              <span><i className="fas fa-euro-sign mr-1"></i>{bourse.montant}</span>
+                            {bourse.organization_name && (
+                              <span><i className="fas fa-university mr-1"></i>{bourse.organization_name}</span>
                             )}
-                            {bourse.type_bourse && (
-                              <span><i className="fas fa-tag mr-1"></i>{bourse.type_bourse}</span>
-                            )}
-                            {bourse.domaine_etude && (
-                              <span><i className="fas fa-book mr-1"></i>{bourse.domaine_etude}</span>
-                            )}
-                                        </div>
-                                    </div>
-                        <Link 
-                          to={`/bourses/${bourse.id || index}`}
-                          className="ml-4 px-3 py-1 bg-fuchsia-100 text-fuchsia-700 rounded-full text-xs font-medium hover:bg-fuchsia-200 transition duration-200"
-                        >
-                          Voir
-                        </Link>
-                                        </div>
-                                    </div>
+                          </div>
+                        </div>
+
+                        {/* Badge expired */}
+                        {bourse.is_expired && (
+                          <div className="flex-shrink-0">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                              Expirée
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </Link>
                   ))}
-                                        </div>
+                </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <i className="fas fa-graduation-cap text-4xl mb-3 text-gray-300"></i>
                   <p>Aucune bourse disponible pour le moment</p>
-                                    </div>
+                </div>
+              )}
+              
+              {/* Bouton Voir plus */}
+              {activeBourses.length > 2 && (
+                <div className="mt-4 text-center">
+                  <button 
+                    onClick={() => setShowAllBourses(!showAllBourses)}
+                    className="px-6 py-2 bg-fuchsia-600 text-white rounded-lg hover:bg-fuchsia-700 transition duration-200 font-medium"
+                  >
+                    {showAllBourses ? 'Voir moins' : 'Voir plus'}
+                  </button>
+                </div>
               )}
                                         </div>
 
@@ -718,48 +792,65 @@ const ProfilPublic = () => {
                 </Link>
                                     </div>
               
-              {loadingData.consultations ? (
-                <div className="flex items-center justify-center py-8">
-                  <i className="fas fa-spinner fa-spin text-fuchsia-600 text-xl"></i>
-                  <span className="ml-2 text-gray-600">Chargement des consultations...</span>
-                                </div>
-              ) : activeConsultations.length > 0 ? (
+              {activeConsultations.length > 0 ? (
                 <div className="space-y-4">
-                  {activeConsultations.slice(0, 3).map((consultation, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition duration-200">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900 mb-1">{consultation.title || `Consultation ${index + 1}`}</h4>
-                          <p className="text-sm text-gray-600 mb-2">
-                            {truncateText(consultation.description || 'Description non disponible', 80)}
-                          </p>
-                          <div className="flex items-center space-x-4 text-xs text-gray-500">
-                            {consultation.budget && (
-                              <span><i className="fas fa-euro-sign mr-1"></i>{consultation.budget}</span>
-                            )}
-                            {consultation.duree && (
-                              <span><i className="fas fa-clock mr-1"></i>{consultation.duree}</span>
-                            )}
-                            {consultation.type_consultation && (
-                              <span><i className="fas fa-tag mr-1"></i>{consultation.type_consultation}</span>
-                            )}
-                            </div>
+                  {activeConsultations.slice(0, showAllConsultations ? activeConsultations.length : 2).map((consultation) => (
+                    <Link key={consultation.id} to={`/consultations/${consultation.id}`} className="block border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-fuchsia-300 transition duration-200 bg-white">
+                      <div className="flex items-start space-x-3">
+                        {/* Logo */}
+                        <div className="flex-shrink-0">
+                          {consultation.company_logo ? (
+                            <img
+                              src={getCorrectImageUrl(consultation.company_logo)}
+                              alt={consultation.company_details?.company_name}
+                              className="w-12 h-12 rounded-lg object-cover border border-gray-200"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <div className={`w-12 h-12 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center ${consultation.company_logo ? 'hidden' : 'flex'}`}>
+                            <i className="fas fa-comments text-white text-lg"></i>
+                          </div>
                         </div>
-                        <Link 
-                          to={`/consultations/${consultation.id || index}`}
-                          className="ml-4 px-3 py-1 bg-fuchsia-100 text-fuchsia-700 rounded-full text-xs font-medium hover:bg-fuchsia-200 transition duration-200"
-                        >
-                          Voir
-                        </Link>
-                                        </div>
-                                    </div>
+
+                        {/* Contenu */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-900 text-lg mb-1 line-clamp-1">{consultation.title}</h4>
+                          <p className="text-sm text-gray-600 mb-2 line-clamp-2">{consultation.description}</p>
+                          
+                          {/* Meta info */}
+                          <div className="flex items-center space-x-4 text-xs text-gray-500">
+                            {consultation.company_details?.company_name && (
+                              <span><i className="fas fa-building mr-1"></i>{consultation.company_details.company_name}</span>
+                            )}
+                            {consultation.country && (
+                              <span><i className="fas fa-map-marker-alt mr-1"></i>{consultation.country.name}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <i className="fas fa-comments text-4xl mb-3 text-gray-300"></i>
                   <p>Aucune consultation en cours pour le moment</p>
-                                        </div>
+                </div>
+              )}
+              
+              {/* Bouton Voir plus */}
+              {activeConsultations.length > 2 && (
+                <div className="mt-4 text-center">
+                  <button 
+                    onClick={() => setShowAllConsultations(!showAllConsultations)}
+                    className="px-6 py-2 bg-fuchsia-600 text-white rounded-lg hover:bg-fuchsia-700 transition duration-200 font-medium"
+                  >
+                    {showAllConsultations ? 'Voir moins' : 'Voir plus'}
+                  </button>
+                </div>
               )}
                                     </div>
                                     

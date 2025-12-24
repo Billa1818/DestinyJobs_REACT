@@ -37,8 +37,7 @@ const DynamicFooter = ({ accountType: propAccountType = null }) => {
       'settings': 'Paramètres',
       'demandes': 'Mes demandes',
       'services': 'Mon portfolio',
-      'notifications': 'Notifications',
-      'offres-prestation': 'Offres de prestation'
+      'notifications': 'Notifications'
     },
     candidat: {
       '': 'Tableau de bord',
