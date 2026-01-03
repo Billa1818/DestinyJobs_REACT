@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import Pagination from '../../components/Pagination';
 import CandidatNotificationService from '../../services/CandidatNotificationService';
 import NotificationItem from '../../components/candidat/NotificationItem';
 
@@ -18,25 +19,41 @@ const Notification = () => {
     read: 0
   });
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  
+  // États pour la pagination
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    pageSize: 20
+  });
 
   // Récupérer les notifications
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (page = 1) => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await CandidatNotificationService.getNotifications(1, 1000, false);
+      const response = await CandidatNotificationService.getNotifications(page, pagination.pageSize, false);
       
       // Formater les notifications pour l'affichage
       const formattedNotifications = CandidatNotificationService.formatNotificationsForDisplay(response.notifications);
       setAllNotifications(formattedNotifications);
+      
+      // Mettre à jour la pagination
+      setPagination(prev => ({
+        ...prev,
+        currentPage: page,
+        totalPages: Math.ceil((response.count || formattedNotifications.length) / pagination.pageSize),
+        totalCount: response.count || formattedNotifications.length
+      }));
       
       // Calculer les stats localement
       const unreadCount = formattedNotifications.filter(n => !n.isRead).length;
       const readCount = formattedNotifications.filter(n => n.isRead).length;
       
       setStats({
-        total: formattedNotifications.length,
+        total: pagination.totalCount,
         unread: unreadCount,
         read: readCount
       });
@@ -128,9 +145,15 @@ const Notification = () => {
 
   // Charger les données au montage du composant
   useEffect(() => {
-    fetchNotifications();
+    fetchNotifications(1);
     fetchPreferences();
   }, []);
+  
+  // Gestionnaire de changement de page
+  const handlePageChange = (page) => {
+    fetchNotifications(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Séparer les notifications
   const unreadNotifications = allNotifications.filter(n => !n.isRead);
@@ -344,6 +367,19 @@ const Notification = () => {
             </div>
           </div>
         </div>
+        
+        {/* Pagination */}
+        {!loading && pagination.totalPages > 1 && (
+          <div className="mt-8">
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.totalCount}
+              itemsPerPage={pagination.pageSize}
+              onPageChange={handlePageChange}
+            />
+          </div>
+        )}
       )}
     </main>
   );

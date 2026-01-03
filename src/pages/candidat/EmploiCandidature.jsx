@@ -26,6 +26,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import EmploiCandidatureRecentService from '../../services/EmploiCandidatureRecentService';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import Pagination from '../../components/Pagination';
 import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
 const EmploiCandidature = () => {
@@ -37,18 +38,38 @@ const EmploiCandidature = () => {
     const [successMessage, setSuccessMessage] = useState('');
     const [expandedId, setExpandedId] = useState(null);
     const [ordering, setOrdering] = useState('-created_at');
+    
+    // États pour la pagination
+    const [pagination, setPagination] = useState({
+        currentPage: 1,
+        totalPages: 1,
+        totalCount: 0,
+        pageSize: 10
+    });
 
     // Charger les candidatures
-    const loadApplications = async () => {
+    const loadApplications = async (page = 1) => {
         try {
             setLoading(true);
             setError(null);
 
             console.log('🔄 Chargement des candidatures...');
-            const response = await EmploiCandidatureRecentService.getJobApplications(filters);
+            const response = await EmploiCandidatureRecentService.getJobApplications(
+                filters,
+                page,
+                pagination.pageSize
+            );
 
             console.log('✅ Candidatures chargées:', response);
             setApplications(response.applications || []);
+            
+            // Mettre à jour la pagination
+            setPagination(prev => ({
+                ...prev,
+                currentPage: page,
+                totalPages: Math.ceil((response.count || response.applications?.length || 0) / pagination.pageSize),
+                totalCount: response.count || response.applications?.length || 0
+            }));
 
         } catch (error) {
             console.error('❌ Erreur lors du chargement:', error);
@@ -60,7 +81,7 @@ const EmploiCandidature = () => {
 
     // Charger les candidatures au montage du composant
     useEffect(() => {
-        loadApplications();
+        loadApplications(1);
     }, []);
 
     // Fonction pour construire l'URL complète des images
@@ -136,14 +157,20 @@ const EmploiCandidature = () => {
 
     // Appliquer les filtres
     const applyFilters = () => {
-        loadApplications();
+        loadApplications(1);
     };
 
     // Réinitialiser les filtres
     const resetFilters = () => {
         setFilters({ search: '', status: '' });
         setOrdering('-created_at');
-        setTimeout(() => loadApplications(), 0);
+        setTimeout(() => loadApplications(1), 0);
+    };
+    
+    // Gestionnaire de changement de page
+    const handlePageChange = (page) => {
+        loadApplications(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     return (
@@ -180,7 +207,7 @@ const EmploiCandidature = () => {
                             </div>
                             <div className="ml-3">
                                 <p className="text-sm font-medium text-gray-600">Total</p>
-                                <p className="text-2xl font-bold text-gray-900">{applications.length}</p>
+                                <p className="text-2xl font-bold text-gray-900">{pagination.totalCount}</p>
                             </div>
                         </div>
                     </div>
@@ -564,6 +591,19 @@ const EmploiCandidature = () => {
                         <FontAwesomeIcon icon={faPlus} className="mr-2" />
                         Parcourir les offres
                     </Link>
+                </div>
+            )}
+            
+            {/* Pagination */}
+            {!loading && pagination.totalPages > 1 && (
+                <div className="mt-8">
+                    <Pagination
+                        currentPage={pagination.currentPage}
+                        totalPages={pagination.totalPages}
+                        totalItems={pagination.totalCount}
+                        itemsPerPage={pagination.pageSize}
+                        onPageChange={handlePageChange}
+                    />
                 </div>
             )}
         </div>

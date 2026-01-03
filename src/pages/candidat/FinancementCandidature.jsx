@@ -20,6 +20,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import Pagination from '../../components/Pagination';
 import financementCandidatureService from '../../services/FinancementCandidatureService';
 import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
@@ -34,6 +35,14 @@ const FinancementCandidature = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [ordering, setOrdering] = useState('-application__created_at');
+    
+    // États pour la pagination
+    const [pagination, setPagination] = useState({
+        currentPage: 1,
+        totalPages: 1,
+        totalCount: 0,
+        pageSize: 10
+    });
 
     // États pour les statistiques
     const [stats, setStats] = useState({
@@ -46,13 +55,8 @@ const FinancementCandidature = () => {
         rejected: 0
     });
 
-    // Charger les candidatures au montage du composant
-    useEffect(() => {
-        loadApplications();
-    }, []);
-
     // Charger les candidatures avec les filtres actuels
-    const loadApplications = async () => {
+    const loadApplications = async (page = 1) => {
         try {
             setLoading(true);
             setError(null);
@@ -66,8 +70,20 @@ const FinancementCandidature = () => {
             // Nettoyer les filtres undefined
             Object.keys(filters).forEach(key => filters[key] === undefined && delete filters[key]);
 
-            const result = await financementCandidatureService.getMyFundingApplications(filters);
+            const result = await financementCandidatureService.getMyFundingApplications(
+                filters,
+                page,
+                pagination.pageSize
+            );
             setApplications(result.applications);
+
+            // Mettre à jour la pagination
+            setPagination(prev => ({
+                ...prev,
+                currentPage: page,
+                totalPages: Math.ceil((result.count || result.applications?.length || 0) / pagination.pageSize),
+                totalCount: result.count || result.applications?.length || 0
+            }));
 
             // Calculer les statistiques
             calculateStats(result.applications);
@@ -79,6 +95,11 @@ const FinancementCandidature = () => {
             setLoading(false);
         }
     };
+    
+    // Charger les candidatures au montage du composant
+    useEffect(() => {
+        loadApplications(1);
+    }, []);
 
     // Calculer les statistiques
     const calculateStats = (apps) => {
@@ -99,7 +120,7 @@ const FinancementCandidature = () => {
 
     // Appliquer les filtres
     const applyFilters = () => {
-        loadApplications();
+        loadApplications(1);
     };
 
     // Réinitialiser les filtres
@@ -107,7 +128,13 @@ const FinancementCandidature = () => {
         setSearchTerm('');
         setStatusFilter('');
         setOrdering('-application__created_at');
-        loadApplications();
+        loadApplications(1);
+    };
+    
+    // Gestionnaire de changement de page
+    const handlePageChange = (page) => {
+        loadApplications(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     // Formater la date
@@ -581,6 +608,19 @@ const FinancementCandidature = () => {
                         </div>
                     )}
                 </div>
+                )}
+                
+                {/* Pagination */}
+                {!loading && pagination.totalPages > 1 && (
+                    <div className="mt-8">
+                        <Pagination
+                            currentPage={pagination.currentPage}
+                            totalPages={pagination.totalPages}
+                            totalItems={pagination.totalCount}
+                            itemsPerPage={pagination.pageSize}
+                            onPageChange={handlePageChange}
+                        />
+                    </div>
                 )}
             </div>
         </div>
