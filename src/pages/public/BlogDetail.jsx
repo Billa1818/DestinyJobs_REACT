@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import blogService from '../../services/blogService';
+import ShareModal from '../../components/ShareModal';
 import { LoadingSpinner } from '../../components';
 import NotFound from './NotFound';
 
@@ -14,6 +15,7 @@ const BlogDetail = () => {
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // Charger l'article
   useEffect(() => {
@@ -57,6 +59,11 @@ const BlogDetail = () => {
   // Gérer le retour à la liste
   const handleBackToList = () => {
     navigate('/blog');
+  };
+
+  // Gérer le partage
+  const handleShare = () => {
+    setShowShareModal(true);
   };
 
   // Affichage du loader
@@ -215,19 +222,20 @@ const BlogDetail = () => {
             </div>
           )}
 
-          {/* Description SEO */}
-          {article.meta_description && (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">Description SEO</h3>
-              <p className="text-sm text-gray-600">{article.meta_description}</p>
-            </div>
-          )}
+          {/* Actions */}
+          <div className="mt-8 pt-6 border-t border-gray-200 flex flex-wrap gap-3">
+            {/* Bouton partager */}
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-2 bg-fuchsia-600 text-white px-4 py-2 rounded-lg hover:bg-fuchsia-700 transition-colors"
+            >
+              <i className="fas fa-share-alt"></i>
+              Partager cet article
+            </button>
 
-          {/* Actions pour l'auteur */}
-          {isAuthenticated && user?.id === article.author?.id && (
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Actions de l'auteur</h3>
-              <div className="flex flex-wrap gap-3">
+            {/* Actions pour l'auteur */}
+            {isAuthenticated && user?.id === article.author?.id && (
+              <>
                 <Link
                   to={`/recruteur/creer-article?edit=${article.slug}`}
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
@@ -242,11 +250,19 @@ const BlogDetail = () => {
                   <i className="fas fa-list mr-2"></i>
                   Gérer mes articles
                 </Link>
-              </div>
-            </div>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </article>
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        isLoggedIn={false}
+        title={article ? `Partager : ${article.title}` : "Partager cet article"}
+      />
     </div>
   );
 };

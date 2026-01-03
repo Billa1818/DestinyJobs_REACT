@@ -191,6 +191,34 @@ const CreeBourse = () => {
         <LoadingSpinner variant="page" size="lg" text="Chargement des données..." />
       ) : (
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Messages d'erreur */}
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <i className="fas fa-exclamation-circle text-red-400"></i>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Messages de succès */}
+      {notification && notification.type === 'success' && (
+        <div className="mb-6 bg-green-50 border border-green-200 rounded-md p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <i className="fas fa-check-circle text-green-400"></i>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-green-800">{notification.message}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">

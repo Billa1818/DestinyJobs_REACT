@@ -1683,6 +1683,10 @@ const PrestataireProfile = () => {
                 <span className="text-gray-600">Taux journalier</span>
                 <span className="font-semibold text-gray-900">{profileData.daily_rate || 0} FCFA</span>
               </div>
+              <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+                <span className="text-gray-600">Score de visibilité</span>
+                <span className="font-semibold text-orange-600">{profileData?.visibility_score || 0}/100</span>
+              </div>
             </div>
           </div>
           </div>

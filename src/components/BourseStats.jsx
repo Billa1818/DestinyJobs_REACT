@@ -8,20 +8,7 @@ const BourseStats = ({ scholarships }) => {
     closed: scholarships.filter(s => s.status === 'CLOSED').length,
     expired: scholarships.filter(s => s.status === 'EXPIRED').length,
     rejected: scholarships.filter(s => s.status === 'REJECTED').length,
-    withDeadline: scholarships.filter(s => s.application_deadline).length,
-    deadlineSoon: scholarships.filter(s => {
-      if (!s.application_deadline) return false;
-      const deadline = new Date(s.application_deadline);
-      const now = new Date();
-      const diffDays = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
-      return diffDays <= 30 && diffDays > 0;
-    }).length,
-    deadlineExpired: scholarships.filter(s => {
-      if (!s.application_deadline) return false;
-      const deadline = new Date(s.application_deadline);
-      const now = new Date();
-      return deadline < now;
-    }).length
+    totalViews: scholarships.reduce((sum, s) => sum + (s.views_count || 0), 0)
   };
 
   const statCards = [
@@ -29,8 +16,9 @@ const BourseStats = ({ scholarships }) => {
     { title: 'Approuvées', value: stats.approved, icon: 'fas fa-thumbs-up', color: 'text-blue-600', bgColor: 'bg-blue-50' },
     { title: 'En attente', value: stats.pending, icon: 'fas fa-clock', color: 'text-yellow-600', bgColor: 'bg-yellow-50' },
     { title: 'Refusées', value: stats.rejected, icon: 'fas fa-times-circle', color: 'text-red-600', bgColor: 'bg-red-50' },
-    { title: 'Limite proche (≤30j)', value: stats.deadlineSoon, icon: 'fas fa-exclamation-triangle', color: 'text-orange-600', bgColor: 'bg-orange-50' },
-    { title: 'Limite expirée', value: stats.deadlineExpired, icon: 'fas fa-calendar-times', color: 'text-red-600', bgColor: 'bg-red-50' }
+    { title: 'Vues', value: stats.totalViews, icon: 'fas fa-eye', color: 'text-fuchsia-600', bgColor: 'bg-fuchsia-50' },
+    { title: 'Expirées', value: stats.expired, icon: 'fas fa-calendar-times', color: 'text-red-600', bgColor: 'bg-red-50' },
+    { title: 'Fermées', value: stats.closed, icon: 'fas fa-lock', color: 'text-gray-600', bgColor: 'bg-gray-50' }
   ];
 
   return (
@@ -99,36 +87,46 @@ const BourseStats = ({ scholarships }) => {
                   </div>
                 </div>
               )}
-              {stats.deadlineExpired > 0 && (
+              {stats.expired > 0 && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Limite expirée</span>
+                  <span className="text-sm text-gray-600">Expirées</span>
                   <div className="flex items-center">
                     <div className="w-20 bg-gray-200 rounded-full h-2 mr-2">
                       <div 
                         className="bg-red-600 h-2 rounded-full" 
-                        style={{ width: `${(stats.deadlineExpired / stats.total) * 100}%` }}
+                        style={{ width: `${(stats.expired / stats.total) * 100}%` }}
                       ></div>
                     </div>
-                    <span className="text-sm font-medium text-gray-900">{stats.deadlineExpired}</span>
+                    <span className="text-sm font-medium text-gray-900">{stats.expired}</span>
                   </div>
                 </div>
               )}
-            </div>
-          </div>
+              {stats.closed > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Fermées</span>
+                  <div className="flex items-center">
+                    <div className="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                      <div 
+                        className="bg-gray-500 h-2 rounded-full" 
+                        style={{ width: `${(stats.closed / stats.total) * 100}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-sm font-medium text-gray-900">{stats.closed}</span>
+                  </div>
+                </div>
+              )}
+              </div>
+              </div>
     
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Métriques des vues</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Total des vues</span>
-                <span className="text-sm font-medium text-gray-900">{stats.totalViews}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Bourses avec date limite</span>
-                <span className="text-sm font-medium text-gray-900">{stats.withDeadline}</span>
-              </div>
-            </div>
-          </div>
+             <h3 className="text-sm font-medium text-gray-700 mb-3">Métriques supplémentaires</h3>
+             <div className="space-y-3">
+               <div className="flex justify-between items-center">
+                 <span className="text-sm text-gray-600">Total des vues</span>
+                 <span className="text-sm font-medium text-gray-900">{stats.totalViews}</span>
+               </div>
+             </div>
+           </div>
         </div>
       </div>
 
@@ -139,22 +137,12 @@ const BourseStats = ({ scholarships }) => {
             <p className="text-sm text-blue-800 mb-2">
               <strong>Résumé :</strong> Vous avez créé {stats.total} bourse{stats.total > 1 ? 's' : ''} au total.
             </p>
-            {stats.deadlineSoon > 0 && (
-              <div className="bg-orange-50 border border-orange-200 rounded-md p-3 mb-2">
-                <div className="flex items-center">
-                  <i className="fas fa-exclamation-triangle text-orange-500 mr-2"></i>
-                  <span className="text-sm text-orange-800 font-medium">
-                    ⚠️ {stats.deadlineSoon} bourse{stats.deadlineSoon > 1 ? 's' : ''} avec date limite proche (≤30 jours)
-                  </span>
-                </div>
-              </div>
-            )}
-            {stats.deadlineExpired > 0 && (
+            {stats.expired > 0 && (
               <div className="bg-red-50 border border-red-200 rounded-md p-3">
                 <div className="flex items-center">
                   <i className="fas fa-exclamation-circle text-red-500 mr-2"></i>
                   <span className="text-sm text-red-800 font-medium">
-                    🚨 {stats.deadlineExpired} bourse{stats.deadlineExpired > 1 ? 's' : ''} avec date limite expirée
+                    🚨 {stats.expired} bourse{stats.expired > 1 ? 's' : ''} expirée{stats.expired > 1 ? 's' : ''}
                   </span>
                 </div>
               </div>

@@ -1418,15 +1418,7 @@ const IACompatibilityCheck = () => {
                   {/* Affichage des erreurs */}
                   {candidatureErrors.length > 0 && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                      <h4 className="text-sm font-medium text-red-800 mb-2">Erreurs à corriger :</h4>
-                      <ul className="text-sm text-red-700 space-y-1">
-                        {candidatureErrors.map((error, index) => (
-                          <li key={index} className="flex items-center">
-                            <i className="fas fa-exclamation-circle mr-2"></i>
-                            {error}
-                          </li>
-                        ))}
-                      </ul>
+                      <h4 className="text-sm font-medium text-red-800 mb-2">Erreurs  </h4>
                     </div>
                   )}
 

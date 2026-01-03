@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import blogService from '../../services/blogService';
 import BlogPagination from '../../components/BlogPagination';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import ShareModal from '../../components/ShareModal';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Blog = () => {
@@ -10,6 +11,8 @@ const Blog = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [sortBy, setSortBy] = useState('recent');
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [selectedArticleForShare, setSelectedArticleForShare] = useState(null);
 
     // États pour l'API
     const [articles, setArticles] = useState([]);
@@ -208,14 +211,11 @@ const Blog = () => {
         }
     }, [searchTerm]);
 
-    const handleShare = (articleId) => {
-        if (!isAuthenticated) {
-            alert('Vous devez être connecté pour partager un article. Veuillez vous connecter.');
-            return;
-        }
-
-        // Simuler le partage
-        alert('Article partagé avec succès !');
+    const handleShare = (articleId, articleTitle, articleSlug) => {
+        const baseUrl = window.location.origin;
+        const shareUrl = `${baseUrl}/blog/${articleSlug}`;
+        setSelectedArticleForShare({ id: articleId, title: articleTitle, slug: articleSlug, shareUrl });
+        setShowShareModal(true);
     };
 
     const handleNewsletterSubscribe = (e) => {
@@ -480,7 +480,7 @@ const Blog = () => {
                                                 <div className="flex items-center space-x-3">
                                                     {/* Bouton partager */}
                                                     <button
-                                                        onClick={() => handleShare(article.id)}
+                                                        onClick={() => handleShare(article.id, article.title, article.slug)}
                                                         className="flex items-center space-x-2 bg-gray-50 hover:bg-fuchsia-50 text-gray-600 hover:text-fuchsia-600 px-4 py-2 rounded-lg transition-all duration-200 group/btn"
                                                     >
                                                         <i className="fas fa-share-alt group-hover/btn:scale-110 transition-transform duration-200"></i>
@@ -590,6 +590,15 @@ const Blog = () => {
                     />
                 </div>
             )}
+
+            {/* Share Modal */}
+            <ShareModal
+                isOpen={showShareModal}
+                onClose={() => setShowShareModal(false)}
+                isLoggedIn={false}
+                title={selectedArticleForShare ? `Partager : ${selectedArticleForShare.title}` : "Partager cet article"}
+                shareUrl={selectedArticleForShare?.shareUrl}
+            />
         </div>
     );
 };

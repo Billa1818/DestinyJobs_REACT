@@ -580,18 +580,6 @@ const DetailOffre = () => {
                                                 <span className="font-medium text-gray-900">{formatCompanySize(offre.recruiter.company_size)}</span>
                                             </div>
                                         )}
-                                        {offre.recruiter.country && (
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-600">Pays :</span>
-                                                <span className="font-medium text-gray-900">{offre.recruiter.country.name}</span>
-                                            </div>
-                                        )}
-                                        {offre.recruiter.region && (
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-600">Région :</span>
-                                                <span className="font-medium text-gray-900">{offre.recruiter.region.name}</span>
-                                            </div>
-                                        )}
                                         {offre.recruiter.website && (
                                             <div className="flex justify-between">
                                                 <span className="text-gray-600">Site web :</span>

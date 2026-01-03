@@ -75,6 +75,9 @@ const Consultations = () => {
       status: apiConsultation.status || 'Statut non spécifié',
       views: apiConsultation.views_count || 0,
       postedDate: apiConsultation.created_at ? new Date(apiConsultation.created_at).toLocaleDateString('fr-FR') : 'Date non spécifiée',
+      deadline: apiConsultation.application_deadline 
+        ? new Date(apiConsultation.application_deadline).toLocaleDateString('fr-FR')
+        : null,
       description: apiConsultation.description || 'Description non disponible',
       logo: apiConsultation.company_logo ? 
         (apiConsultation.company_logo.startsWith('http') ? apiConsultation.company_logo : buildImageUrl(apiConsultation.company_logo)) : 
@@ -379,7 +382,7 @@ const Consultations = () => {
 
                           {/* Meta Information */}
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-                            {/* Left Side - Date */}
+                            {/* Left Side - Date & Applications */}
                             <div className="flex items-center space-x-4 text-xs text-gray-500">
                               <span className="flex items-center">
                                 <i className="fas fa-calendar mr-1"></i>
@@ -387,15 +390,21 @@ const Consultations = () => {
                               </span>
                             </div>
 
-                            {/* Right Side - Action */}
-                             <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-                               <Link 
-                                 to={`/consultations/${consultation.id}`}
-                                 className="bg-fuchsia-600 text-white px-4 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200 text-sm font-medium text-center"
-                               >
-                                 Voir les détails
-                               </Link>
-                             </div>
+                            {/* Right Side - Deadline & Action */}
+                            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                              {consultation.deadline && (
+                                <span className="text-xs text-red-600 font-medium flex items-center">
+                                  <i className="fas fa-clock mr-1"></i>
+                                  Limite : {consultation.deadline}
+                                </span>
+                              )}
+                              <Link 
+                                to={`/consultations/${consultation.id}`}
+                                className="bg-fuchsia-600 text-white px-4 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200 text-sm font-medium text-center"
+                              >
+                                Voir les détails
+                              </Link>
+                            </div>
                           </div>
                         </div>
                       </div>

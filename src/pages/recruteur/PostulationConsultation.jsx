@@ -647,6 +647,25 @@ const PostulationConsultation = () => {
                 </div>
             </div>
 
+            {/* Alerte si l'offre de consultation est fermée */}
+            {consultationDetails && consultationDetails.status === 'CLOSED' && (
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 sm:p-6 mb-4 sm:mb-6 rounded-lg">
+                    <div className="flex items-start">
+                        <div className="flex-shrink-0">
+                            <i className="fas fa-exclamation-circle text-red-500 text-xl"></i>
+                        </div>
+                        <div className="ml-3 sm:ml-4">
+                            <h3 className="text-lg font-semibold text-red-800">
+                                Cette offre de consultation est déjà fermée
+                            </h3>
+                            <p className="text-red-700 mt-2">
+                                Toutes les actions effectuées ici sont désormais nulles. L'offre ne peut plus recevoir de candidatures et aucune modification ne sera appliquée.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Détails de l'offre (si une offre spécifique est sélectionnée) */}
             {consultationIdParam && consultationIdParam !== 'undefined' && (
                 <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm mb-4 sm:mb-6">
@@ -1319,13 +1338,15 @@ const PostulationConsultation = () => {
                                     </button>
                                     <button
                                         onClick={() => approveApplication(candidature)}
-                                        className="px-3 py-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition duration-200 text-sm"
+                                        disabled={!consultationIdParam || consultationIdParam === 'undefined' || consultationDetails?.status === 'CLOSED'}
+                                        className={`px-3 py-2 rounded-lg transition duration-200 text-sm ${!consultationIdParam || consultationIdParam === 'undefined' || consultationDetails?.status === 'CLOSED' ? 'text-gray-400 bg-gray-100 cursor-not-allowed opacity-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
                                     >
                                         <i className="fas fa-check mr-1"></i>Accepter
                                     </button>
                                     <button
                                         onClick={() => rejectApplication(candidature)}
-                                        className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition duration-200 text-sm"
+                                        disabled={!consultationIdParam || consultationIdParam === 'undefined' || consultationDetails?.status === 'CLOSED'}
+                                        className={`px-3 py-2 rounded-lg transition duration-200 text-sm ${!consultationIdParam || consultationIdParam === 'undefined' || consultationDetails?.status === 'CLOSED' ? 'text-gray-400 bg-gray-100 cursor-not-allowed opacity-50' : 'text-red-600 hover:bg-red-50'}`}
                                     >
                                         <i className="fas fa-times mr-1"></i>Refuser
                                     </button>

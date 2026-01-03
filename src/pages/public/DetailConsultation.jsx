@@ -483,28 +483,18 @@ const DetailConsultation = () => {
               </div>
             )}
 
-            {/* Informations de la consultation */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Détails de la consultation</h3>
-              <div className="space-y-3 text-sm text-gray-600">
-                <div>
-                  <span className="font-medium text-gray-900">Vues :</span>
-                  <p>{consultation.views_count || 0}</p>
+            {/* Date limite */}
+            {consultation.application_deadline && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Date limite</h3>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-red-600">
+                    {new Date(consultation.application_deadline).toLocaleDateString('fr-FR')}
+                  </div>
+                  <div className="text-sm text-gray-500">Date limite de candidature</div>
                 </div>
-                {consultation.country && (
-                  <div>
-                    <span className="font-medium text-gray-900">Pays :</span>
-                    <p>{consultation.country.name}</p>
-                  </div>
-                )}
-                {consultation.region && (
-                  <div>
-                    <span className="font-medium text-gray-900">Région :</span>
-                    <p>{consultation.region.name}</p>
-                  </div>
-                )}
               </div>
-            </div>
+            )}
 
             {/* Informations de contact */}
             {consultation.recruiter && (

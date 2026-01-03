@@ -251,13 +251,19 @@ class BourseService {
       const status = error.response.status;
       const data = error.response.data;
 
+      // Vérifier si la réponse a un champ 'error' (format: { error: "...", ... })
+      if (data?.error) {
+        return new Error(data.error);
+      }
+
       switch (status) {
         case 400:
           if (data && typeof data === 'object') {
             const errorMessages = Object.entries(data)
+              .filter(([key]) => key !== 'error' && key !== 'max_offers') // Ignorer les champs techniques
               .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
               .join('; ');
-            return new Error(`Données invalides: ${errorMessages}`);
+            return new Error(errorMessages || 'Données invalides');
           }
           return new Error(data?.message || 'Données invalides');
         

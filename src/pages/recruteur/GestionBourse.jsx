@@ -99,13 +99,6 @@ const GestionBourse = () => {
   };
 
   const getStatusText = (scholarship) => {
-    if (scholarship.application_deadline) {
-      const deadline = new Date(scholarship.application_deadline);
-      const now = new Date();
-      if (deadline < now) {
-        return 'Limite expirée';
-      }
-    }
     switch (scholarship.status) {
       case 'PUBLISHED': return 'Publiée';
       case 'PENDING_APPROVAL': return 'En attente';
@@ -119,13 +112,6 @@ const GestionBourse = () => {
   };
 
   const getStatusColor = (scholarship) => {
-    if (scholarship.application_deadline) {
-      const deadline = new Date(scholarship.application_deadline);
-      const now = new Date();
-      if (deadline < now) {
-        return 'bg-red-600 text-white'; // Limite expirée
-      }
-    }
     switch (scholarship.status) {
       case 'PUBLISHED': return 'bg-green-100 text-green-800';
       case 'PENDING_APPROVAL': return 'bg-yellow-100 text-yellow-800';
@@ -169,29 +155,45 @@ const GestionBourse = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm mb-4 sm:mb-6">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gestion des Bourses</h1>
-              <p className="mt-2 text-gray-600">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
+                <i className="fas fa-graduation-cap mr-2 text-fuchsia-600"></i>
+                Mes Bourses
+              </h1>
+              <p className="text-gray-600 mt-1 text-sm sm:text-base">
                 Gérez vos bourses d'études et suivez les candidatures
               </p>
+              {scholarships.length > 0 && (
+                <p className="text-sm text-gray-500 mt-2">
+                  {scholarships.length} bourse{scholarships.length > 1 ? 's' : ''} au total
+                </p>
+              )}
             </div>
-            <div className="mt-4 sm:mt-0">
+            <div className="flex items-center space-x-3">
               <button
-                onClick={() => navigate('/recruteur/creer-bourse')}
-                className="bg-fuchsia-600 text-white px-6 py-3 rounded-lg hover:bg-fuchsia-700 transition duration-200 font-medium"
+                onClick={loadScholarships}
+                className="p-2 text-gray-600 hover:text-fuchsia-600 transition duration-200"
+                title="Actualiser"
               >
-                <i className="fas fa-plus mr-2"></i>
-                Créer une bourse
+                <i className="fas fa-sync-alt"></i>
               </button>
+              <div className="hidden sm:block">
+                <button
+                  onClick={() => navigate('/recruteur/creer-bourse')}
+                  className="bg-fuchsia-600 text-white px-4 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200 flex items-center"
+                >
+                  <i className="fas fa-plus mr-2"></i>
+                  Nouvelle bourse
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-
         {/* Statistiques */}
-        <BourseStats scholarships={scholarships} />
+        {scholarships.length > 0 && <BourseStats scholarships={scholarships} />}
 
         {/* Filtres */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">

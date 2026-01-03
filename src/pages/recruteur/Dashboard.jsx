@@ -9,6 +9,7 @@ const Dashboard = () => {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedOfferType, setSelectedOfferType] = useState('ALL'); // ALL, JOB, FUNDING, CONSULTATION, SCHOLARSHIP
 
     // Formatage des dates
     const formatDate = (dateString) => {
@@ -73,6 +74,85 @@ const Dashboard = () => {
         return num.toLocaleString('fr-FR');
     };
 
+    // Obtenir la couleur du statut
+    const getStatusColor = (status, isExpired = false) => {
+        if (isExpired) return 'bg-red-100 text-red-800';
+        switch (status) {
+            case 'DRAFT':
+                return 'bg-gray-100 text-gray-800';
+            case 'PENDING_APPROVAL':
+                return 'bg-yellow-100 text-yellow-800';
+            case 'APPROVED':
+                return 'bg-fuchsia-100 text-fuchsia-800';
+            case 'PUBLISHED':
+                return 'bg-green-100 text-green-800';
+            case 'REJECTED':
+                return 'bg-red-100 text-red-800';
+            case 'CLOSED':
+                return 'bg-gray-800 text-white';
+            case 'EXPIRED':
+                return 'bg-red-100 text-red-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    // Obtenir le label du statut
+    const getStatusLabel = (status, isExpired = false) => {
+        if (isExpired) return 'Expiré';
+        switch (status) {
+            case 'DRAFT':
+                return 'Brouillon';
+            case 'PENDING_APPROVAL':
+                return 'En attente d\'approbation';
+            case 'APPROVED':
+                return 'Approuvée';
+            case 'PUBLISHED':
+                return 'Publiée';
+            case 'REJECTED':
+                return 'Refusée';
+            case 'CLOSED':
+                return 'Fermée';
+            case 'EXPIRED':
+                return 'Expiré';
+            default:
+                return status;
+        }
+    };
+
+    // Calculer les stats filtrées par type d'offre
+    const getFilteredStats = () => {
+        if (!dashboardData?.recentApplications) {
+            return dashboardData?.applicationStats || {};
+        }
+
+        if (selectedOfferType === 'ALL') {
+            return dashboardData?.applicationStats || {};
+        }
+
+        // Filtrer les candidatures par type d'offre
+        const filteredApplications = dashboardData.recentApplications.filter(app => {
+            if (selectedOfferType === 'JOB') return app.offer_type === 'JOB';
+            if (selectedOfferType === 'FUNDING') return app.offer_type === 'FUNDING';
+            if (selectedOfferType === 'CONSULTATION') return app.offer_type === 'CONSULTATION';
+            if (selectedOfferType === 'SCHOLARSHIP') return app.offer_type === 'SCHOLARSHIP';
+            return true;
+        });
+
+        // Compter par statut
+        const stats = {
+            total_applications: filteredApplications.length,
+            pending_applications: filteredApplications.filter(a => a.status === 'PENDING').length,
+            viewed_applications: filteredApplications.filter(a => a.status === 'VIEWED').length,
+            shortlisted_applications: filteredApplications.filter(a => a.status === 'SHORTLISTED').length,
+            rejected_applications: filteredApplications.filter(a => a.status === 'REJECTED').length,
+            accepted_applications: filteredApplications.filter(a => a.status === 'ACCEPTED').length,
+            interview_applications: filteredApplications.filter(a => a.status === 'INTERVIEW').length
+        };
+
+        return stats;
+    };
+
     if (error) {
         return (
             <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
@@ -112,6 +192,9 @@ const Dashboard = () => {
         recentApplications = []
     } = dashboardData || {};
 
+    // Obtenir les stats filtrées
+    const filteredStats = getFilteredStats();
+
     return (
         <div className="bg-gray-50 min-h-screen">
             {loading ? (
@@ -119,24 +202,59 @@ const Dashboard = () => {
             ) : (
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Tableau de Bord</h1>
-                    <p className="text-gray-600">Vue d'ensemble de vos activités de recrutement</p>
+                <div className="mb-8 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Tableau de Bord</h1>
+                        <p className="text-gray-600">Vue d'ensemble de vos activités de recrutement</p>
+                    </div>
+                    <button
+                        onClick={loadDashboard}
+                        className="px-4 py-2 bg-fuchsia-600 text-white rounded-lg hover:bg-fuchsia-700 transition duration-200 flex items-center"
+                    >
+                        <i className="fas fa-sync mr-2"></i>
+                        Actualiser
+                    </button>
                 </div>
 
 
+
+                {/* Filtres par type d'offre */}
+                <div className="bg-white rounded-lg shadow p-6 mb-8">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-4">Filtrer par type d'offre</h3>
+                    <div className="flex flex-wrap gap-3">
+                        {[
+                            { value: 'ALL', label: 'Toutes les offres' },
+                            { value: 'JOB', label: 'Offres d\'emploi' },
+                            { value: 'FUNDING', label: 'Offres de financement' },
+                            { value: 'CONSULTATION', label: 'Consultations' },
+                            { value: 'SCHOLARSHIP', label: 'Bourses' }
+                        ].map(option => (
+                            <button
+                                key={option.value}
+                                onClick={() => setSelectedOfferType(option.value)}
+                                className={`px-4 py-2 rounded-lg transition duration-200 ${
+                                    selectedOfferType === option.value
+                                        ? 'bg-fuchsia-600 text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                {option.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
 
                 {/* Statistiques des Candidatures */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div className="bg-white rounded-lg shadow p-6">
                         <div className="flex items-center">
-                            <div className="p-3 rounded-full bg-blue-100 text-blue-600">
+                            <div className="p-3 rounded-full bg-fuchsia-100 text-fuchsia-600">
                                 <i className="fas fa-users text-xl"></i>
                             </div>
                             <div className="ml-4">
                                 <p className="text-sm font-medium text-gray-600">Total Candidatures</p>
                                 <p className="text-2xl font-semibold text-gray-900">
-                                    {formatNumber(applicationStats?.total_applications || 0)}
+                                    {formatNumber(filteredStats?.total_applications || 0)}
                                 </p>
                             </div>
                         </div>
@@ -150,7 +268,7 @@ const Dashboard = () => {
                             <div className="ml-4">
                                 <p className="text-sm font-medium text-gray-600">En Attente</p>
                                 <p className="text-2xl font-semibold text-gray-900">
-                                    {formatNumber(applicationStats?.pending_applications || 0)}
+                                    {formatNumber(filteredStats?.pending_applications || 0)}
                                 </p>
                             </div>
                         </div>
@@ -164,7 +282,7 @@ const Dashboard = () => {
                             <div className="ml-4">
                                 <p className="text-sm font-medium text-gray-600">Présélectionnés</p>
                                 <p className="text-2xl font-semibold text-gray-900">
-                                    {formatNumber(applicationStats?.shortlisted_applications || 0)}
+                                    {formatNumber(filteredStats?.shortlisted_applications || 0)}
                                 </p>
                             </div>
                         </div>
@@ -180,7 +298,7 @@ const Dashboard = () => {
                             <div className="ml-4">
                                 <p className="text-sm font-medium text-gray-600">Refusées</p>
                                 <p className="text-2xl font-semibold text-gray-900">
-                                    {formatNumber(applicationStats?.rejected_applications || 0)}
+                                    {formatNumber(filteredStats?.rejected_applications || 0)}
                                 </p>
                             </div>
                         </div>
@@ -218,12 +336,9 @@ const Dashboard = () => {
                                                 <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">
                                                     {offer.title}
                                                 </h3>
-                                                <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded whitespace-nowrap flex-shrink-0 ${offer.status === 'PUBLISHED' ? 'bg-gray-100 text-gray-700' :
-                                                        offer.status === 'PENDING_APPROVAL' ? 'bg-gray-100 text-gray-600' :
-                                                            offer.is_expired ? 'bg-gray-100 text-gray-600' :
-                                                                'bg-gray-100 text-gray-600'
+                                                <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded whitespace-nowrap flex-shrink-0 ${getStatusColor(offer.status, offer.is_expired)
                                                     }`}>
-                                                    {offer.is_expired ? 'Expiré' : offer.status === 'PUBLISHED' ? 'Publié' : 'En attente'}
+                                                    {getStatusLabel(offer.status, offer.is_expired)}
                                                 </span>
                                             </div>
 
@@ -272,7 +387,7 @@ const Dashboard = () => {
                                 <div className="text-center py-8">
                                     <i className="fas fa-inbox text-3xl text-gray-300 mb-3 block"></i>
                                     <p className="text-gray-500 text-sm mb-3">Aucune offre d'emploi créée</p>
-                                    <Link to="/recruteur/creer-offre" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                                    <Link to="/recruteur/creer-offre" className="text-fuchsia-600 hover:text-fuchsia-700 text-sm font-medium">
                                         <i className="fas fa-plus mr-1"></i>Créer une offre
                                     </Link>
                                 </div>
@@ -306,12 +421,9 @@ const Dashboard = () => {
                                                 <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">
                                                     {offer.title}
                                                 </h3>
-                                                <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded whitespace-nowrap flex-shrink-0 ${offer.status === 'PUBLISHED' ? 'bg-gray-100 text-gray-700' :
-                                                        offer.status === 'PENDING_APPROVAL' ? 'bg-gray-100 text-gray-600' :
-                                                            offer.is_expired ? 'bg-gray-100 text-gray-600' :
-                                                                'bg-gray-100 text-gray-600'
+                                                <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded whitespace-nowrap flex-shrink-0 ${getStatusColor(offer.status, offer.is_expired)
                                                     }`}>
-                                                    {offer.is_expired ? 'Expiré' : offer.status === 'PUBLISHED' ? 'Publié' : 'En attente'}
+                                                    {getStatusLabel(offer.status, offer.is_expired)}
                                                 </span>
                                             </div>
 
@@ -487,12 +599,12 @@ const Dashboard = () => {
                                 };
 
                                 return (
-                                    <div key={notification.id} className={`p-3 rounded-lg border-l-4 ${notification.is_read ? 'bg-gray-50 border-gray-300' : 'bg-blue-50 border-blue-500'
+                                    <div key={notification.id} className={`p-3 rounded-lg border-l-4 ${notification.is_read ? 'bg-gray-50 border-gray-300' : 'bg-fuchsia-50 border-fuchsia-500'
                                         }`}>
                                         <div className="flex justify-between items-start">
                                             <div className="pr-4 flex-1">
                                                 <div className="flex items-center flex-wrap gap-2 mb-1">
-                                                    <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                                    <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-fuchsia-100 text-fuchsia-800">
                                                         {notification.notification_type_display || notification.notification_type}
                                                     </span>
                                                     <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${priorityClass}`}>

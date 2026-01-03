@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import consultationService from '../../services/consultationService';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
+import CloseOfferConfirmationModal from '../../components/CloseOfferConfirmationModal';
 import FinancementStats from '../../components/FinancementStats';
 import FinancementPagination from '../../components/FinancementPagination';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -28,6 +29,12 @@ const GestionFinancement = () => {
   
   // États pour les modales
   const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    fundingId: null,
+    fundingName: ''
+  });
+
+  const [closeModal, setCloseModal] = useState({
     isOpen: false,
     fundingId: null,
     fundingName: ''
@@ -93,26 +100,7 @@ const GestionFinancement = () => {
     // Gestion du filtre statut
     let matchesStatus = true;
     if (status) {
-      if (status === 'EXPIRED') {
-        // Filtrer les offres expirées
-        matchesStatus = funding.is_expired === true;
-      } else if (status === 'DEADLINE_EXPIRED') {
-        // Filtrer les offres avec date limite expirée
-        matchesStatus = funding.date_limite && new Date(funding.date_limite) < new Date();
-      } else if (status === 'DEADLINE_SOON') {
-        // Filtrer les offres avec date limite proche (≤30 jours)
-        if (funding.date_limite) {
-          const deadline = new Date(funding.date_limite);
-          const now = new Date();
-          const diffDays = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
-          matchesStatus = diffDays <= 30 && diffDays > 0;
-        } else {
-          matchesStatus = false;
-        }
-      } else {
-        // Filtrage normal par statut
-        matchesStatus = funding.status === status;
-      }
+      matchesStatus = funding.status === status;
     }
     
     return matchesSearch && matchesStatus;
@@ -151,6 +139,44 @@ const GestionFinancement = () => {
     }
   };
 
+  const openCloseModal = (id, name) => {
+    setCloseModal({
+      isOpen: true,
+      fundingId: id,
+      fundingName: name
+    });
+  };
+
+  const closeCloseModal = () => {
+    setCloseModal({
+      isOpen: false,
+      fundingId: null,
+      fundingName: ''
+    });
+  };
+
+  // Gérer la fermeture d'une offre de financement expirée
+  const handleCloseExpired = async () => {
+    if (closeModal.fundingId) {
+      try {
+        setLoading(true);
+        await consultationService.closeExpiredFundingOffer(closeModal.fundingId);
+        
+        // Mettre à jour la liste locale
+        setFundings(prev => prev.filter(f => f.id !== closeModal.fundingId));
+        setTotalCount(prev => Math.max(0, prev - 1));
+        
+        closeCloseModal();
+        setError(null);
+        setLoading(false);
+      } catch (error) {
+        setError(error.message || 'Erreur lors de la fermeture de l\'offre');
+        console.error('Erreur:', error);
+        setLoading(false);
+      }
+    }
+  };
+
   // Gérer la modification
   const handleModifier = (id) => {
     navigate(`/recruteur/creer-financement?edit=${id}`, { replace: true });
@@ -163,21 +189,7 @@ const GestionFinancement = () => {
 
   // Obtenir le texte du statut
   const getStatusText = (funding) => {
-    // Vérifier d'abord si la date limite est expirée
-    if (funding.date_limite) {
-      const deadline = new Date(funding.date_limite);
-      const now = new Date();
-      if (deadline < now) {
-        return 'Limite expirée';
-      }
-    }
-    
-    // Vérifier si l'offre est expirée
-    if (funding.is_expired) {
-      return 'Expirée';
-    }
-    
-    // Sinon, utiliser le statut normal
+    // Utiliser le statut normal
     switch (funding.status) {
       case 'DRAFT':
         return 'Brouillon';
@@ -189,6 +201,10 @@ const GestionFinancement = () => {
         return 'Publiée';
       case 'REJECTED':
         return 'Refusée';
+      case 'EXPIRED':
+        return 'Expirée';
+      case 'CLOSED':
+        return 'Fermée';
       default:
         return funding.status || 'Statut inconnu';
     }
@@ -196,21 +212,7 @@ const GestionFinancement = () => {
 
   // Obtenir la couleur du statut
   const getStatusColor = (funding) => {
-    // Vérifier d'abord si la date limite est expirée
-    if (funding.date_limite) {
-      const deadline = new Date(funding.date_limite);
-      const now = new Date();
-      if (deadline < now) {
-        return 'bg-red-600 text-white';
-      }
-    }
-    
-    // Vérifier si l'offre est expirée
-    if (funding.is_expired) {
-      return 'bg-red-100 text-red-800';
-    }
-    
-    // Sinon, utiliser la couleur du statut normal
+    // Utiliser la couleur du statut normal
     switch (funding.status) {
       case 'DRAFT':
         return 'bg-gray-100 text-gray-800';
@@ -222,6 +224,10 @@ const GestionFinancement = () => {
         return 'bg-blue-100 text-blue-800';
       case 'REJECTED':
         return 'bg-red-100 text-red-800';
+      case 'EXPIRED':
+        return 'bg-orange-100 text-orange-800';
+      case 'CLOSED':
+        return 'bg-gray-200 text-gray-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -277,14 +283,23 @@ const GestionFinancement = () => {
               </p>
             )}
           </div>
-          <div className="hidden sm:block">
-            <Link 
-              to="/recruteur/creer-financement"
-              className="bg-fuchsia-600 text-white px-4 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200 flex items-center"
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={loadMyFundingOffers}
+              className="p-2 text-gray-600 hover:text-fuchsia-600 transition duration-200"
+              title="Actualiser"
             >
-              <i className="fas fa-plus mr-2"></i>
-              Nouveau financement
-            </Link>
+              <i className="fas fa-sync-alt"></i>
+            </button>
+            <div className="hidden sm:block">
+              <Link 
+                to="/recruteur/creer-financement"
+                className="bg-fuchsia-600 text-white px-4 py-2 rounded-lg hover:bg-fuchsia-700 transition duration-200 flex items-center"
+              >
+                <i className="fas fa-plus mr-2"></i>
+                Nouveau financement
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -340,8 +355,7 @@ const GestionFinancement = () => {
               <option value="PUBLISHED">Publiées</option>
               <option value="REJECTED">Refusées</option>
               <option value="EXPIRED">Expirées</option>
-              <option value="DEADLINE_EXPIRED">Limite expirée</option>
-              <option value="DEADLINE_SOON">Limite proche (≤30j)</option>
+              <option value="CLOSED">Fermées</option>
             </select>
           </div>
         </div>
@@ -380,7 +394,7 @@ const GestionFinancement = () => {
                       )}
                     </div>
                     {funding.objective && (
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-1">
                         {funding.objective}
                       </p>
                     )}
@@ -455,6 +469,16 @@ const GestionFinancement = () => {
                 Aperçu
               </button>
               
+              {funding.status === 'EXPIRED' && (
+                <button 
+                  onClick={() => openCloseModal(funding.id, funding.title)}
+                  className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition duration-200 text-sm"
+                >
+                  <i className="fas fa-times-circle mr-2"></i>
+                  Fermer
+                </button>
+              )}
+              
               <button 
                 onClick={() => openDeleteModal(funding.id, funding.title)}
                 className="flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200 text-sm"
@@ -507,6 +531,15 @@ const GestionFinancement = () => {
         onConfirm={confirmDelete}
         itemName={deleteModal.fundingName}
         itemType="ce financement"
+      />
+
+      {/* Close Offer Confirmation Modal */}
+      <CloseOfferConfirmationModal
+        isOpen={closeModal.isOpen}
+        onClose={closeCloseModal}
+        onConfirm={handleCloseExpired}
+        offerName={closeModal.fundingName}
+        offerType="ce financement"
       />
     </div>
   );

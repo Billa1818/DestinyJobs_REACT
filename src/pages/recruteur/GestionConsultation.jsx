@@ -139,6 +139,22 @@ const GestionConsultation = () => {
     }
   };
 
+  // Gérer la fermeture d'une consultation expirée
+  const handleCloseExpired = async (consultation) => {
+    try {
+      setLoading(true);
+      await consultationService.closeExpiredConsultationOffer(consultation.id);
+      showNotification('success', 'Consultation fermée avec succès');
+      setTimeout(() => {
+        loadMyConsultationOffers();
+      }, 1000);
+    } catch (error) {
+      showNotification('error', error.message || 'Erreur lors de la fermeture de la consultation');
+      console.error('Erreur:', error);
+      setLoading(false);
+    }
+  };
+
   // Gérer la modification
   const handleModifier = (consultationId) => {
     navigate(`/recruteur/creer-consultation?edit=${consultationId}`);
@@ -391,17 +407,25 @@ const GestionConsultation = () => {
                  <i className="fas fa-edit mr-2"></i>Modifier
                </button>
                <button 
-                 onClick={() => handleApercu(consultation.id)}
-                 className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-200"
-               >
-                 <i className="fas fa-eye mr-2"></i>Aperçu
-               </button>
-               <button 
-                 onClick={() => openDeleteModal(consultation.id, consultation.title)}
-                 className="flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200"
-               >
-                 <i className="fas fa-trash mr-2"></i>Supprimer
-               </button>
+                  onClick={() => handleApercu(consultation.id)}
+                  className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-200"
+                >
+                  <i className="fas fa-eye mr-2"></i>Aperçu
+                </button>
+                {consultation.status === 'EXPIRED' && (
+                  <button 
+                    onClick={() => handleCloseExpired(consultation)}
+                    className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition duration-200"
+                  >
+                    <i className="fas fa-times-circle mr-2"></i>Fermer
+                  </button>
+                )}
+                <button 
+                  onClick={() => openDeleteModal(consultation.id, consultation.title)}
+                  className="flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200"
+                >
+                  <i className="fas fa-trash mr-2"></i>Supprimer
+                </button>
              </div>
           </div>
         ))}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
+import CloseOfferConfirmationModal from '../../components/CloseOfferConfirmationModal';
 import JobStats from '../../components/JobStats';
 import Pagination from '../../components/Pagination';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -26,6 +27,12 @@ const GestionOffre = () => {
     message: ''
   });
   const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    offreId: null,
+    offreName: ''
+  });
+
+  const [closeModal, setCloseModal] = useState({
     isOpen: false,
     offreId: null,
     offreName: ''
@@ -109,23 +116,9 @@ const GestionOffre = () => {
       );
     }
 
-    // Appliquer les filtres de statut spéciaux (dates limites)
+    // Appliquer les filtres de statut
     if (filters.status) {
-      if (filters.status === 'DEADLINE_EXPIRED') {
-        filtered = filtered.filter(offre => 
-          offre.application_deadline && new Date(offre.application_deadline) < new Date()
-        );
-      } else if (filters.status === 'DEADLINE_SOON') {
-        filtered = filtered.filter(offre => {
-          if (!offre.application_deadline) return false;
-          const deadline = new Date(offre.application_deadline);
-          const now = new Date();
-          const diffDays = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
-          return diffDays <= 30 && diffDays > 0;
-        });
-      } else {
-        filtered = filtered.filter(offre => offre.status === filters.status);
-      }
+      filtered = filtered.filter(offre => offre.status === filters.status);
     }
 
     setFilteredOffres(filtered);
@@ -162,20 +155,11 @@ const GestionOffre = () => {
   };
 
   const getStatusColor = (offre) => {
-    // Vérifier d'abord les dates limites
-    if (offre.application_deadline) {
-      const deadline = new Date(offre.application_deadline);
-      const now = new Date();
-      if (deadline < now) {
-        return 'bg-red-600 text-white'; // Limite expirée
-      }
-    }
-    
-    // Sinon, utiliser le statut normal
+    // Utiliser le statut normal
     switch (offre.status) {
       case 'PUBLISHED': return 'bg-green-100 text-green-800';
       case 'PENDING_APPROVAL': return 'bg-yellow-100 text-yellow-800';
-      case 'APPROVED': return 'bg-green-100 text-green-800'; // Changé en vert
+      case 'APPROVED': return 'bg-green-100 text-green-800';
       case 'REJECTED': return 'bg-red-100 text-red-800';
       case 'EXPIRED': return 'bg-orange-100 text-orange-800';
       case 'CLOSED': return 'bg-gray-100 text-gray-800';
@@ -184,16 +168,7 @@ const GestionOffre = () => {
   };
 
   const getStatusText = (offre) => {
-    // Vérifier d'abord les dates limites
-    if (offre.application_deadline) {
-      const deadline = new Date(offre.application_deadline);
-      const now = new Date();
-      if (deadline < now) {
-        return 'Limite expirée';
-      }
-    }
-    
-    // Sinon, utiliser le statut normal
+    // Utiliser le statut normal
     switch (offre.status) {
       case 'PUBLISHED': return 'Publiée';
       case 'PENDING_APPROVAL': return 'En attente';
@@ -274,6 +249,40 @@ const GestionOffre = () => {
       } catch (error) {
         console.error('Erreur lors de la suppression:', error);
         showNotification('error', error.message || 'Erreur lors de la suppression');
+      }
+    }
+  };
+
+  const openCloseModal = (id, name) => {
+    setCloseModal({
+      isOpen: true,
+      offreId: id,
+      offreName: name
+    });
+  };
+
+  const closeCloseModal = () => {
+    setCloseModal({
+      isOpen: false,
+      offreId: null,
+      offreName: ''
+    });
+  };
+
+  const handleCloseExpired = async () => {
+    if (closeModal.offreId) {
+      try {
+        setLoading(true);
+        await jobService.closeExpiredJobOffer(closeModal.offreId);
+        showNotification('success', 'Offre fermée avec succès');
+        closeCloseModal();
+        setTimeout(() => {
+          loadOffres();
+        }, 1000);
+      } catch (error) {
+        showNotification('error', error.message || 'Erreur lors de la fermeture de l\'offre');
+        console.error('Erreur:', error);
+        setLoading(false);
       }
     }
   };
@@ -388,8 +397,6 @@ const GestionOffre = () => {
               <option value="REJECTED">Refusées</option>
               <option value="EXPIRED">Expirées</option>
               <option value="CLOSED">Fermées</option>
-              <option value="DEADLINE_EXPIRED">Limite expirée</option>
-              <option value="DEADLINE_SOON">Limite proche (≤30j)</option>
             </select>
           </div>
           <div>
@@ -452,7 +459,7 @@ const GestionOffre = () => {
                       )}
                     </div>
                     {offre.description && (
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-1">
                         {offre.description}
                       </p>
                     )}
@@ -527,6 +534,14 @@ const GestionOffre = () => {
               >
                 <i className="fas fa-eye mr-2"></i>Aperçu
               </Link>
+              {offre.status === 'EXPIRED' && (
+                <button 
+                  onClick={() => openCloseModal(offre.id, offre.title)}
+                  className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition duration-200"
+                >
+                  <i className="fas fa-times-circle mr-2"></i>Fermer
+                </button>
+              )}
               <button 
                 onClick={() => openDeleteModal(offre.id, offre.title)}
                 className="flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200"
@@ -580,6 +595,15 @@ const GestionOffre = () => {
         onConfirm={confirmDelete}
         itemName={deleteModal.offreName}
         itemType="cette offre"
+      />
+
+      {/* Close Offer Confirmation Modal */}
+      <CloseOfferConfirmationModal
+        isOpen={closeModal.isOpen}
+        onClose={closeCloseModal}
+        onConfirm={handleCloseExpired}
+        offerName={closeModal.offreName}
+        offerType="cette offre"
       />
     </div>
   );

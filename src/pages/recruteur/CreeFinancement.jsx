@@ -30,7 +30,9 @@ const CreeFinancement = () => {
         external_application_url: '',
         company_website_url: '',
         country_id: '',
-        region_id: ''
+        region_id: '',
+        selected_candidate_message: '',
+        rejected_candidate_message: ''
     });
     
     const [loading, setLoading] = useState(false);
@@ -118,7 +120,9 @@ const CreeFinancement = () => {
                 external_application_url: fundingData.external_application_url || '',
                 company_website_url: fundingData.company_website_url || '',
                 country_id: fundingData.country?.id?.toString() || '',
-                region_id: fundingData.region?.id?.toString() || ''
+                region_id: fundingData.region?.id?.toString() || '',
+                selected_candidate_message: fundingData.selected_candidate_message || '',
+                rejected_candidate_message: fundingData.rejected_candidate_message || ''
             });
             
             // Charger les régions si un pays est sélectionné
@@ -227,7 +231,9 @@ const CreeFinancement = () => {
                 external_application_url: formData.is_external_application ? formData.external_application_url : null,
                 company_website_url: formData.company_website_url,
                 country_id: formData.country_id ? parseInt(formData.country_id) : null,
-                region_id: formData.region_id ? parseInt(formData.region_id) : null
+                region_id: formData.region_id ? parseInt(formData.region_id) : null,
+                selected_candidate_message: formData.selected_candidate_message && formData.selected_candidate_message.trim() ? formData.selected_candidate_message.trim() : null,
+                rejected_candidate_message: formData.rejected_candidate_message && formData.rejected_candidate_message.trim() ? formData.rejected_candidate_message.trim() : null
             };
 
             if (isEditing && currentFunding) {
@@ -694,6 +700,48 @@ const CreeFinancement = () => {
                                 onChange={handleInputChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500" 
                             />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Messages aux candidats */}
+                <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <i className="fas fa-envelope mr-2 text-blue-600"></i>
+                        Messages aux candidats
+                    </h2>
+
+                    <div className="space-y-4 sm:space-y-6">
+                        <div>
+                            <label htmlFor="selected_candidate_message" className="block text-sm font-medium text-gray-700 mb-2">
+                                Message pour candidats sélectionnés
+                            </label>
+                            <textarea
+                                id="selected_candidate_message"
+                                name="selected_candidate_message"
+                                rows="3"
+                                value={formData.selected_candidate_message}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500"
+                                placeholder="Message personnalisé envoyé aux candidats sélectionnés (optionnel)"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Ce message sera envoyé automatiquement aux candidats retenus.</p>
+                        </div>
+
+                        <div>
+                            <label htmlFor="rejected_candidate_message" className="block text-sm font-medium text-gray-700 mb-2">
+                                Message pour candidats non retenus
+                            </label>
+                            <textarea
+                                id="rejected_candidate_message"
+                                name="rejected_candidate_message"
+                                rows="3"
+                                value={formData.rejected_candidate_message}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500"
+                                placeholder="Message personnalisé envoyé aux candidats non retenus (optionnel)"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Ce message sera envoyé automatiquement aux candidats non retenus.</p>
                         </div>
                     </div>
                 </div>

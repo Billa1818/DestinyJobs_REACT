@@ -432,12 +432,6 @@ const Jobs = () => {
                                                                     {job.postedDate}
                                                                 </span>
                                                             )}
-                                                            {job.applications_count > 0 && (
-                                                                <span className="flex items-center">
-                                                                    <i className="fas fa-users mr-1"></i>
-                                                                    {job.applications_count} candidature{job.applications_count !== 1 ? 's' : ''}
-                                                                </span>
-                                                            )}
                                                         </div>
 
                                                         {/* Right Side - Deadline & Action */}

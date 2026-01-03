@@ -20,7 +20,10 @@ const CreeConsultation = () => {
         description: '',
         country: '',
         region: '',
-        documents: null
+        application_deadline: '',
+        documents: null,
+        selected_candidate_message: '',
+        rejected_candidate_message: ''
     });
 
     const [loading, setLoading] = useState(false);
@@ -59,7 +62,10 @@ const CreeConsultation = () => {
                 description: consultation.description || '',
                 country: consultation.country?.id ? consultation.country.id.toString() : '',
                 region: consultation.region?.id ? consultation.region.id.toString() : '',
-                documents: null
+                application_deadline: consultation.application_deadline ? consultation.application_deadline.split('T')[0] : '',
+                documents: null,
+                selected_candidate_message: consultation.selected_candidate_message || '',
+                rejected_candidate_message: consultation.rejected_candidate_message || ''
             });
         } catch (error) {
             setError('Erreur lors du chargement de la consultation');
@@ -129,6 +135,11 @@ const CreeConsultation = () => {
             if (formData.region) {
                 apiData.region = parseInt(formData.region);
             }
+            if (formData.application_deadline) {
+                apiData.application_deadline = `${formData.application_deadline}T23:59:59Z`;
+            }
+            apiData.selected_candidate_message = formData.selected_candidate_message && formData.selected_candidate_message.trim() ? formData.selected_candidate_message.trim() : null;
+            apiData.rejected_candidate_message = formData.rejected_candidate_message && formData.rejected_candidate_message.trim() ? formData.rejected_candidate_message.trim() : null;
 
             if (editId) {
                 // Mode édition
@@ -141,6 +152,15 @@ const CreeConsultation = () => {
                     }
                     if (formData.region) {
                         formDataWithFiles.append('region', parseInt(formData.region));
+                    }
+                    if (formData.application_deadline) {
+                        formDataWithFiles.append('application_deadline', `${formData.application_deadline}T23:59:59Z`);
+                    }
+                    if (formData.selected_candidate_message?.trim()) {
+                        formDataWithFiles.append('selected_candidate_message', formData.selected_candidate_message.trim());
+                    }
+                    if (formData.rejected_candidate_message?.trim()) {
+                        formDataWithFiles.append('rejected_candidate_message', formData.rejected_candidate_message.trim());
                     }
                     formDataWithFiles.append('documents', formData.documents);
                     await consultationService.updateConsultationOfferWithFiles(editId, formDataWithFiles);
@@ -159,6 +179,15 @@ const CreeConsultation = () => {
                     }
                     if (formData.region) {
                         formDataWithFiles.append('region', parseInt(formData.region));
+                    }
+                    if (formData.application_deadline) {
+                        formDataWithFiles.append('application_deadline', `${formData.application_deadline}T23:59:59Z`);
+                    }
+                    if (formData.selected_candidate_message?.trim()) {
+                        formDataWithFiles.append('selected_candidate_message', formData.selected_candidate_message.trim());
+                    }
+                    if (formData.rejected_candidate_message?.trim()) {
+                        formDataWithFiles.append('rejected_candidate_message', formData.rejected_candidate_message.trim());
                     }
                     formDataWithFiles.append('documents', formData.documents);
                     await consultationService.createConsultationOfferWithFiles(formDataWithFiles);
@@ -273,6 +302,20 @@ const CreeConsultation = () => {
                                 placeholder="Décrivez en détail votre offre de consultation, vos domaines d'expertise, les services proposés..."
                             />
                         </div>
+
+                        <div>
+                            <label htmlFor="application_deadline" className="block text-sm font-medium text-gray-700 mb-2">
+                                Date limite de candidature
+                            </label>
+                            <input
+                                type="date"
+                                id="application_deadline"
+                                name="application_deadline"
+                                value={formData.application_deadline}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500"
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -352,6 +395,48 @@ const CreeConsultation = () => {
                                     {formData.documents ? formData.documents.name : 'Aucun fichier sélectionné'}
                                 </p>
                             </label>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Messages aux candidats */}
+                <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <i className="fas fa-envelope mr-2 text-blue-600"></i>
+                        Messages aux candidats
+                    </h2>
+
+                    <div className="space-y-4 sm:space-y-6">
+                        <div>
+                            <label htmlFor="selected_candidate_message" className="block text-sm font-medium text-gray-700 mb-2">
+                                Message pour candidats sélectionnés
+                            </label>
+                            <textarea
+                                id="selected_candidate_message"
+                                name="selected_candidate_message"
+                                rows="3"
+                                value={formData.selected_candidate_message}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500"
+                                placeholder="Message personnalisé envoyé aux candidats sélectionnés (optionnel)"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Ce message sera envoyé automatiquement aux candidats retenus.</p>
+                        </div>
+
+                        <div>
+                            <label htmlFor="rejected_candidate_message" className="block text-sm font-medium text-gray-700 mb-2">
+                                Message pour candidats non retenus
+                            </label>
+                            <textarea
+                                id="rejected_candidate_message"
+                                name="rejected_candidate_message"
+                                rows="3"
+                                value={formData.rejected_candidate_message}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500"
+                                placeholder="Message personnalisé envoyé aux candidats non retenus (optionnel)"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Ce message sera envoyé automatiquement aux candidats non retenus.</p>
                         </div>
                     </div>
                 </div>

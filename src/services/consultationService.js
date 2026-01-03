@@ -247,6 +247,20 @@ class ConsultationService {
     }
 
     /**
+     * Fermer une offre de consultation expirée
+     * @param {string} offerId - ID de l'offre
+     * @returns {Promise} - Promesse contenant la réponse
+     */
+    async closeExpiredConsultationOffer(offerId) {
+        try {
+            const response = await api.post(`/api/jobs/consultation-offers/${offerId}/close-expired/`);
+            return response.data;
+        } catch (error) {
+            throw this.handleError(error, 'Erreur lors de la fermeture de l\'offre expirée');
+        }
+    }
+
+    /**
      * Récupération des offres de consultation publiques avec filtres et pagination
      * GET /api/jobs/consultation-offers/
      * Authentification: Non requise
@@ -530,6 +544,20 @@ class ConsultationService {
             return response.data;
         } catch (error) {
             throw this.handleError(error, 'Erreur lors de la suppression de l\'offre');
+        }
+    }
+
+    /**
+     * Fermer une offre de financement expirée
+     * @param {string} offerId - ID de l'offre
+     * @returns {Promise} - Promesse contenant la réponse
+     */
+    async closeExpiredFundingOffer(offerId) {
+        try {
+            const response = await api.post(`/api/jobs/funding-offers/${offerId}/close-expired/`);
+            return response.data;
+        } catch (error) {
+            throw this.handleError(error, 'Erreur lors de la fermeture de l\'offre expirée');
         }
     }
 

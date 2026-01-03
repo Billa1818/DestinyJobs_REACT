@@ -217,18 +217,32 @@ class JobService {
   }
 
   /**
-   * Suppression d'une offre d'emploi par un recruteur
-   * @param {string} offerId - ID de l'offre
-   * @returns {Promise} - Promesse contenant la réponse
-   */
-  async deleteJobOffer(offerId) {
-    try {
-      const response = await api.delete(`/api/jobs/job-offers/${offerId}/`);
-      return response.data;
-    } catch (error) {
-      throw this.handleJobError(error, 'Erreur lors de la suppression de l\'offre');
-    }
-  }
+    * Suppression d'une offre d'emploi par un recruteur
+    * @param {string} offerId - ID de l'offre
+    * @returns {Promise} - Promesse contenant la réponse
+    */
+   async deleteJobOffer(offerId) {
+     try {
+       const response = await api.delete(`/api/jobs/job-offers/${offerId}/`);
+       return response.data;
+     } catch (error) {
+       throw this.handleJobError(error, 'Erreur lors de la suppression de l\'offre');
+     }
+   }
+
+   /**
+    * Fermer une offre d'emploi expirée
+    * @param {string} offerId - ID de l'offre
+    * @returns {Promise} - Promesse contenant la réponse
+    */
+   async closeExpiredJobOffer(offerId) {
+     try {
+       const response = await api.post(`/api/jobs/job-offers/${offerId}/close-expired/`);
+       return response.data;
+     } catch (error) {
+       throw this.handleJobError(error, 'Erreur lors de la fermeture de l\'offre expirée');
+     }
+   }
 
   /**
    * Recherche avancée d'offres d'emploi

@@ -218,18 +218,32 @@ class FinancementService {
   }
 
   /**
-   * Récupération du détail d'une offre de financement
-   * @param {string} offerId - ID de l'offre
-   * @returns {Promise} - Promesse contenant le détail de l'offre
-   */
-  async getFundingOfferDetail(offerId) {
-    try {
-      const response = await api.get(`/api/jobs/funding-offers/${offerId}/`);
-      return response.data;
-    } catch (error) {
-      throw this.handleFinancementError(error, 'Erreur lors de la récupération du détail de l\'offre de financement');
-    }
-  }
+    * Récupération du détail d'une offre de financement
+    * @param {string} offerId - ID de l'offre
+    * @returns {Promise} - Promesse contenant le détail de l'offre
+    */
+   async getFundingOfferDetail(offerId) {
+     try {
+       const response = await api.get(`/api/jobs/funding-offers/${offerId}/`);
+       return response.data;
+     } catch (error) {
+       throw this.handleFinancementError(error, 'Erreur lors de la récupération du détail de l\'offre de financement');
+     }
+   }
+
+   /**
+    * Fermer une offre de financement expirée
+    * @param {string} offerId - ID de l'offre
+    * @returns {Promise} - Promesse contenant la réponse
+    */
+   async closeExpiredFundingOffer(offerId) {
+     try {
+       const response = await api.post(`/api/jobs/funding-offers/${offerId}/close-expired/`);
+       return response.data;
+     } catch (error) {
+       throw this.handleFinancementError(error, 'Erreur lors de la fermeture de l\'offre expirée');
+     }
+   }
 
   /**
    * Recherche avancée

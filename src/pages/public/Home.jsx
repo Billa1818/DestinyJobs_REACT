@@ -47,9 +47,9 @@ const Home = () => {
             const response = await jobService.getPublicJobOffers();
             const jobs = response.results || response || [];
 
-            // Prendre les 3 plus récents avec statut PUBLISHED ou Approved
+            // Prendre les 3 plus récents avec statut PUBLISHED ou APPROVED
             const sortedJobs = jobs
-                .filter(job => (job.status === 'PUBLISHED' || job.status === 'Approved') && !job.is_expired)
+                .filter(job => (job.status === 'PUBLISHED' || job.status === 'APPROVED') && !job.is_expired)
                 .sort((a, b) => new Date(b.post_date || b.created_at) - new Date(a.post_date || a.created_at))
                 .slice(0, 3);
 
@@ -73,9 +73,9 @@ const Home = () => {
             const response = await consultationService.getPublicConsultationOffers();
             const consultations = response.results || response || [];
 
-            // Prendre les 3 plus récents avec statut PUBLISHED ou Approved
+            // Prendre les 3 plus récents avec statut PUBLISHED ou APPROVED
             const sortedConsultations = consultations
-                .filter(consultation => (consultation.status === 'PUBLISHED' || consultation.status === 'Approved') && !consultation.is_expired)
+                .filter(consultation => (consultation.status === 'PUBLISHED' || consultation.status === 'APPROVED') && !consultation.is_expired)
                 .sort((a, b) => new Date(b.created_at || b.post_date) - new Date(a.created_at || a.post_date))
                 .slice(0, 3);
 
@@ -99,9 +99,9 @@ const Home = () => {
             const response = await financementService.getPublicFundingOffers();
             const financements = response.results || response || [];
 
-            // Prendre les 3 plus récents avec statut PUBLISHED ou Approved
+            // Prendre les 3 plus récents avec statut PUBLISHED ou APPROVED
             const sortedFinancements = financements
-                .filter(financement => (financement.status === 'PUBLISHED' || financement.status === 'Approved') && !financement.is_expired)
+                .filter(financement => (financement.status === 'PUBLISHED' || financement.status === 'APPROVED') && !financement.is_expired)
                 .sort((a, b) => new Date(b.created_at || b.post_date) - new Date(a.created_at || a.post_date))
                 .slice(0, 3);
 
@@ -147,9 +147,9 @@ const Home = () => {
             const response = await bourseService.getPublicScholarships();
             const bourses = response.results || response || [];
 
-            // Prendre les 3 plus récents avec statut PUBLISHED ou Approved
+            // Prendre les 3 plus récents avec statut PUBLISHED ou APPROVED
             const sortedBourses = bourses
-                .filter(bourse => (bourse.status === 'PUBLISHED' || bourse.status === 'Approved') && !bourse.is_expired)
+                .filter(bourse => (bourse.status === 'PUBLISHED' || bourse.status === 'APPROVED') && !bourse.is_expired)
                 .sort((a, b) => new Date(b.created_at || b.post_date) - new Date(a.created_at || a.post_date))
                 .slice(0, 3);
 

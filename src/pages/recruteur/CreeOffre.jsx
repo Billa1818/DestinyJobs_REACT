@@ -43,7 +43,9 @@ const CreeOffre = () => {
     motivation_letter_required: false,
     is_urgent: false,
     country: null,
-    region: null
+    region: null,
+    selected_candidate_message: '',
+    rejected_candidate_message: ''
   });
 
   // Vérifier si on est en mode édition
@@ -153,7 +155,9 @@ const CreeOffre = () => {
         motivation_letter_required: jobData.motivation_letter_required ?? false,
         is_urgent: jobData.is_urgent ?? false,
         country: jobData.country?.id || jobData.country || null,
-        region: jobData.region?.id || jobData.region || null
+        region: jobData.region?.id || jobData.region || null,
+        selected_candidate_message: jobData.selected_candidate_message || '',
+        rejected_candidate_message: jobData.rejected_candidate_message || ''
       });
       
       // Mettre à jour le département sélectionné pour charger les catégories
@@ -202,7 +206,9 @@ const CreeOffre = () => {
         salary_min: formData.salary_min ? parseInt(formData.salary_min) : null,
         salary_max: formData.salary_max ? parseInt(formData.salary_max) : null,
         department: parseInt(formData.department),
-        category: parseInt(formData.category)
+        category: parseInt(formData.category),
+        selected_candidate_message: formData.selected_candidate_message && formData.selected_candidate_message.trim() ? formData.selected_candidate_message.trim() : null,
+        rejected_candidate_message: formData.rejected_candidate_message && formData.rejected_candidate_message.trim() ? formData.rejected_candidate_message.trim() : null
       };
 
       let result;
@@ -706,10 +712,52 @@ const CreeOffre = () => {
               </div>
             </div>
                         </div>
-                    </div>
-                    
-        {/* Form Actions */}
-        <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+                        </div>
+
+                        {/* Candidate Messages */}
+                        <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <i className="fas fa-envelope mr-2 text-blue-600"></i>
+                        Messages aux candidats
+                        </h2>
+                        
+                        <div className="space-y-4 sm:space-y-6">
+                        <div>
+                        <label htmlFor="selected_candidate_message" className="block text-sm font-medium text-gray-700 mb-2">
+                        Message pour candidats sélectionnés
+                        </label>
+                        <textarea 
+                        id="selected_candidate_message" 
+                        name="selected_candidate_message" 
+                        rows={3}
+                        value={formData.selected_candidate_message}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500"
+                        placeholder="Message personnalisé envoyé aux candidats sélectionnés (optionnel)"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Ce message sera envoyé automatiquement aux candidats retenus pour la prochaine étape.</p>
+                        </div>
+                        
+                        <div>
+                        <label htmlFor="rejected_candidate_message" className="block text-sm font-medium text-gray-700 mb-2">
+                        Message pour candidats non retenus
+                        </label>
+                        <textarea 
+                        id="rejected_candidate_message" 
+                        name="rejected_candidate_message" 
+                        rows={3}
+                        value={formData.rejected_candidate_message}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500"
+                        placeholder="Message personnalisé envoyé aux candidats non retenus (optionnel)"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Ce message sera envoyé automatiquement aux candidats non retenus.</p>
+                        </div>
+                        </div>
+                        </div>
+                        
+                        {/* Form Actions */}
+                        <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
             <button 
               type="button"

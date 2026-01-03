@@ -104,7 +104,7 @@ const Financements = () => {
   // Formater les données de l'API
   const formatFinancementData = (apiFinancement) => {
     // Formater le montant
-    let amountDisplay = 'Montant non spécifié';
+    let amountDisplay = '';
     if (apiFinancement.montant) {
       const amount = parseFloat(apiFinancement.montant);
       amountDisplay = `${amount.toLocaleString('fr-FR', { minimumFractionDigits: 0 })} FCFA`;
@@ -456,9 +456,6 @@ const Financements = () => {
                           
                           {/* Tags Row */}
                           <div className="flex flex-wrap gap-2 mb-4">
-                            <span className="bg-purple-50 text-purple-700 px-2 py-1 rounded-lg text-xs font-medium border border-purple-200">
-                              {financement.amount}
-                            </span>
                             <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-lg text-xs font-medium border border-blue-200">
                               {financement.duration}
                             </span>
@@ -472,12 +469,6 @@ const Financements = () => {
                                 <span className="flex items-center">
                                   <i className="fas fa-calendar mr-1"></i>
                                   {financement.postedDate}
-                                </span>
-                              )}
-                              {financement.applications_count > 0 && (
-                                <span className="flex items-center">
-                                  <i className="fas fa-users mr-1"></i>
-                                  {financement.applications_count} demande{financement.applications_count !== 1 ? 's' : ''}
                                 </span>
                               )}
                             </div>

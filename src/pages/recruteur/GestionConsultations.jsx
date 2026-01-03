@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import consultationService from '../../services/consultationService';
+import ConsultationStats from '../../components/ConsultationStats';
+import CloseOfferConfirmationModal from '../../components/CloseOfferConfirmationModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 const GestionConsultations = () => {
@@ -12,6 +14,12 @@ const GestionConsultations = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
+
+  const [closeModal, setCloseModal] = useState({
+    isOpen: false,
+    consultationId: null,
+    consultationTitle: ''
+  });
 
   // Vérifier l'authentification
   useEffect(() => {
@@ -30,7 +38,9 @@ const GestionConsultations = () => {
     try {
       setLoading(true);
       const data = await consultationService.getMyConsultationOffers();
-      setConsultations(Array.isArray(data) ? data : data.results || []);
+      const consultationsData = Array.isArray(data) ? data : data.results || [];
+      console.log('Consultations loaded:', consultationsData.map(c => ({ id: c.id, status: c.status, title: c.title })));
+      setConsultations(consultationsData);
     } catch (error) {
       setError('Erreur lors du chargement des offres');
     } finally {
@@ -47,6 +57,40 @@ const GestionConsultations = () => {
         loadConsultations();
       } catch (error) {
         setError('Erreur lors de la suppression de l\'offre');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const openCloseModal = (id, title) => {
+    console.log('Opening close modal for:', id, title);
+    setCloseModal({
+      isOpen: true,
+      consultationId: id,
+      consultationTitle: title
+    });
+  };
+
+  const closeCloseModal = () => {
+    setCloseModal({
+      isOpen: false,
+      consultationId: null,
+      consultationTitle: ''
+    });
+  };
+
+  const handleCloseExpired = async () => {
+    console.log('handleCloseExpired called with:', closeModal.consultationId);
+    if (closeModal.consultationId) {
+      try {
+        setLoading(true);
+        await consultationService.closeExpiredConsultationOffer(closeModal.consultationId);
+        closeCloseModal();
+        loadConsultations();
+      } catch (error) {
+        console.error('Error closing offer:', error);
+        setError('Erreur lors de la fermeture de l\'offre');
       } finally {
         setLoading(false);
       }
@@ -129,6 +173,9 @@ const GestionConsultations = () => {
         </div>
       </div>
 
+      {/* Statistiques */}
+      {consultations.length > 0 && <ConsultationStats consultations={consultations} />}
+
       {/* Messages d'erreur */}
       {error && (
         <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
@@ -189,7 +236,7 @@ const GestionConsultations = () => {
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">
                         {consultation.title}
                       </h3>
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-1">
                         {consultation.description}
                       </p>
 
@@ -203,9 +250,27 @@ const GestionConsultations = () => {
                           </span>
                         )}
                         <span>
-                          <i className="fas fa-calendar mr-1 text-gray-400"></i>
-                          {new Date(consultation.created_at).toLocaleDateString('fr-FR')}
+                          <i className="fas fa-calendar-plus mr-1 text-gray-400"></i>
+                          Créée le {new Date(consultation.created_at).toLocaleDateString('fr-FR')}
                         </span>
+                        {consultation.application_deadline && (
+                          <span>
+                            <i className="fas fa-calendar-times mr-1 text-gray-400"></i>
+                            Date limite : {new Date(consultation.application_deadline).toLocaleDateString('fr-FR')}
+                          </span>
+                        )}
+                        {consultation.date_limite && (
+                          <span>
+                            <i className="fas fa-calendar-times mr-1 text-gray-400"></i>
+                            Date limite : {new Date(consultation.date_limite).toLocaleDateString('fr-FR')}
+                          </span>
+                        )}
+                        {consultation.deadline && (
+                          <span>
+                            <i className="fas fa-calendar-times mr-1 text-gray-400"></i>
+                            Date limite : {new Date(consultation.deadline).toLocaleDateString('fr-FR')}
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -232,6 +297,15 @@ const GestionConsultations = () => {
                     <i className="fas fa-edit mr-1"></i>
                     Éditer
                   </button>
+                  {consultation.status === 'EXPIRED' && (
+                    <button 
+                      onClick={() => openCloseModal(consultation.id, consultation.title)}
+                      className="flex-1 sm:flex-initial px-3 py-2 bg-orange-50 text-orange-600 rounded-md hover:bg-orange-100 transition duration-200 flex items-center justify-center text-sm"
+                    >
+                      <i className="fas fa-times-circle mr-1"></i>
+                      Fermer
+                    </button>
+                  )}
                   <button
                     onClick={() => handleDelete(consultation.id)}
                     className="flex-1 sm:flex-initial px-3 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition duration-200 flex items-center justify-center text-sm"
@@ -245,6 +319,15 @@ const GestionConsultations = () => {
           ))}
         </div>
       )}
+
+      {/* Close Offer Confirmation Modal */}
+      <CloseOfferConfirmationModal
+        isOpen={closeModal.isOpen}
+        onClose={closeCloseModal}
+        onConfirm={handleCloseExpired}
+        offerName={closeModal.consultationTitle}
+        offerType="cette consultation"
+      />
     </div>
   );
 };
