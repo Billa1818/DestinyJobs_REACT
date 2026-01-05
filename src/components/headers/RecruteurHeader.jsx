@@ -376,9 +376,9 @@ const RecruteurHeader = () => {
             <div className="relative">
               <Link to="/recruteur/notifications" className="text-gray-600 hover:text-fuchsia-600 p-2 rounded-full transition duration-200 relative group">
                 <i className="fas fa-bell text-lg group-hover:scale-110 transition-transform"></i>
-                {/* Badge bleu avec le nombre de notifications - affiché seulement s'il y a des notifications non lues */}
+                {/* Badge fuchsia avec le nombre de notifications - affiché seulement s'il y a des notifications non lues */}
                 {notificationCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full px-2 py-1 font-bold shadow-lg">
+                  <span className="absolute -top-2 -right-2 bg-fuchsia-500 text-white text-xs rounded-full px-2 py-1 font-bold shadow-lg">
                     {notificationCount}
                   </span>
                 )}
