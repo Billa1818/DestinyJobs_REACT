@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import ProviderNotificationService from '../../services/ProviderNotificationService';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import NotificationItem from '../../components/prestataire/NotificationItem';
+import NotificationPagination from '../../components/NotificationPagination';
 
 const Notifications = () => {
   // États pour les notifications
-  const [allNotifications, setAllNotifications] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [selectedNotifications, setSelectedNotifications] = useState(new Set());
   const [stats, setStats] = useState({
     total: 0,
@@ -13,6 +14,12 @@ const Notifications = () => {
     read: 0
   });
   const [preferences, setPreferences] = useState(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    pageSize: 20
+  });
 
   // États pour l'interface
   const [loading, setLoading] = useState(true);
@@ -43,24 +50,34 @@ const Notifications = () => {
   };
 
   // Charger les notifications
-  const loadNotifications = async () => {
+  const loadNotifications = async (page = 1, pageSize = 20) => {
     try {
       const params = {
-        page: 1,
-        page_size: 1000
+        page: page,
+        page_size: pageSize
       };
 
       const response = await ProviderNotificationService.getNotifications(params);
       
-      const notifs = ProviderNotificationService.formatNotificationsForDisplay(response.notifications);
-      setAllNotifications(notifs);
+      const notificationsData = response.notifications || [];
+      const notifs = ProviderNotificationService.formatNotificationsForDisplay(notificationsData);
+      setNotifications(notifs);
       
-      // Calculer les stats localement
+      // Mettre à jour la pagination
+      const totalCount = response.pagination?.totalCount || notificationsData.length;
+      setPagination(prev => ({
+        ...prev,
+        currentPage: page,
+        totalPages: Math.ceil(totalCount / pageSize),
+        totalCount: totalCount
+      }));
+      
+      // Calculer les stats
       const unreadCount = notifs.filter(n => !n.is_read).length;
       const readCount = notifs.filter(n => n.is_read).length;
       
       setStats({
-        total: notifs.length,
+        total: totalCount,
         unread: unreadCount,
         read: readCount
       });
@@ -69,6 +86,17 @@ const Notifications = () => {
       console.error('Erreur lors du chargement des notifications:', err);
       setError('Erreur lors du chargement des notifications');
     }
+  };
+
+  // Gérer le changement de page
+  const handlePageChange = (page) => {
+    loadNotifications(page, pagination.pageSize);
+  };
+
+  // Gérer le changement de taille de page
+  const handlePageSizeChange = (newPageSize) => {
+    setPagination(prev => ({ ...prev, pageSize: newPageSize }));
+    loadNotifications(1, newPageSize);
   };
 
   // Charger les préférences
@@ -103,12 +131,12 @@ const Notifications = () => {
       await ProviderNotificationService.markNotificationsAsRead(data);
       
       // Mettre à jour l'état local
-      const updated = allNotifications.map(notif => 
+      const updated = notifications.map(notif => 
         (data.mark_all || data.notification_ids.includes(notif.id))
           ? { ...notif, is_read: true }
           : notif
       );
-      setAllNotifications(updated);
+      setNotifications(updated);
       
       // Mettre à jour les stats
       const unreadCount = updated.filter(n => !n.is_read).length;
@@ -179,12 +207,12 @@ const Notifications = () => {
   };
 
   // Séparer les notifications
-  const unreadNotifications = allNotifications.filter(n => !n.is_read);
-  const readNotifications = allNotifications.filter(n => n.is_read);
+  const unreadNotifications = notifications.filter(n => !n.is_read);
+  const readNotifications = notifications.filter(n => n.is_read);
 
   return (
     <main className="flex-1 max-w-6xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
-      {loading && allNotifications.length === 0 ? (
+      {loading && notifications.length === 0 ? (
         <LoadingSpinner variant="page" size="lg" text="Chargement des notifications..." />
       ) : (
         <>
@@ -303,7 +331,7 @@ const Notifications = () => {
           )}
 
           {/* Aucune notification */}
-          {allNotifications.length === 0 && !loading && (
+          {notifications.length === 0 && !loading && (
             <div className="bg-white rounded-lg shadow p-8 text-center">
               <div className="text-gray-400 mb-4">
                 <i className="fas fa-bell text-6xl"></i>
@@ -314,8 +342,22 @@ const Notifications = () => {
               </p>
             </div>
           )}
-        </>
-      )}
+
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <div className="mt-8">
+              <NotificationPagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                totalCount={pagination.totalCount}
+                pageSize={pagination.pageSize}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+              />
+            </div>
+          )}
+          </>
+          )}
 
       {/* Modal des préférences */}
       {showPreferences && (

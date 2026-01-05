@@ -25,7 +25,6 @@ import {
   faGlobe
 } from '@fortawesome/free-solid-svg-icons';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import Pagination from '../../components/Pagination';
 import consultationDemandesService from '../../services/consultationDemandesService';
 import { buildImageUrl, getApiBaseUrl } from '../../utils/urlHelper';
 
@@ -45,14 +44,6 @@ const Demandes = () => {
     search: ''
   });
   const [ordering, setOrdering] = useState('-created_at');
-  
-  // États pour la pagination
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalCount: 0,
-    pageSize: 10
-  });
 
   // Charger les demandes au montage du composant
   useEffect(() => {

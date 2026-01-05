@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import Pagination from '../../components/Pagination';
 import CandidatNotificationService from '../../services/CandidatNotificationService';
 import NotificationItem from '../../components/candidat/NotificationItem';
+import NotificationPagination from '../../components/NotificationPagination';
 
 const Notification = () => {
-  const [allNotifications, setAllNotifications] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedNotifications, setSelectedNotifications] = useState([]);
@@ -19,8 +19,6 @@ const Notification = () => {
     read: 0
   });
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
-  
-  // États pour la pagination
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -29,31 +27,33 @@ const Notification = () => {
   });
 
   // Récupérer les notifications
-  const fetchNotifications = async (page = 1) => {
+  const fetchNotifications = async (page = 1, pageSize = 20) => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await CandidatNotificationService.getNotifications(page, pagination.pageSize, false);
+      const response = await CandidatNotificationService.getNotifications(page, pageSize, false);
       
       // Formater les notifications pour l'affichage
-      const formattedNotifications = CandidatNotificationService.formatNotificationsForDisplay(response.notifications);
-      setAllNotifications(formattedNotifications);
+      const notificationsData = response.notifications || [];
+      const formattedNotifications = CandidatNotificationService.formatNotificationsForDisplay(notificationsData);
+      setNotifications(formattedNotifications);
       
       // Mettre à jour la pagination
+      const totalCount = response.pagination?.totalCount || notificationsData.length;
       setPagination(prev => ({
         ...prev,
         currentPage: page,
-        totalPages: Math.ceil((response.count || formattedNotifications.length) / pagination.pageSize),
-        totalCount: response.count || formattedNotifications.length
+        totalPages: Math.ceil(totalCount / pageSize),
+        totalCount: totalCount
       }));
       
-      // Calculer les stats localement
+      // Calculer les stats
       const unreadCount = formattedNotifications.filter(n => !n.isRead).length;
       const readCount = formattedNotifications.filter(n => n.isRead).length;
       
       setStats({
-        total: pagination.totalCount,
+        total: totalCount,
         unread: unreadCount,
         read: readCount
       });
@@ -64,6 +64,17 @@ const Notification = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Gérer le changement de page
+  const handlePageChange = (page) => {
+    fetchNotifications(page, pagination.pageSize);
+  };
+
+  // Gérer le changement de taille de page
+  const handlePageSizeChange = (newPageSize) => {
+    setPagination(prev => ({ ...prev, pageSize: newPageSize }));
+    fetchNotifications(1, newPageSize);
   };
 
   // Récupérer les préférences
@@ -89,12 +100,12 @@ const Notification = () => {
       await CandidatNotificationService.markAsRead(notificationIds, markAll);
       
       // Mettre à jour l'état local
-      const updated = allNotifications.map(notif => 
+      const updated = notifications.map(notif => 
         markAll || notificationIds.includes(notif.id) 
           ? { ...notif, isRead: true }
           : notif
       );
-      setAllNotifications(updated);
+      setNotifications(updated);
       
       // Mettre à jour les stats
       const unreadCount = updated.filter(n => !n.isRead).length;
@@ -145,28 +156,22 @@ const Notification = () => {
 
   // Charger les données au montage du composant
   useEffect(() => {
-    fetchNotifications(1);
+    fetchNotifications(1, pagination.pageSize);
     fetchPreferences();
   }, []);
-  
-  // Gestionnaire de changement de page
-  const handlePageChange = (page) => {
-    fetchNotifications(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   // Séparer les notifications
-  const unreadNotifications = allNotifications.filter(n => !n.isRead);
-  const readNotifications = allNotifications.filter(n => n.isRead);
+  const unreadNotifications = notifications.filter(n => !n.isRead);
+  const readNotifications = notifications.filter(n => n.isRead);
 
   return (
     <main className="flex-1 max-w-6xl mx-auto w-full px-2 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
       <div className="flex flex-col">
-        {/* Main Content Column */}
-        <div className="w-full">
-          {loading && allNotifications.length === 0 ? (
-            <LoadingSpinner variant="page" size="lg" text="Chargement des notifications..." />
-          ) : (
+         {/* Main Content Column */}
+         <div className="w-full">
+           {loading && notifications.length === 0 ? (
+             <LoadingSpinner variant="page" size="lg" text="Chargement des notifications..." />
+           ) : (
             <>
               {/* Header */}
               <div className="bg-white rounded-lg p-4 sm:p-6 shadow-sm mb-4 sm:mb-6">
@@ -283,7 +288,7 @@ const Notification = () => {
               )}
 
               {/* Aucune notification */}
-              {allNotifications.length === 0 && !loading && (
+              {notifications.length === 0 && !loading && (
                 <div className="bg-white rounded-lg shadow p-8 text-center">
                   <div className="text-gray-400 mb-4">
                     <i className="fas fa-bell text-6xl"></i>
@@ -295,6 +300,20 @@ const Notification = () => {
                 </div>
               )}
             </>
+          )}
+
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <div className="mt-8">
+              <NotificationPagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                totalCount={pagination.totalCount}
+                pageSize={pagination.pageSize}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+              />
+            </div>
           )}
 
           {/* Actions rapides */}
@@ -367,19 +386,6 @@ const Notification = () => {
             </div>
           </div>
         </div>
-        
-        {/* Pagination */}
-        {!loading && pagination.totalPages > 1 && (
-          <div className="mt-8">
-            <Pagination
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPages}
-              totalItems={pagination.totalCount}
-              itemsPerPage={pagination.pageSize}
-              onPageChange={handlePageChange}
-            />
-          </div>
-        )}
       )}
     </main>
   );

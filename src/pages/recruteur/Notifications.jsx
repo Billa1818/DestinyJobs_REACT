@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import RecruteurNotificationService from '../../services/RecruteurNotificationService';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import NotificationItem from '../../components/recruteur/NotificationItem';
+import NotificationPagination from '../../components/NotificationPagination';
 
 const Notifications = () => {
-  const [allNotifications, setAllNotifications] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [stats, setStats] = useState({
@@ -14,24 +15,56 @@ const Notifications = () => {
   });
   const [selectedNotifications, setSelectedNotifications] = useState([]);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    pageSize: 20
+  });
 
-  // Charger les notifications
-  const loadNotifications = async () => {
+  // Charger les notifications avec pagination
+  const loadNotifications = async (page = 1, pageSize = 20) => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await RecruteurNotificationService.getNotifications({}, 1, 1000);
+      const response = await RecruteurNotificationService.getNotifications({}, page, pageSize);
+      
+      // Extraire les notifications de la réponse (personnalisé format)
       const notificationsData = response.notifications || response.results || [];
       
-      setAllNotifications(notificationsData);
+      // Format personnalisé avec pagination objet
+      let totalCount = notificationsData.length;
+      let totalPages = 1;
       
-      // Calculer les stats localement
+      if (response.pagination) {
+        totalCount = response.pagination.totalCount;
+        totalPages = response.pagination.totalPages;
+      } else if (response.count) {
+        // Format DRF standard
+        totalCount = response.count;
+        totalPages = Math.ceil(totalCount / pageSize);
+      } else {
+        // Fallback
+        totalPages = Math.ceil(totalCount / pageSize);
+      }
+      
+      setNotifications(notificationsData);
+      
+      // Mettre à jour la pagination
+      setPagination(prev => ({
+        ...prev,
+        currentPage: page,
+        totalPages: totalPages,
+        totalCount: totalCount
+      }));
+      
+      // Calculer les stats à partir des données actuelles
       const unreadCount = notificationsData.filter(n => !n.is_read).length;
       const readCount = notificationsData.filter(n => n.is_read).length;
       
       setStats({
-        total_notifications: notificationsData.length,
+        total_notifications: totalCount,
         unread_count: unreadCount,
         read_count: readCount,
       });
@@ -39,7 +72,7 @@ const Notifications = () => {
     } catch (err) {
       console.error('❌ Erreur lors du chargement:', err);
       setError('Erreur lors du chargement des notifications');
-      setAllNotifications([]);
+      setNotifications([]);
     } finally {
       setLoading(false);
     }
@@ -47,24 +80,35 @@ const Notifications = () => {
 
   // Charger les données au montage
   useEffect(() => {
-    loadNotifications();
+    loadNotifications(1, pagination.pageSize);
   }, []);
+
+  // Gérer le changement de page
+  const handlePageChange = (page) => {
+    loadNotifications(page, pagination.pageSize);
+  };
+
+  // Gérer le changement de taille de page
+  const handlePageSizeChange = (newPageSize) => {
+    setPagination(prev => ({ ...prev, pageSize: newPageSize }));
+    loadNotifications(1, newPageSize);
+  };
 
   // Marquer une notification comme lue
   const markAsRead = async (id) => {
     try {
       await RecruteurNotificationService.markAsRead([id]);
       
-      const updated = allNotifications.map(notif => 
+      const updated = notifications.map(notif => 
         notif.id === id ? { ...notif, is_read: true } : notif
       );
-      setAllNotifications(updated);
+      setNotifications(updated);
       
       // Mettre à jour les stats
       const unreadCount = updated.filter(n => !n.is_read).length;
       const readCount = updated.filter(n => n.is_read).length;
       setStats({
-        total_notifications: updated.length,
+        total_notifications: pagination.totalCount,
         unread_count: unreadCount,
         read_count: readCount,
       });
@@ -77,12 +121,12 @@ const Notifications = () => {
   const markAllAsRead = async () => {
     try {
       await RecruteurNotificationService.markAllAsRead();
-      const updated = allNotifications.map(notif => ({ ...notif, is_read: true }));
-      setAllNotifications(updated);
+      const updated = notifications.map(notif => ({ ...notif, is_read: true }));
+      setNotifications(updated);
       
       // Mettre à jour les stats
       setStats({
-        total_notifications: updated.length,
+        total_notifications: pagination.totalCount,
         unread_count: 0,
         read_count: updated.length,
       });
@@ -108,18 +152,18 @@ const Notifications = () => {
       setBulkActionLoading(true);
       await RecruteurNotificationService.markAsRead(selectedNotifications);
       
-      const updated = allNotifications.map(notif => 
+      const updated = notifications.map(notif => 
         selectedNotifications.includes(notif.id) 
           ? { ...notif, is_read: true } 
           : notif
       );
-      setAllNotifications(updated);
+      setNotifications(updated);
       
       // Mettre à jour les stats
       const unreadCount = updated.filter(n => !n.is_read).length;
       const readCount = updated.filter(n => n.is_read).length;
       setStats({
-        total_notifications: updated.length,
+        total_notifications: pagination.totalCount,
         unread_count: unreadCount,
         read_count: readCount,
       });
@@ -133,12 +177,12 @@ const Notifications = () => {
   };
 
   // Séparer les notifications
-  const unreadNotifications = allNotifications.filter(n => !n.is_read);
-  const readNotifications = allNotifications.filter(n => n.is_read);
+  const unreadNotifications = notifications.filter(n => !n.is_read);
+  const readNotifications = notifications.filter(n => n.is_read);
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      {loading && allNotifications.length === 0 ? (
+      {loading && notifications.length === 0 ? (
         <LoadingSpinner variant="page" size="lg" text="Chargement des notifications..." />
       ) : (
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -248,7 +292,7 @@ const Notifications = () => {
         )}
 
         {/* Aucune notification */}
-        {allNotifications.length === 0 && !loading && (
+        {notifications.length === 0 && !loading && (
           <div className="bg-white rounded-lg shadow p-8 text-center">
             <div className="text-gray-400 mb-4">
               <i className="fas fa-bell text-6xl"></i>
@@ -257,6 +301,20 @@ const Notifications = () => {
             <p className="text-gray-500">
               Vous n'avez pas encore reçu de notifications
             </p>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {pagination.totalPages > 1 && (
+          <div className="mt-8 bg-white rounded-lg shadow p-4 sm:p-6">
+            <NotificationPagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              totalCount={pagination.totalCount}
+              pageSize={pagination.pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+            />
           </div>
         )}
       </div>
