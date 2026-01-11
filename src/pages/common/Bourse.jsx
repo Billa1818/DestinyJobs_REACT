@@ -119,7 +119,7 @@ const Bourse = () => {
                   
                   <div className="flex items-center text-sm text-gray-600 mb-3">
                     <i className="fas fa-money-bill mr-2"></i>
-                    <span>15,000€/an + logement</span>
+                    <span>15,000FCFA/an + logement</span>
                     <i className="fas fa-calendar ml-4 mr-2"></i>
                     <span>Date limite : 15 mars 2024</span>
                   </div>
@@ -248,7 +248,7 @@ const Bourse = () => {
                   
                   <div className="flex items-center text-sm text-gray-600 mb-3">
                     <i className="fas fa-money-bill mr-2"></i>
-                    <span>Frais complets + 1,150€/mois</span>
+                    <span>Frais complets + 1,150FCFA/mois</span>
                     <i className="fas fa-calendar ml-4 mr-2"></i>
                     <span>Date limite : 1 février 2024</span>
                   </div>

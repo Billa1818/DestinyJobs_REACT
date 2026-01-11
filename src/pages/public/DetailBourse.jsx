@@ -59,7 +59,7 @@ const DetailBourse = () => {
 
   const formatAmount = (amount) => {
     if (!amount) return 'Non spécifié';
-    return `${parseFloat(amount).toLocaleString('fr-FR')}€`;
+    return `${parseFloat(amount).toLocaleString('fr-FR')}FCFA`;
   };
 
   const getStatusText = (status) => {

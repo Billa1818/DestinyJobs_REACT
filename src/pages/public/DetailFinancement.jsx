@@ -66,7 +66,7 @@ const DetailFinancement = () => {
   // Fonctions de formatage
   const formatAmount = (amount) => {
     if (!amount) return 'À négocier';
-    return new Intl.NumberFormat('fr-FR').format(parseFloat(amount)) + ' €';
+    return new Intl.NumberFormat('fr-FR').format(parseFloat(amount)) + ' FCFA';
   };
 
   const formatDate = (dateString) => {

@@ -57,7 +57,7 @@ const DetailBourse = () => {
             {/* Scholarship Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
               <div className="bg-blue-50 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600 mb-1">15,000€</div>
+                <div className="text-2xl font-bold text-blue-600 mb-1">15,000FCFA</div>
                 <div className="text-sm text-gray-600">Montant annuel</div>
               </div>
               <div className="bg-green-50 p-4 rounded-lg">
@@ -92,7 +92,7 @@ const DetailBourse = () => {
               <ul className="list-disc list-inside space-y-2 text-gray-700">
                 <li>Frais de scolarité entièrement pris en charge</li>
                 <li>Hébergement en résidence universitaire</li>
-                <li>Allocation mensuelle de 1,200€</li>
+                <li>Allocation mensuelle de 1,200FCFA</li>
                 <li>Assurance santé complète</li>
                 <li>Formation linguistique intensive</li>
                 <li>Accompagnement administratif</li>

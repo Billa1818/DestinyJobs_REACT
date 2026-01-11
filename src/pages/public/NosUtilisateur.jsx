@@ -221,7 +221,7 @@ const NosUtilisateur = () => {
             {/* Tarif horaire max (pour prestataires) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tarif max (€/h)
+                Tarif max (FCFA/h)
               </label>
               <input
                 type="number"

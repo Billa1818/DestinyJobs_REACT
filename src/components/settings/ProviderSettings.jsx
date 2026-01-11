@@ -310,7 +310,7 @@ const ProviderSettings = () => {
 
           {/* Taux horaire */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Taux horaire (€)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Taux horaire (FCFA)</label>
             <input
               type="number"
               value={providerProfile.hourlyRate}

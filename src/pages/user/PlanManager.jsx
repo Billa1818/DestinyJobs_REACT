@@ -72,8 +72,8 @@ const PlanManager = () => {
   };
 
   /**
-   * Souscrire à un nouveau plan
-   */
+    * Souscrire à un nouveau plan
+    */
   const handleSubscribe = async () => {
     if (!selectedPlan || !selectedDuration) {
       toast.error('Veuillez sélectionner un plan et une durée');
@@ -96,11 +96,25 @@ const PlanManager = () => {
         setSelectedDuration(null);
         loadData();
       } else {
-        // Paiement Stripe requis
-        if (result.stripe_session_url) {
-          window.location.href = result.stripe_session_url;
+        // Paiement requis - Déterminer le provider
+        const paymentProvider = result.payment_provider;
+
+        if (paymentProvider === 'FEDAPAY') {
+          // Rediriger vers FedaPay
+          if (result.fedapay_payment_url) {
+            window.location.href = result.fedapay_payment_url;
+          } else {
+            toast.error('Erreur: URL de paiement FedaPay introuvable');
+          }
+        } else if (paymentProvider === 'STRIPE') {
+          // Rediriger vers Stripe (configuration existante)
+          if (result.stripe_session_url) {
+            window.location.href = result.stripe_session_url;
+          } else {
+            toast.error('Erreur: URL de paiement Stripe introuvable');
+          }
         } else {
-          toast.error('Erreur: URL de paiement introuvable');
+          toast.error('Erreur: Fournisseur de paiement non reconnu');
         }
       }
     } catch (error) {
@@ -555,12 +569,20 @@ const PlanManager = () => {
                   </div>
                 )}
                 <div className="border-t border-gray-200 pt-3 flex justify-between">
-                  <span className="font-semibold text-gray-900">Total:</span>
-                  <span className="font-bold text-fuchsia-600 text-lg">
-                    {formatPrice(selectedDuration.discounted_price)}
-                  </span>
+                   <span className="font-semibold text-gray-900">Total:</span>
+                   <span className="font-bold text-fuchsia-600 text-lg">
+                     {formatPrice(selectedDuration.discounted_price)}
+                   </span>
+                 </div>
                 </div>
-              </div>
+
+                {/* Information du fournisseur de paiement */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6">
+                 <p className="text-sm text-blue-700">
+                   <i className="fas fa-info-circle mr-2"></i>
+                   Le paiement sera traité de manière sécurisée. Vous serez redirigé vers la plateforme de paiement.
+                 </p>
+                </div>
 
               <div className="flex justify-end space-x-3">
                 <button

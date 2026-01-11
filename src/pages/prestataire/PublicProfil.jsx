@@ -321,7 +321,7 @@ const PublicProfil = () => {
                   <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
                     <div className="text-sm text-gray-600 mb-1">Taux horaire</div>
                     <div className="text-2xl font-bold text-orange-600">
-                      {parseFloat(profile.hourly_rate).toFixed(2)} €
+                      {parseFloat(profile.hourly_rate).toFixed(2)} FCFA
                     </div>
                   </div>
                 )}
@@ -329,7 +329,7 @@ const PublicProfil = () => {
                   <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
                     <div className="text-sm text-gray-600 mb-1">Taux journalier</div>
                     <div className="text-2xl font-bold text-orange-600">
-                      {parseFloat(profile.daily_rate).toFixed(2)} €
+                      {parseFloat(profile.daily_rate).toFixed(2)} FCFA
                     </div>
                   </div>
                 )}

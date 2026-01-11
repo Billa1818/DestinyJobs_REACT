@@ -123,7 +123,7 @@ class PublicUserSearchService {
       displayName: profile.display_name || `${profile.user?.first_name || ''} ${profile.user?.last_name || ''}`.trim() || 'N/A',
       providerType: profile.provider_type || 'N/A',
       specializations: profile.specializations || 'Aucune spécialisation',
-      hourlyRate: profile.hourly_rate ? `${profile.hourly_rate}€/h` : 'Tarif non précisé',
+      hourlyRate: profile.hourly_rate ? `${profile.hourly_rate}FCFA/h` : 'Tarif non précisé',
       availability: this.getAvailabilityDisplay(profile.availability),
       availabilityColor: this.getAvailabilityColor(profile.availability),
       yearsExperience: profile.years_experience || 0,

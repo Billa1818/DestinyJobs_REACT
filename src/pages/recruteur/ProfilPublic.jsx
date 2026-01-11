@@ -637,7 +637,7 @@ const ProfilPublic = () => {
                           {/* Montant badge */}
                           {financement.montant && (
                             <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-50 text-green-700 border border-green-200 mb-2">
-                              <i className="fas fa-euro-sign mr-1"></i>{parseFloat(financement.montant).toLocaleString()} €
+                              <i className="fas fa-euro-sign mr-1"></i>{parseFloat(financement.montant).toLocaleString()} FCFA
                             </span>
                           )}
 
@@ -717,7 +717,7 @@ const ProfilPublic = () => {
                           <div className="flex flex-wrap gap-2 mb-2">
                             {bourse.scholarship_amount && (
                               <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                                <i className="fas fa-euro-sign mr-1"></i>{parseFloat(bourse.scholarship_amount).toLocaleString()} €
+                                <i className="fas fa-euro-sign mr-1"></i>{parseFloat(bourse.scholarship_amount).toLocaleString()} FCFA
                               </span>
                             )}
                             {bourse.required_level && (
