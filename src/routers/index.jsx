@@ -8,6 +8,7 @@ import RecruteurLayout from '../layouts/RecruteurLayout';
 import ProtectedCandidatRoute from '../components/auth/ProtectedCandidatRoute';
 import ProtectedRecruteurRoute from '../components/auth/ProtectedRecruteurRoute';
 import ProtectedPrestataireRoute from '../components/auth/ProtectedPrestataireRoute';
+import { AuthenticatedRoute } from '../components/auth/ProtectedRoute';
 
 // Import des routes décentralisées
 import authRoutes from './authRoutes';
@@ -69,9 +70,17 @@ const AppRouter = () => {
             key={route.path}
             path={route.path}
             element={
-              <BaseLayout>
-                {route.element}
-              </BaseLayout>
+              route.path === '/plan-manager' ? (
+                <AuthenticatedRoute>
+                  <BaseLayout>
+                    {route.element}
+                  </BaseLayout>
+                </AuthenticatedRoute>
+              ) : (
+                <BaseLayout>
+                  {route.element}
+                </BaseLayout>
+              )
             }
           />
         ))}

@@ -106,99 +106,102 @@ class PublicUserSearchService {
   }
 
   /**
-   * Formater un prestataire pour l'affichage
-   * @param {Object} profile - Profil du prestataire
-   * @returns {Object} - Prestataire formaté
-   */
-  formatProviderForDisplay(profile) {
-    if (!profile) return null;
+    * Formater un prestataire pour l'affichage
+    * @param {Object} profile - Profil du prestataire
+    * @returns {Object} - Prestataire formaté
+    */
+   formatProviderForDisplay(profile) {
+     if (!profile) return null;
 
-    return {
-      id: profile.id,
-      userType: 'PRESTATAIRE',
-      userTypeDisplay: 'Prestataire',
-      username: profile.user?.username || 'N/A',
-      firstName: profile.user?.first_name || 'N/A',
-      lastName: profile.user?.last_name || 'N/A',
-      displayName: profile.display_name || `${profile.user?.first_name || ''} ${profile.user?.last_name || ''}`.trim() || 'N/A',
-      providerType: profile.provider_type || 'N/A',
-      specializations: profile.specializations || 'Aucune spécialisation',
-      hourlyRate: profile.hourly_rate ? `${profile.hourly_rate}FCFA/h` : 'Tarif non précisé',
-      availability: this.getAvailabilityDisplay(profile.availability),
-      availabilityColor: this.getAvailabilityColor(profile.availability),
-      yearsExperience: profile.years_experience || 0,
-      completedProjects: profile.completed_projects || 0,
-      country: profile.country?.name || 'Pays non précisé',
-      region: profile.region?.name || 'Région non précisée',
-      location: profile.country?.name && profile.region?.name ? 
-        `${profile.region.name}, ${profile.country.name}` : 
-        (profile.country?.name || profile.region?.name || 'Localisation non précisée'),
-      createdAt: profile.user?.created_at,
-      lastActivity: profile.user?.last_activity,
-      skills: profile.specializations ? profile.specializations.split(',').map(s => s.trim()) : []
-    };
-  }
-
-  /**
-   * Formater un candidat pour l'affichage
-   * @param {Object} profile - Profil du candidat
-   * @returns {Object} - Candidat formaté
-   */
-  formatCandidateForDisplay(profile) {
-    if (!profile) return null;
-
-    return {
-      id: profile.id,
-      userType: 'CANDIDAT',
-      userTypeDisplay: 'Candidat',
-      username: profile.user?.username || 'N/A',
-      firstName: profile.user?.first_name || 'N/A',
-      lastName: profile.user?.last_name || 'N/A',
-      displayName: profile.display_name || `${profile.user?.first_name || ''} ${profile.user?.last_name || ''}`.trim() || 'N/A',
-      skills: profile.skills || 'Aucune compétence',
-      technologies: profile.technologies || 'Aucune technologie',
-      yearsExperience: profile.years_experience || 0,
-      about: profile.about || 'Aucune description',
-      country: profile.country?.name || 'Pays non précisé',
-      region: profile.region?.name || 'Région non précisée',
-      location: profile.country?.name && profile.region?.name ? 
-        `${profile.region.name}, ${profile.country.name}` : 
-        (profile.country?.name || profile.region?.name || 'Localisation non précisée'),
-      createdAt: profile.user?.created_at,
-      lastActivity: profile.user?.last_activity,
-      skillsList: profile.skills ? profile.skills.split(',').map(s => s.trim()) : []
-    };
-  }
+     return {
+       id: profile.id,
+       userType: 'PRESTATAIRE',
+       userTypeDisplay: 'Prestataire',
+       username: profile.user?.username || 'N/A',
+       firstName: profile.user?.first_name || 'N/A',
+       lastName: profile.user?.last_name || 'N/A',
+       displayName: profile.display_name || `${profile.user?.first_name || ''} ${profile.user?.last_name || ''}`.trim() || 'N/A',
+       providerType: profile.provider_type || 'N/A',
+       specializations: profile.specializations || 'Aucune spécialisation',
+       hourlyRate: profile.hourly_rate ? `${profile.hourly_rate}FCFA/h` : 'Tarif non précisé',
+       availability: this.getAvailabilityDisplay(profile.availability),
+       availabilityColor: this.getAvailabilityColor(profile.availability),
+       yearsExperience: profile.years_experience || 0,
+       completedProjects: profile.completed_projects || 0,
+       country: profile.country?.name || 'Pays non précisé',
+       region: profile.region?.name || 'Région non précisée',
+       location: profile.country?.name && profile.region?.name ? 
+         `${profile.region.name}, ${profile.country.name}` : 
+         (profile.country?.name || profile.region?.name || 'Localisation non précisée'),
+       createdAt: profile.user?.created_at,
+       lastActivity: profile.user?.last_activity,
+       skills: profile.specializations ? profile.specializations.split(',').map(s => s.trim()) : [],
+       image: profile.logo || null
+     };
+   }
 
   /**
-   * Formater un recruteur pour l'affichage
-   * @param {Object} profile - Profil du recruteur
-   * @returns {Object} - Recruteur formaté
-   */
-  formatRecruiterForDisplay(profile) {
-    if (!profile) return null;
+    * Formater un candidat pour l'affichage
+    * @param {Object} profile - Profil du candidat
+    * @returns {Object} - Candidat formaté
+    */
+   formatCandidateForDisplay(profile) {
+     if (!profile) return null;
 
-    return {
-      id: profile.id,
-      userType: 'RECRUTEUR',
-      userTypeDisplay: 'Recruteur',
-      username: profile.user?.username || 'N/A',
-      firstName: profile.user?.first_name || 'N/A',
-      lastName: profile.user?.last_name || 'N/A',
-      displayName: profile.display_name || `${profile.user?.first_name || ''} ${profile.user?.last_name || ''}`.trim() || 'N/A',
-      companyName: profile.company_name || 'Entreprise non précisée',
-      sector: profile.sector || 'Secteur non précisé',
-      companySize: profile.company_size || 'Taille non précisée',
-      website: profile.website || null,
-      country: profile.country?.name || 'Pays non précisé',
-      region: profile.region?.name || 'Région non précisée',
-      location: profile.country?.name && profile.region?.name ? 
-        `${profile.region.name}, ${profile.country.name}` : 
-        (profile.country?.name || profile.region?.name || 'Localisation non précisée'),
-      createdAt: profile.user?.created_at,
-      lastActivity: profile.user?.last_activity
-    };
-  }
+     return {
+       id: profile.id,
+       userType: 'CANDIDAT',
+       userTypeDisplay: 'Candidat',
+       username: profile.user?.username || 'N/A',
+       firstName: profile.user?.first_name || 'N/A',
+       lastName: profile.user?.last_name || 'N/A',
+       displayName: profile.display_name || `${profile.user?.first_name || ''} ${profile.user?.last_name || ''}`.trim() || 'N/A',
+       skills: profile.skills || 'Aucune compétence',
+       technologies: profile.technologies || 'Aucune technologie',
+       yearsExperience: profile.years_experience || 0,
+       about: profile.about || 'Aucune description',
+       country: profile.country?.name || 'Pays non précisé',
+       region: profile.region?.name || 'Région non précisée',
+       location: profile.country?.name && profile.region?.name ? 
+         `${profile.region.name}, ${profile.country.name}` : 
+         (profile.country?.name || profile.region?.name || 'Localisation non précisée'),
+       createdAt: profile.user?.created_at,
+       lastActivity: profile.user?.last_activity,
+       skillsList: profile.skills ? profile.skills.split(',').map(s => s.trim()) : [],
+       image: profile.image || null
+     };
+   }
+
+  /**
+    * Formater un recruteur pour l'affichage
+    * @param {Object} profile - Profil du recruteur
+    * @returns {Object} - Recruteur formaté
+    */
+   formatRecruiterForDisplay(profile) {
+     if (!profile) return null;
+
+     return {
+       id: profile.id,
+       userType: 'RECRUTEUR',
+       userTypeDisplay: 'Recruteur',
+       username: profile.user?.username || 'N/A',
+       firstName: profile.user?.first_name || 'N/A',
+       lastName: profile.user?.last_name || 'N/A',
+       displayName: profile.display_name || `${profile.user?.first_name || ''} ${profile.user?.last_name || ''}`.trim() || 'N/A',
+       companyName: profile.company_name || 'Entreprise non précisée',
+       sector: profile.sector || 'Secteur non précisé',
+       companySize: profile.company_size || 'Taille non précisée',
+       website: profile.website || null,
+       country: profile.country?.name || 'Pays non précisé',
+       region: profile.region?.name || 'Région non précisée',
+       location: profile.country?.name && profile.region?.name ? 
+         `${profile.region.name}, ${profile.country.name}` : 
+         (profile.country?.name || profile.region?.name || 'Localisation non précisée'),
+       createdAt: profile.user?.created_at,
+       lastActivity: profile.user?.last_activity,
+       image: profile.logo || null
+     };
+   }
 
   /**
    * Obtenir l'affichage de la disponibilité

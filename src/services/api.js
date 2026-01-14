@@ -10,7 +10,7 @@ const api = axios.create({
   timeout: 30000, // Augmenté à 30 secondes par défaut
   headers: {
     'Content-Type': 'application/json',
-  },
+  }, 
 });
 
 // Configuration spécifique pour l'analyse IA (peut prendre plus de temps)

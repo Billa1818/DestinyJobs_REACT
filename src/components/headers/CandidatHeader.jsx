@@ -131,7 +131,7 @@ const CandidatHeader = () => {
     const firstName = user.first_name || '';
     const lastName = user.last_name || '';
     if (firstName && lastName) {
-      return `${firstName} ${lastName}`;
+      return `${firstName}`;
     } else if (firstName) {
       return firstName;
     } else if (lastName) {
@@ -218,7 +218,7 @@ const CandidatHeader = () => {
                   : 'text-gray-700 hover:text-fuchsia-600'
               }`}>
                 <i className="fas fa-briefcase mr-1"></i>
-                Emplois <i className="fas fa-chevron-down ml-1 text-xs"></i>
+                Emploi <i className="fas fa-chevron-down ml-1 text-xs"></i>
               </button>
               <div className="dropdown-menu absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible z-10">
                 <div className="py-1">
@@ -240,7 +240,7 @@ const CandidatHeader = () => {
                   : 'text-gray-700 hover:text-fuchsia-600'
               }`}>
                 <i className="fas fa-money-bill-wave mr-1"></i>
-                Financements  de projets<i className="fas fa-chevron-down ml-1 text-xs"></i>
+                Financement <i className="fas fa-chevron-down ml-1 text-xs"></i>
               </button>
               <div className="dropdown-menu absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible z-10">
                 <div className="py-1">
@@ -274,17 +274,15 @@ const CandidatHeader = () => {
             </div>
 
             {/* Formations */}
-            <Link 
-              to="/formations" 
-              className={`px-2 py-2 rounded-md text-sm font-medium transition duration-200 ${
-                location.pathname.includes('/formations') 
-                  ? 'text-fuchsia-600 bg-fuchsia-50' 
-                  : 'text-gray-700 hover:text-fuchsia-600'
-              }`}
+            <a 
+              href="https://destinyacademypro.com/" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-2 py-2 rounded-md text-sm font-medium transition duration-200 text-gray-700 hover:text-fuchsia-600"
             >
               <i className="fas fa-chalkboard-teacher mr-1"></i>
               Formations
-            </Link>
+            </a>
 
             {/* Blog */}
             <Link 
@@ -448,14 +446,14 @@ const CandidatHeader = () => {
             Tableau de bord
           </Link>
           
-          {/* Emplois */}
+          {/* Offre d'emploi */}
           <div>
             <button onClick={() => toggleMobileDropdown('mobile-offers')} className={`w-full flex justify-between items-center px-3 py-2 text-sm rounded-md ${
               location.pathname.includes('/candidat/offre') || location.pathname.includes('/jobs')
                 ? 'text-fuchsia-600 bg-fuchsia-50' 
                 : 'text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50'
             }`}>
-              <span><i className="fas fa-briefcase mr-2"></i>Emplois</span>
+              <span><i className="fas fa-briefcase mr-2"></i>Emploi</span>
               <i className={`fas fa-chevron-down text-xs transform transition-transform duration-300 ${mobileOffersOpen ? 'rotate-180' : ''}`}></i>
             </button>
             {mobileOffersOpen && (
@@ -470,14 +468,33 @@ const CandidatHeader = () => {
             )}
           </div>
 
-          {/* Financements */}
+          {/* Bourses */}
+          <div>
+            <button onClick={() => toggleMobileDropdown('mobile-profile')} className={`w-full flex justify-between items-center px-3 py-2 text-sm rounded-md ${
+              location.pathname.includes('/candidat/bourse') || location.pathname.includes('/bourses')
+                ? 'text-fuchsia-600 bg-fuchsia-50' 
+                : 'text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50'
+            }`}>
+              <span><i className="fas fa-graduation-cap mr-2"></i>Bourse</span>
+              <i className={`fas fa-chevron-down text-xs transform transition-transform duration-300 ${mobileProfileOpen ? 'rotate-180' : ''}`}></i>
+            </button>
+            {mobileProfileOpen && (
+              <div className="ml-4 space-y-0">
+                <Link to="/bourses" onClick={() => setMobileProfileOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
+                  <i className="fas fa-external-link-alt mr-2"></i>Toutes les bourses
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Financement */}
           <div>
             <button onClick={() => toggleMobileDropdown('mobile-opportunities')} className={`w-full flex justify-between items-center px-3 py-2 text-sm rounded-md ${
               location.pathname.includes('/candidat/finacement') || location.pathname.includes('/financements')
                 ? 'text-fuchsia-600 bg-fuchsia-50' 
                 : 'text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50'
             }`}>
-              <span><i className="fas fa-money-bill-wave mr-2"></i>Financements de projets</span>
+              <span><i className="fas fa-money-bill-wave mr-2"></i>Financement</span>
               <i className={`fas fa-chevron-down text-xs transform transition-transform duration-300 ${mobileOpportunitiesOpen ? 'rotate-180' : ''}`}></i>
             </button>
             {mobileOpportunitiesOpen && (
@@ -491,35 +508,12 @@ const CandidatHeader = () => {
               </div>
             )}
           </div>
-
-          {/* Bourses */}
-          <div>
-            <button onClick={() => toggleMobileDropdown('mobile-profile')} className={`w-full flex justify-between items-center px-3 py-2 text-sm rounded-md ${
-              location.pathname.includes('/candidat/bourse') || location.pathname.includes('/bourses')
-                ? 'text-fuchsia-600 bg-fuchsia-50' 
-                : 'text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50'
-            }`}>
-              <span><i className="fas fa-graduation-cap mr-2"></i>Bourses d'études</span>
-              <i className={`fas fa-chevron-down text-xs transform transition-transform duration-300 ${mobileProfileOpen ? 'rotate-180' : ''}`}></i>
-            </button>
-            {mobileProfileOpen && (
-              <div className="ml-4 space-y-0">
-                <Link to="/bourses" onClick={() => setMobileProfileOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-                  <i className="fas fa-external-link-alt mr-2"></i>Toutes les bourses
-                </Link>
-              </div>
-            )}
-          </div>
           
           {/* Formations */}
-          <Link to="/formations" className={`flex items-center px-3 py-2 text-sm rounded-md ${
-            location.pathname.includes('/formations') 
-              ? 'text-fuchsia-600 bg-fuchsia-50' 
-              : 'text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50'
-          }`}>
+          <a href="https://destinyacademypro.com/" target="_blank" rel="noopener noreferrer" className="flex items-center px-3 py-2 text-sm rounded-md text-gray-700 hover:text-fuchsia-600 hover:bg-fuchsia-50">
             <i className="fas fa-chalkboard-teacher mr-2"></i>
             Formations
-          </Link>
+          </a>
 
           {/* Blog */}
           <Link to="/blog" className={`flex items-center px-3 py-2 text-sm rounded-md ${

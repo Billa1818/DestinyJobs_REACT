@@ -1,116 +1,568 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const TermePolitiqueConfidentialite = () => {
+  const [activeTab, setActiveTab] = useState('mentions');
+  const [expandedSections, setExpandedSections] = useState({});
+
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
   return (
-    {/* Main Content Area */}
-    <main className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-      <div className="bg-white rounded-lg shadow-sm">
-        <div className="p-4 sm:p-6 lg:p-8">
-          {/* Breadcrumb */}
-          <nav className="flex mb-4 sm:mb-6" aria-label="Breadcrumb">
-            <ol className="inline-flex items-center space-x-1 md:space-x-3 text-xs sm:text-sm">
-              <li className="inline-flex items-center">
-                <a href="#" className="inline-flex items-center font-medium text-gray-700 hover:text-fuchsia-600 transition-colors">
-                  <i className="fas fa-home mr-1 sm:mr-2"></i>
-                  <span className="hidden sm:inline">Accueil</span>
-                </a>
-              </li>
-              <li>
-                <div className="flex items-center">
-                  <i className="fas fa-chevron-right text-gray-400 mx-1 sm:mx-2 text-xs"></i>
-                  <span className="font-medium text-gray-500 line-clamp-1">Conditions d'utilisation et Politique de confidentialité</span>
-                </div>
-              </li>
-            </ol>
-          </nav>
+    <div className="min-h-screen bg-gray-50">
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto px-4 py-6">
 
-          {/* Page Header */}
-          <div className="mb-6 sm:mb-8 text-center">
-            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 sm:mb-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
-              <i className="fas fa-shield-alt text-fuchsia-600 text-lg sm:text-xl md:text-2xl lg:text-3xl"></i>
-              <span className="leading-tight">Conditions d'utilisation & Politique de confidentialité</span>
-            </h1>
-            <p className="text-gray-600 text-sm sm:text-base lg:text-lg">Dernière mise à jour : 25 juin 2025</p>
-          </div>
+        {/* Page Header */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-700 mb-2">
+            Mentions Légales & Politique de Confidentialité
+          </h1>
+          <p className="text-gray-600 text-sm">Dernière mise à jour : Janvier 2026 - Version 1.0</p>
+        </div>
 
-          {/* Navigation tabs */}
-          <div className="flex flex-col sm:flex-row bg-gray-50 rounded-lg p-1 mb-6 sm:mb-8 gap-1 sm:gap-0">
-            <button className="flex-1 py-2 sm:py-3 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 bg-fuchsia-600 text-white">
-              <i className="fas fa-file-contract mr-1 sm:mr-2"></i>
-              <span className="hidden xs:inline">Conditions d'utilisation</span>
-              <span className="xs:hidden">Conditions</span>
-            </button>
-            <button className="flex-1 py-2 sm:py-3 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 text-gray-600 hover:text-fuchsia-600">
-              <i className="fas fa-user-shield mr-1 sm:mr-2"></i>
-              <span className="hidden xs:inline">Politique de confidentialité</span>
-              <span className="xs:hidden">Confidentialité</span>
-            </button>
-          </div>
+        {/* Navigation tabs */}
+        <div className="flex flex-wrap border-b border-gray-200 mb-6 text-sm">
+          <button
+            onClick={() => setActiveTab('mentions')}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === 'mentions'
+                ? 'text-gray-600 border-b-2 border-gray-600'
+                : 'text-gray-600 hover:text-gray-500'
+            }`}
+          >
+            Mentions Légales
+          </button>
+          <button
+            onClick={() => setActiveTab('privacy')}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === 'privacy'
+                ? 'text-gray-600 border-b-2 border-gray-600'
+                : 'text-gray-600 hover:text-gray-500'
+            }`}
+          >
+            Politique de Confidentialité
+          </button>
+          <button
+            onClick={() => setActiveTab('conditions')}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === 'conditions'
+                ? 'text-gray-600 border-b-2 border-gray-600'
+                : 'text-gray-600 hover:text-gray-500'
+            }`}
+          >
+            Conditions d'Utilisation
+          </button>
+          <button
+            onClick={() => setActiveTab('exclusion')}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === 'exclusion'
+                ? 'text-gray-600 border-b-2 border-gray-600'
+                : 'text-gray-600 hover:text-gray-500'
+            }`}
+          >
+            Exclusion de Responsabilité
+          </button>
+          <button
+            onClick={() => setActiveTab('copyright')}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === 'copyright'
+                ? 'text-gray-600 border-b-2 border-gray-600'
+                : 'text-gray-600 hover:text-gray-500'
+            }`}
+          >
+            Droit d'Auteur
+          </button>
+          <button
+            onClick={() => setActiveTab('contact')}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === 'contact'
+                ? 'text-gray-600 border-b-2 border-gray-600'
+                : 'text-gray-600 hover:text-gray-500'
+            }`}
+          >
+            Contact
+          </button>
+        </div>
 
-          {/* Terms Section */}
-          <div className="section-content">
-            <div className="prose max-w-none">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-3">
-                <i className="fas fa-file-contract text-fuchsia-600"></i>
-                <span>Conditions d'utilisation</span>
-              </h2>
-
-              <div className="bg-fuchsia-50 border-l-4 border-fuchsia-500 p-4 sm:p-6 mb-6 sm:mb-8">
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="flex-shrink-0 self-center sm:self-start">
-                    <i className="fas fa-info-circle text-fuchsia-500 text-lg sm:text-xl"></i>
-                  </div>
-                  <div>
-                    <h3 className="text-base sm:text-lg font-medium text-fuchsia-900 text-center sm:text-left">Bienvenue sur Destiny Jobs</h3>
-                    <p className="mt-2 text-sm sm:text-base text-fuchsia-700 text-center sm:text-left">
-                      En utilisant notre plateforme, vous acceptez ces conditions d'utilisation. Veuillez les lire attentivement.
-                    </p>
-                  </div>
-                </div>
+        {/* Mentions Légales Section */}
+        {activeTab === 'mentions' && (
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-2xl font-bold text-gray-700 mb-4">
+              Mentions Légales
+            </h2>
+            
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  Informations sur l'Entreprise
+                </h3>
+                <p className="text-gray-700 mb-2">
+                  <strong>DestinyJobs</strong> est une plateforme de recrutement et de mise en relation entre candidats, recruteurs et prestataires de services.
+                </p>
+                <ul className="text-gray-700 space-y-1 ml-4">
+                  <li><strong>Responsable de la publication :</strong> DestinyJobs</li>
+                  <li><strong>Adresse :</strong> Parakou, Bénin</li>
+                  <li><strong>Email :</strong> contact@destinyjobs.net</li>
+                  <li><strong>Téléphone :</strong> 229 01 56 56 61 86</li>
+                  <li><strong>Numéro RCCM :</strong> RB/PKO/23 B 1016</li>
+                </ul>
               </div>
 
-              <div className="space-y-6 sm:space-y-8">
-                <section>
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 flex flex-col xs:flex-row items-center xs:items-start gap-2 xs:gap-3">
-                    <span className="bg-fuchsia-100 text-fuchsia-800 rounded-full w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-xs sm:text-sm font-bold flex-shrink-0">1</span>
-                    <span className="text-center xs:text-left">Acceptation des conditions</span>
-                  </h3>
-                  <p className="text-gray-700 leading-relaxed mb-3 sm:mb-4 text-sm sm:text-base">
-                    En accédant et en utilisant la plateforme Destiny Jobs, vous acceptez d'être lié par ces conditions d'utilisation. 
-                    Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre service.
-                  </p>
-                  <ul className="list-disc list-inside text-gray-700 space-y-1 sm:space-y-2 ml-2 sm:ml-4 text-sm sm:text-base">
-                    <li>Ces conditions s'appliquent à tous les utilisateurs de la plateforme</li>
-                    <li>Nous nous réservons le droit de modifier ces conditions à tout moment</li>
-                    <li>Les modifications seront communiquées par email ou notification sur la plateforme</li>
-                  </ul>
-                </section>
+              <div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  Hébergement du Site
+                </h3>
+                <ul className="text-gray-700 space-y-1 ml-4">
+                  <li><strong>Hébergeur :</strong> LWS</li>
+                  <li><strong>Contact :</strong> contact@lws.fr</li>
+                </ul>
+              </div>
 
-                <section>
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 flex flex-col xs:flex-row items-center xs:items-start gap-2 xs:gap-3">
-                    <span className="bg-fuchsia-100 text-fuchsia-800 rounded-full w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-xs sm:text-sm font-bold flex-shrink-0">2</span>
-                    <span className="text-center xs:text-left">Utilisation de la plateforme</span>
-                  </h3>
-                  <p className="text-gray-700 leading-relaxed mb-3 sm:mb-4 text-sm sm:text-base">
-                    Destiny Jobs est une plateforme de mise en relation entre candidats, recruteurs et prestataires de services au Bénin.
-                  </p>
-                  
-                  <div className="bg-gray-50 rounded-lg p-4 sm:p-6 mb-3 sm:mb-4">
-                    <h4 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">Utilisation autorisée :</h4>
-                    <ul className="list-disc list-inside text-gray-700 space-y-1 sm:space-y-2 text-sm sm:text-base">
-                      <li>Recherche et candidature à des offres d'emploi légitimes</li>
-                      <li>Publication d'offres d'emploi conformes à la législation</li>
-                      <li>Réseautage professionnel respectueux</li>
-                      <li>Accès aux formations et ressources éducatives</li>
-                    </ul>
-                  </div>
-                </section>
+              <div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  Propriété Intellectuelle
+                </h3>
+                <p className="text-gray-700">
+                  Le contenu du site (textes, images, logos, code source) est la propriété exclusive de DestinyJobs ou de ses partenaires. Toute reproduction, modification ou exploitation sans autorisation est strictement interdite.
+                </p>
               </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Privacy Policy Section */}
+        {activeTab === 'privacy' && (
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-2xl font-bold text-gray-700 mb-4">
+              Politique de Confidentialité
+            </h2>
+            
+            <div className="space-y-4">
+              {/* Section 1 */}
+              <div className="border-b border-gray-200 pb-3">
+                <button
+                  onClick={() => toggleSection('collecte')}
+                  className="w-full flex items-center justify-between text-left"
+                >
+                  <h3 className="text-xl font-semibold text-gray-600">
+                    1. Collecte et Traitement des Données
+                  </h3>
+                  {expandedSections['collecte'] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                </button>
+                {expandedSections['collecte'] && (
+                  <div className="mt-3 space-y-3">
+                    <div>
+                      <p className="font-medium text-gray-800 mb-1">Pour les Candidats :</p>
+                      <ul className="list-disc list-inside text-gray-700 space-y-1 ml-2">
+                        <li>Identité complète (nom, prénom, email)</li>
+                        <li>Numéro de téléphone et adresse postale</li>
+                        <li>Informations professionnelles (CV, expériences, compétences)</li>
+                        <li>Éducation et diplômes</li>
+                        <li>Préférences de salaire et géographiques</li>
+                        <li>Documents d'application (portfolio, certifications)</li>
+                        <li>Historique de candidatures et statistiques</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-800 mb-1">Pour les Recruteurs :</p>
+                      <ul className="list-disc list-inside text-gray-700 space-y-1 ml-2">
+                        <li>Identité et informations d'entreprise</li>
+                        <li>Données professionnelles (secteur, taille)</li>
+                        <li>Informations de paiement et facturation</li>
+                        <li>Offres d'emploi publiées</li>
+                        <li>Historique des candidatures reçues</li>
+                        <li>Communications avec les candidats</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-800 mb-1">Pour tous les utilisateurs :</p>
+                      <ul className="list-disc list-inside text-gray-700 space-y-1 ml-2">
+                        <li>Adresse IP et géolocalisation</li>
+                        <li>Données de session et cookies</li>
+                        <li>Historique de navigation</li>
+                        <li>Données d'appareil (navigateur, OS)</li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Section 2 */}
+              <div className="border-b border-gray-200 pb-3">
+                <button
+                  onClick={() => toggleSection('utilisation')}
+                  className="w-full flex items-center justify-between text-left"
+                >
+                  <h3 className="text-xl font-semibold text-gray-600">
+                    2. Utilisation des Données
+                  </h3>
+                  {expandedSections['utilisation'] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+                {expandedSections['utilisation'] && (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-gray-700">Les données sont utilisées pour :</p>
+                    <ul className="list-disc list-inside text-gray-700 space-y-1 ml-2">
+                      <li>Fourniture des services de matchmaking candidat/offre</li>
+                      <li>Analyse de compatibilité et calcul de scores IA</li>
+                      <li>Sécurité et détection de fraude</li>
+                      <li>Conformité légale</li>
+                      <li>Statistiques et analytics (anonymisées)</li>
+                      <li>Traçabilité pour audit et support</li>
+                    </ul>
+                    <p className="text-gray-700 mt-2"><strong>Les données ne sont jamais vendues à des tiers commerciaux.</strong></p>
+                  </div>
+                )}
+              </div>
+
+              {/* Section 3 */}
+              <div className="border-b border-gray-200 pb-3">
+                <button
+                  onClick={() => toggleSection('retention')}
+                  className="w-full flex items-center justify-between text-left"
+                >
+                  <h3 className="text-xl font-semibold text-gray-600">
+                    3. Durée de Rétention
+                  </h3>
+                  {expandedSections['retention'] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+                {expandedSections['retention'] && (
+                  <div className="mt-3">
+                    <ul className="list-disc list-inside text-gray-700 space-y-1 ml-2">
+                      <li>Comptes actifs : tant que le compte est actif</li>
+                      <li>Données de candidature : 5 ans après fin du processus</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* Section 4 */}
+              <div className="border-b border-gray-200 pb-3">
+                <button
+                  onClick={() => toggleSection('droits')}
+                  className="w-full flex items-center justify-between text-left"
+                >
+                  <h3 className="text-xl font-semibold text-gray-600">
+                    4. Vos Droits (RGPD/CNIL)
+                  </h3>
+                  {expandedSections['droits'] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+                {expandedSections['droits'] && (
+                  <div className="mt-3">
+                    <ul className="list-disc list-inside text-gray-700 space-y-1 ml-2">
+                      <li>Droit d'accès : accéder à vos données personnelles</li>
+                      <li>Droit de rectification : corriger des données inexactes</li>
+                    </ul>
+                    <p className="text-gray-700 mt-2">
+                      Pour exercer ces droits, contactez : <span className="text-gray-600 font-medium">support@destinyjobs.net</span>
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Section 5 */}
+              <div className="border-b border-gray-200 pb-3">
+                <button
+                  onClick={() => toggleSection('securite')}
+                  className="w-full flex items-center justify-between text-left"
+                >
+                  <h3 className="text-xl font-semibold text-gray-600">
+                    5. Sécurité des Données
+                  </h3>
+                  {expandedSections['securite'] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+                {expandedSections['securite'] && (
+                  <div className="mt-3">
+                    <p className="text-gray-700 mb-2">Mesures de sécurité implémentées :</p>
+                    <ul className="list-disc list-inside text-gray-700 space-y-1 ml-2">
+                      <li>Chiffrement HTTPS</li>
+                      <li>JWT Tokens pour authentification</li>
+                      <li>Validation des données côté serveur</li>
+                      <li>Gestion des accès par rôle</li>
+                      <li>Logs de sécurité et audit trail</li>
+                      <li>Protection CSRF et sécurité HTTP</li>
+                    </ul>
+                    <p className="text-gray-700 mt-2 font-medium">
+                      Aucune transmission sur internet n'est 100% sécurisée. DestinyJobs ne peut garantir une sécurité absolue.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Section 6 */}
+              <div className="border-b border-gray-200 pb-3">
+                <button
+                  onClick={() => toggleSection('cookies')}
+                  className="w-full flex items-center justify-between text-left"
+                >
+                  <h3 className="text-xl font-semibold text-gray-600">
+                    6. Cookies et Technologies
+                  </h3>
+                  {expandedSections['cookies'] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+                {expandedSections['cookies'] && (
+                  <div className="mt-3">
+                    <ul className="list-disc list-inside text-gray-700 space-y-1 ml-2">
+                      <li>Cookies de session : gestion d'authentification</li>
+                      <li>Cookies d'authentification : maintien de connexion</li>
+                      <li>Cookies d'analyse : amélioration des services</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Conditions d'Utilisation Section */}
+        {activeTab === 'conditions' && (
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-2xl font-bold text-gray-700 mb-4">
+              Conditions d'Utilisation
+            </h2>
+            
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  1. Acceptation des Conditions
+                </h3>
+                <p className="text-gray-700">
+                  En accédant et en utilisant DestinyJobs, vous acceptez ces conditions d'utilisation intégralement.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  2. Utilisation Autorisée
+                </h3>
+                <p className="text-gray-700 mb-2">Vous vous engagez à :</p>
+                <ul className="list-disc list-inside text-gray-700 space-y-1 ml-2">
+                  <li>Fournir des informations exactes et complètes</li>
+                  <li>Respecter toutes les lois applicables</li>
+                  <li>Ne pas violer les droits d'autrui</li>
+                  <li>Ne pas utiliser le site à des fins frauduleuses</li>
+                  <li>Ne pas harceler, menacer ou discriminer</li>
+                  <li>Ne pas publier du contenu offensant ou illégal</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  3. Interdictions Strictes
+                </h3>
+                <p className="text-gray-700 mb-2">Sont strictement interdits :</p>
+                <ul className="list-disc list-inside text-gray-700 space-y-1 ml-2">
+                  <li>Toute forme de discrimination</li>
+                  <li>Le harcèlement ou les menaces</li>
+                  <li>La fraude ou la tromperie</li>
+                  <li>L'utilisation abusive de la plateforme</li>
+                  <li>La violation de droits d'auteur</li>
+                  <li>Le spam ou envois massifs</li>
+                  <li>L'injection de code malveillant</li>
+                  <li>Le scraping ou extraction de données</li>
+                  <li>Le piratage de compte</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  4. Modération
+                </h3>
+                <p className="text-gray-700 mb-2">DestinyJobs se réserve le droit de :</p>
+                <ul className="list-disc list-inside text-gray-700 space-y-1 ml-2">
+                  <li>Modérer les contenus</li>
+                  <li>Supprimer les messages inappropriés</li>
+                  <li>Suspendre ou fermer les comptes violant ces conditions</li>
+                  <li>Signaler aux autorités en cas d'activité criminelle</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Exclusion de Responsabilité Section */}
+        {activeTab === 'exclusion' && (
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-2xl font-bold text-gray-700 mb-4">
+              Exclusion de Responsabilité
+            </h2>
+            
+            <div className="bg-gray-50 border-l-4 border-gray-600 p-3 mb-4">
+              <p className="font-bold text-gray-800 mb-1">⚠️ AVIS IMPORTANT</p>
+              <p className="text-gray-700">
+                DestinyJobs et ses dirigeants, employés, prestataires n'acceptent <strong>AUCUNE RESPONSABILITÉ</strong> concernant :
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  1. Contenu des Utilisateurs
+                </h3>
+                <ul className="list-disc list-inside text-gray-700 space-y-1 ml-2">
+                  <li>Les informations fournies par les utilisateurs</li>
+                  <li>L'exactitude des offres d'emploi</li>
+                  <li>Les CV et documents téléchargés</li>
+                  <li>Les comportements entre utilisateurs</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  2. Matchmaking et Recommandations IA
+                </h3>
+                <ul className="list-disc list-inside text-gray-700 space-y-1 ml-2">
+                  <li>La pertinence des scores de compatibilité</li>
+                  <li>Les recommandations d'offres ou candidats</li>
+                  <li>Les erreurs des algorithmes IA</li>
+                  <li>L'indisponibilité du service d'IA</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  3. Recrutement et Contrats
+                </h3>
+                <ul className="list-disc list-inside text-gray-700 space-y-1 ml-2">
+                  <li>Les décisions de recrutement</li>
+                  <li>Les conditions de travail</li>
+                  <li>Les litiges entre parties</li>
+                  <li>La validation des qualifications</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  4. Paiements et Sécurité
+                </h3>
+                <ul className="list-disc list-inside text-gray-700 space-y-1 ml-2">
+                  <li>Les transactions (responsabilité Stripe/FedaPay)</li>
+                  <li>Les fraudes ou usurpations</li>
+                  <li>Les violations de sécurité externes</li>
+                  <li>La perte de données</li>
+                </ul>
+              </div>
+
+              <div className="bg-red-50 border border-red-200 p-3 rounded">
+                <p className="font-bold text-red-800 mb-2">Limitation de Responsabilité</p>
+                <p className="text-gray-700">
+                  <strong>LA RESPONSABILITÉ TOTALE DE DESTINYJOBS EST LIMITÉE À ZÉRO (0).</strong>
+                </p>
+                <p className="text-gray-700 mt-2">
+                  Le service est fourni "EN L'ÉTAT" sans aucune garantie d'exactitude, de disponibilité, de qualité ou de sécurité absolue.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Droit d'Auteur Section */}
+        {activeTab === 'copyright' && (
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-2xl font-bold text-gray-700 mb-4">
+              Droit d'Auteur et Propriété Intellectuelle
+            </h2>
+            
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  Propriété Intellectuelle
+                </h3>
+                <ul className="list-disc list-inside text-gray-700 space-y-1 ml-2">
+                  <li>Le code source, design et logos sont protégés par le droit d'auteur</li>
+                  <li>Les modèles IA conservent leurs licences respectives</li>
+                  <li>Les contenus utilisateurs restent leur propriété</li>
+                  <li>L'utilisation sur le site est autorisée à titre de licence révocable</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  Licences Logicielles
+                </h3>
+                <ul className="text-gray-700 space-y-1 ml-2">
+                  <li><strong>Django :</strong> BSD 3-Clause</li>
+                  <li><strong>Django REST Framework :</strong> BSD 2-Clause</li>
+                  <li><strong>Sentence Transformers :</strong> Apache 2.0</li>
+                  <li><strong>PyTorch :</strong> BSD</li>
+                  <li><strong>Celery :</strong> BSD</li>
+                  <li><strong>Redis :</strong> SSPL</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  Attribution
+                </h3>
+                <p className="text-gray-700">
+                  Toute utilisation commerciale de la plateforme requiert une attribution claire.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Contact Section */}
+        {activeTab === 'contact' && (
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-2xl font-bold text-gray-700 mb-4">
+              Contact
+            </h2>
+            
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  Pour toute question ou réclamation
+                </h3>
+                <div className="bg-gray-50 p-4 rounded space-y-2">
+                  <p className="text-gray-700">
+                    <strong>Email général :</strong> <span className="text-gray-600">contact@destinyjobs.net</span>
+                  </p>
+                  <p className="text-gray-700">
+                    <strong>Support :</strong> <span className="text-gray-600">support@destinyjobs.net</span>
+                  </p>
+                  <p className="text-gray-700">
+                    <strong>Téléphone :</strong> <span className="text-gray-600">229 01 56 56 61 86</span>
+                  </p>
+                  <p className="text-gray-700">
+                    <strong>Adresse :</strong> Parakou, Bénin
+                  </p>
+                </div>
+                <p className="text-gray-600 mt-3">
+                  Les demandes seront traitées sous 30 jours.
+                </p>
+              </div>
+
+              <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3">
+                <h3 className="text-lg font-semibold text-yellow-800 mb-2">
+                  ⚠️ Points Clés à Retenir
+                </h3>
+                <ul className="list-disc list-inside text-gray-700 space-y-1 ml-2">
+                  <li>DestinyJobs n'est responsable de rien</li>
+                  <li>Vous devez vérifier vous-même les informations</li>
+                  <li>Vos données sont collectées pour améliorer le service</li>
+                  <li>Aucune garantie sur la qualité ou sécurité absolue</li>
+                  <li>Les paiements sont traités par des tiers</li>
+                  <li>Vous avez des droits : accès, suppression, rectification</li>
+                  <li>La discrimination est strictement interdite</li>
+                  <li>Signalez les abus à support@destinyjobs.net</li>
+                </ul>
+              </div>
+
+              <div className="bg-gray-100 p-4 rounded text-center">
+                <p className="text-gray-700 font-medium">
+                  En utilisant DestinyJobs, vous acceptez l'intégralité de ces conditions.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-    </main>
+    </div>
   );
 };
 

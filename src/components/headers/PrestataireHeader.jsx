@@ -174,8 +174,7 @@ const PrestataireHeader = () => {
             </Link>
             
             <Link to="/formation" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
-              <i className="fas fa-graduation-cap mr-2"></i>
-              Formation
+              <a href="https://destinyacademypro.com/" target="_blank" rel="noopener noreferrer" className="flex items-center"> Formation</a>
             </Link>
             
             <Link to="/blog" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
@@ -361,10 +360,10 @@ const PrestataireHeader = () => {
               Mon Portfolio
             </Link>
             
-            <Link to="/formations" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+            <a href="https://destinyacademypro.com/" target="_blank" rel="noopener noreferrer" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
               <i className="fas fa-graduation-cap mr-2"></i>
               Formation
-            </Link>
+            </a>
             
             <Link to="/blog" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
               <i className="fas fa-newspaper mr-2"></i>

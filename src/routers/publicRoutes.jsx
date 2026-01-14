@@ -32,6 +32,7 @@ import CandidatePublicProfile from '../pages/public/CandidatePublicProfile';
 import NosUtilisateur from '../pages/public/NosUtilisateur';
 import SolutionsRh from '../pages/public/SolutionRh';
 import DiffusionOpportunites from '../pages/public/DiffusionOpportunites';
+import TermePolitiqueConfidentialite from '../pages/public/TermePolitiqueConfidentialite';
 
 
 const Formations = () => (
@@ -174,6 +175,18 @@ const publicRoutes = [
   {
     path: '/diffusion-opportunites',
     element: <DiffusionOpportunites />
+  },
+  {
+    path: '/mentions-legales',
+    element: <TermePolitiqueConfidentialite />
+  },
+  {
+    path: '/politique-confidentialite',
+    element: <TermePolitiqueConfidentialite />
+  },
+  {
+    path: '/conditions-utilisation',
+    element: <TermePolitiqueConfidentialite />
   },
   {
     path: '/404',

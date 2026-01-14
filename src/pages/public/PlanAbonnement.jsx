@@ -1,481 +1,402 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const PlanAbonnement = () => {
+  const [selectedProfile, setSelectedProfile] = useState('candidat');
+  const [selectedDuration, setSelectedDuration] = useState(1);
   const navigate = useNavigate();
-  const [selectedPlan, setSelectedPlan] = useState('decouverte');
-  const [showFactureModal, setShowFactureModal] = useState(false);
-  const [currentFacturePlan, setCurrentFacturePlan] = useState(null);
 
-  const plans = {
-    decouverte: {
-      name: "Pack Découverte",
-      subtitle: "Démarrage de carrière",
-      description: "Parfait pour débuter votre parcours professionnel",
-      icon: "fas fa-rocket",
-      color: "bg-blue-500",
-      badge: "Offre de lancement",
-      price: "30 000",
-      currency: "FCFA",
-      features: [
-        "Élaboration d'un plan de carrière individualisé",
-        "Coaching carrière (1 séance de 1h)",
-        "Élaboration ou refonte du CV + lettre de motivation"
-      ],
-      popular: false,
-      highlight: false
+  // Configuration des plans
+  const plansData = {
+    candidat: {
+      name: 'Candidat',
+      icon: 'fas fa-user-tie',
+      isRecruteur: false,
+      plans: [
+        {
+          type: 'FREE',
+          basePrice: 0,
+          visibility: '10/100',
+          avantages: [
+            '1 candidature emploi/mois',
+            '1 candidature financement/mois',
+            'Profil de base',
+            'Accès à la plateforme'
+          ]
+        },
+        {
+          type: 'STANDARD',
+          basePrice: 30000,
+          visibility: '60/100',
+          avantages: [
+            '3 candidatures emploi/mois',
+            '3 candidatures financement/mois',
+            'Profil amélioré',
+            'Visibilité moyenne'
+          ]
+        },
+        {
+          type: 'PRO',
+          basePrice: 30000,
+          visibility: '90/100',
+          avantages: [
+            'Candidatures emploi illimitées',
+            'Candidatures financement illimitées',
+            'Profil premium',
+            'Visibilité maximale'
+          ]
+        }
+      ]
     },
-    boost: {
-      name: "Pack Boost Standard",
-      subtitle: "Carrière en action",
-      description: "Pour accélérer votre progression professionnelle",
-      icon: "fas fa-star",
-      color: "bg-fuchsia-500",
-      badge: "Populaire",
-      price: "50 000",
-      currency: "FCFA",
-      features: [
-        "Tout du Pack Découverte",
-        "Préparation à l'entretien d'embauche (simulation + conseils)",
-        "Coaching carrière avancé (2 séances supplémentaires)",
-        "Accès à des modèles de CV & LM professionnels"
-      ],
-      popular: true,
-      highlight: true
+    prestataire: {
+      name: 'Prestataire',
+      icon: 'fas fa-briefcase',
+      isRecruteur: false,
+      plans: [
+        {
+          type: 'FREE',
+          basePrice: 0,
+          visibility: '10/100',
+          avantages: [
+            '1 consultation/mois',
+            'Profil de base',
+            'Accès à la plateforme',
+            'Visibilité minimale'
+          ]
+        },
+        {
+          type: 'STANDARD',
+          basePrice: 30000,
+          visibility: '60/100',
+          avantages: [
+            '3 consultations/mois',
+            'Profil amélioré',
+            'Visibilité moyenne',
+            'Accès prioritaire'
+          ]
+        },
+        {
+          type: 'PRO',
+          basePrice: 30000,
+          visibility: '90/100',
+          avantages: [
+            'Consultations illimitées',
+            'Profil premium',
+            'Visibilité maximale',
+            'Support prioritaire'
+          ]
+        }
+      ]
     },
-    premium: {
-      name: "Pack Premium",
-      subtitle: "Objectif emploi ou promotion",
-      description: "La solution complète pour réussir votre carrière",
-      icon: "fas fa-crown",
-      color: "bg-purple-500",
-      badge: "Premium",
-      price: "75 000",
-      currency: "FCFA",
-      features: [
-        "Tout du Pack Boost Standard",
-        "Soft skills & compétences clés pour réussir sa carrière",
-        "Réussir son intégration professionnelle",
-        "Spiritualité et emploi : concilier foi et carrière",
-        "Coaching carrière premium (jusqu'à 5 séances)"
-      ],
-      popular: false,
-      highlight: false
-    },
-    surmesure: {
-      name: "Pack Sur Mesure",
-      subtitle: "À la carte",
-      description: "Personnalisez selon vos besoins spécifiques",
-      icon: "fas fa-puzzle-piece",
-      color: "bg-green-500",
-      badge: "Flexible",
-      price: "À partir de 10 000",
-      currency: "FCFA",
-      features: [
-        "Vous choisissez vos modules selon vos besoins",
-        "Élaboration de CV ou LM seuls",
-        "Préparation à l'entretien",
-        "1 ou plusieurs séances de coaching ciblé",
-        "Audit de présence professionnelle en ligne (LinkedIn, etc.)"
-      ],
-      popular: false,
-      highlight: false
-    },
-    cvlm: {
-      name: "CV & Lettre de Motivation",
-      subtitle: "Pack essentiel",
-      description: "Uniquement pour vos documents de candidature",
-      icon: "fas fa-file-alt",
-      color: "bg-orange-500",
-      badge: "Essentiel",
-      price: "15 000",
-      currency: "FCFA",
-      features: [
-        "Création ou amélioration d'un CV professionnel",
-        "Rédaction ou amélioration d'une lettre de motivation"
-      ],
-      popular: false,
-      highlight: false
+    recruteur: {
+      name: 'Recruteur',
+      icon: 'fas fa-building',
+      isRecruteur: true,
+      plans: [
+        {
+          type: 'FREE',
+          basePrice: 0,
+          avantages: [
+            '1 offre emploi active',
+            '1 offre financement active',
+            '1 offre consultation active',
+            'Profil de base'
+          ]
+        },
+        {
+          type: 'STANDARD',
+          basePrice: 50000,
+          avantages: [
+            '3 offres emploi actives',
+            '3 offres financement actives',
+            '3 offres consultation actives',
+            'Profil amélioré'
+          ]
+        },
+        {
+          type: 'PRO',
+          basePrice: 75000,
+          avantages: [
+            'Offres emploi illimitées',
+            'Offres financement illimitées',
+            'Offres consultation illimitées',
+            'Profil premium'
+          ]
+        }
+      ]
     }
   };
 
-  const servicesComplementaires = [
-    {
-      name: "Audit LinkedIn",
-      description: "Analyse, recommandations, modèle de profil optimisé",
-      icon: "fab fa-linkedin",
-      price: "5 000",
-      currency: "FCFA"
-    },
-    {
-      name: "Bilan d'orientation pro rapide",
-      description: "Pour les indécis sur leur parcours professionnel",
-      icon: "fas fa-compass",
-      price: "8 000",
-      currency: "FCFA"
-    }
+  const durations = [
+    { months: 1, label: '1 mois', discount: 0 },
+    { months: 3, label: '3 mois', discount: 0 },
+    { months: 6, label: '6 mois', discount: 5 },
+    { months: 12, label: '12 mois', discount: 16.67 }
   ];
 
-  // Afficher la facture proforma
-  const showFacture = (planKey) => {
-    console.log('showFacture appelé avec:', planKey);
-    console.log('Plan sélectionné:', plans[planKey]);
-    setCurrentFacturePlan({ key: planKey, ...plans[planKey] });
-    setShowFactureModal(true);
-    console.log('Modal ouverte, showFactureModal:', true);
+  const calculatePrice = (basePrice, months, discount) => {
+    if (basePrice === 0) return 0;
+    const totalPrice = basePrice * months;
+    const discountedPrice = totalPrice * (1 - discount / 100);
+    return Math.round(discountedPrice);
   };
 
-  // Fermer la modal
-  const closeFactureModal = () => {
-    console.log('closeFactureModal appelé');
-    setShowFactureModal(false);
-    setCurrentFacturePlan(null);
-    console.log('Modal fermée, showFactureModal:', false);
-  };
-
-  // Télécharger la facture PDF
-  const downloadFacturePDF = (plan) => {
-    // Simulation de génération et téléchargement du PDF
-    const factureData = generateFactureData(plan);
-    console.log('Téléchargement facture PDF:', factureData);
-    
-    // Ici vous pouvez intégrer une vraie bibliothèque de génération PDF
-    // comme jsPDF, PDFKit, ou appeler votre API backend
-    
-    // Pour l'instant, on simule le téléchargement
-    const link = document.createElement('a');
-    link.href = `data:text/plain;charset=utf-8,${encodeURIComponent(JSON.stringify(factureData, null, 2))}`;
-    link.download = `Facture_Proforma_${plan.name}_${Date.now()}.txt`;
-    link.click();
-  };
-
-  // Générer les données de la facture
-  const generateFactureData = (plan) => {
-    const now = new Date();
-    const factureNumber = `PRO-${plan.key.toUpperCase()}-${now.getTime().toString().slice(-6)}`;
-    
-    return {
-      numero: factureNumber,
-      date: now.toLocaleDateString('fr-FR'),
-      client: 'À définir',
-      validite: '30 jours',
-      plan: plan.name,
-      subtitle: plan.subtitle,
-      description: plan.description,
-      prix: plan.price,
-      currency: plan.currency,
-      fonctionnalites: plan.features,
-      total: plan.price,
-      conditions: [
-        'Facture valable 30 jours',
-        'Paiement à réception de facture',
-        'Résiliation possible à tout moment',
-        'Support selon le plan choisi',
-        'Programme personnalisé selon vos besoins'
-      ]
-    };
-  };
-
-  const handleSubscribe = (planKey) => {
-    // Rediriger vers la page de paiement avec le plan sélectionné
-    navigate(`/paiement/${planKey}`);
-  };
-
-  const handleContact = () => {
-    // Rediriger vers la page de contact
-    navigate('/contact');
-  };
+  const currentPlans = plansData[selectedProfile].plans;
+  const isRecruteur = plansData[selectedProfile].isRecruteur;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-fuchsia-600 to-purple-600 rounded-full text-white mb-6">
-            <i className="fas fa-graduation-cap text-3xl"></i>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            Programme <span className="text-fuchsia-600">Boost Careers</span>
+        <div className="text-center mb-12">
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+            Plans d'Abonnement
           </h1>
-          <p className="text-xl text-gray-600 max-w-4xl mx-auto mb-8">
-            Développez votre carrière avec nos programmes personnalisés. 
-            Du démarrage à l'excellence professionnelle, nous vous accompagnons à chaque étape.
+          <p className="text-xl text-gray-600">
+            Choisissez le plan adapté à vos besoins
           </p>
         </div>
 
-        {/* Plans Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {Object.entries(plans).map(([key, plan]) => (
-            <div 
+        {/* Profile Selection Tabs */}
+        <div className="flex flex-wrap justify-center gap-4 mb-12">
+          {Object.entries(plansData).map(([key, data]) => (
+            <button
               key={key}
-              className={`relative bg-white rounded-xl shadow-lg border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
-                plan.highlight ? 'border-fuchsia-500 ring-4 ring-fuchsia-100' : 'border-gray-200'
+              onClick={() => setSelectedProfile(key)}
+              className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 ${
+                selectedProfile === key
+                  ? 'bg-gradient-to-r from-fuchsia-600 to-orange-500 text-white shadow-lg'
+                  : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300'
               }`}
             >
-              {/* Badge */}
-              {plan.badge && (
-                <div className={`absolute -top-3 left-1/2 transform -translate-x-1/2 px-3 py-1.5 rounded-full text-xs font-bold text-white whitespace-nowrap ${
-                  plan.popular ? 'bg-fuchsia-600' : 
-                  plan.badge === 'Offre de lancement' ? 'bg-green-600' :
-                  plan.badge === 'Premium' ? 'bg-purple-600' :
-                  plan.badge === 'Flexible' ? 'bg-green-600' :
-                  'bg-orange-600'
-                }`}>
-                  <i className={`mr-1.5 ${
-                    plan.popular ? 'fas fa-star' :
-                    plan.badge === 'Offre de lancement' ? 'fas fa-fire' :
-                    plan.badge === 'Premium' ? 'fas fa-crown' :
-                    plan.badge === 'Flexible' ? 'fas fa-magic' :
-                    'fas fa-check'
-                  }`}></i>
-                  {plan.badge === 'Offre de lancement' ? 'Lancement' : plan.badge}
-                </div>
-              )}
-
-              <div className="p-8">
-                {/* Plan Header */}
-                <div className="text-center mb-8">
-                  <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full ${plan.color} text-white mb-6`}>
-                    <i className={`${plan.icon} text-3xl`}></i>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                  <p className="text-fuchsia-600 font-semibold mb-2">{plan.subtitle}</p>
-                  <p className="text-gray-600 text-sm">{plan.description}</p>
-                </div>
-
-                {/* Pricing */}
-                <div className="text-center mb-8">
-                  <div className="text-4xl font-bold text-gray-900 mb-2">
-                    {plan.price} <span className="text-lg text-gray-600">{plan.currency}</span>
-                  </div>
-                  {key === 'surmesure' && (
-                    <p className="text-sm text-gray-500">par module</p>
-                  )}
-                </div>
-
-                {/* Features */}
-                <div className="space-y-4 mb-8">
-                  <h4 className="font-semibold text-gray-900 mb-4 text-center">
-                    <i className="fas fa-check-circle text-green-500 mr-2"></i>
-                    Ce qui est inclus :
-                  </h4>
-                  {plan.features.map((feature, index) => (
-                    <div key={index} className="flex items-start">
-                      <i className="fas fa-check text-green-500 mt-1 mr-3 flex-shrink-0"></i>
-                      <span className="text-sm text-gray-700">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Boutons d'action */}
-                <div className="space-y-3">
-                  {/* CTA Button */}
-                  <button
-                    onClick={() => handleSubscribe(key)}
-                    className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition duration-200 ${
-                      plan.highlight 
-                        ? 'bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white hover:from-fuchsia-700 hover:to-purple-700 shadow-lg' 
-                        : 'bg-gray-800 text-white hover:bg-gray-900'
-                    }`}
-                  >
-                    {key === 'surmesure' ? 'Nous contacter' : 'Choisir ce pack'}
-                  </button>
-
-                  {/* Bouton facture proforma */}
-                  <button
-                    onClick={() => showFacture(key)}
-                    className="w-full py-3 px-6 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition duration-200 flex items-center justify-center"
-                  >
-                    <i className="fas fa-file-invoice mr-2"></i>
-                    Voir Facture Proforma
-                  </button>
-                </div>
-              </div>
-            </div>
+              <i className={data.icon}></i>
+              {data.name}
+            </button>
           ))}
         </div>
 
-        {/* Modal Facture Proforma */}
-        {showFactureModal && currentFacturePlan && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              {/* En-tête de la modal */}
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 border-b">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      Facture Proforma - {currentFacturePlan.name}
-                    </h2>
-                    <p className="text-gray-600">
-                      {currentFacturePlan.subtitle} - {currentFacturePlan.description}
-                    </p>
+        {/* Duration Selection */}
+        <div className="flex flex-wrap justify-center gap-3 mb-12">
+          {durations.map((duration) => (
+            <button
+              key={duration.months}
+              onClick={() => setSelectedDuration(duration.months)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 relative ${
+                selectedDuration === duration.months
+                  ? 'bg-gradient-to-r from-fuchsia-600 to-orange-500 text-white shadow-lg'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
+              }`}
+            >
+              {duration.label}
+              {duration.discount > 0 && (
+                <span className="ml-2 text-sm font-bold">
+                  -{duration.discount.toFixed(2)}%
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Plans Grid */}
+        <div className="grid md:grid-cols-3 gap-8 mb-12">
+          {currentPlans.map((plan, index) => {
+            const duration = durations.find(d => d.months === selectedDuration);
+            const monthlyPrice = plan.basePrice;
+            const totalPrice = calculatePrice(monthlyPrice, duration.months, duration.discount);
+            const pricePerMonth = duration.months > 1 ? Math.round(totalPrice / duration.months) : totalPrice;
+
+            return (
+              <div
+                key={index}
+                className={`relative bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl ${
+                  plan.type === 'PRO' ? 'ring-2 ring-offset-2 ring-fuchsia-400 transform scale-105 md:scale-100' : ''
+                }`}
+              >
+                {/* Popular Badge */}
+                {plan.type === 'PRO' && (
+                  <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-fuchsia-600 to-orange-500 text-white py-2 text-center font-bold text-sm flex items-center justify-center gap-2">
+                    <i className="fas fa-star"></i>
+                    POPULAIRE
                   </div>
+                )}
+
+                <div className={`bg-gradient-to-r from-fuchsia-600 to-orange-500 text-white pt-8 px-6 pb-6 ${plan.type === 'PRO' ? 'mt-8' : ''}`}>
+                  <h3 className="text-2xl font-bold mb-2">{plan.type}</h3>
+                  <div className="flex items-baseline">
+                    <span className="text-4xl font-bold">{totalPrice.toLocaleString('fr-FR')}</span>
+                    <span className="ml-2 text-sm opacity-90">FCFA</span>
+                  </div>
+                  <p className="text-sm opacity-90 mt-2">
+                    {duration.months === 1
+                      ? '/mois'
+                      : `${duration.months} mois (${pricePerMonth.toLocaleString('fr-FR')} FCFA/mois)`}
+                  </p>
+                </div>
+
+                <div className="px-6 py-8">
+                  {/* Visibilité - seulement pour non-recruteurs */}
+                  {!isRecruteur && (
+                    <div className="mb-6 p-4 bg-gradient-to-br from-fuchsia-50 to-orange-50 rounded-lg border-l-4 border-fuchsia-500">
+                      <p className="text-sm font-semibold text-fuchsia-700 mb-2 flex items-center gap-2">
+                        <i className="fas fa-eye"></i>
+                        Visibilité du Profil
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">{plan.visibility}</p>
+                    </div>
+                  )}
+
+                  {/* Avantages */}
+                  <div className="mb-8">
+                    <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <i className="fas fa-check-circle text-fuchsia-600"></i>
+                      Avantages
+                    </h4>
+                    <ul className="space-y-3">
+                      {plan.avantages.map((avantage, idx) => (
+                        <li key={idx} className="flex items-start">
+                          <span className="inline-block w-5 h-5 rounded-full bg-gradient-to-br from-fuchsia-100 to-orange-100 flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
+                            <i className="text-xs text-fuchsia-600 fas fa-check"></i>
+                          </span>
+                          <span className="text-gray-700 text-sm">{avantage}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* CTA Button */}
                   <button
-                    onClick={closeFactureModal}
-                    className="text-gray-400 hover:text-gray-600 transition duration-200"
+                    onClick={() => {
+                      if (plan.basePrice === 0) {
+                        navigate('/signup');
+                      } else {
+                        navigate('/plan-manager');
+                      }
+                    }}
+                    className={`w-full py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                      plan.type === 'PRO'
+                        ? 'bg-gradient-to-r from-fuchsia-600 to-orange-500 text-white hover:shadow-lg'
+                        : plan.basePrice === 0
+                        ? 'border-2 border-gray-300 text-gray-700 hover:bg-gray-50'
+                        : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                    }`}
                   >
-                    <i className="fas fa-times text-2xl"></i>
+                    <i className={`fas ${plan.basePrice === 0 ? 'fa-rocket' : 'fa-shopping-cart'}`}></i>
+                    {plan.basePrice === 0
+                      ? 'Commencer Gratuitement'
+                      : 'Souscrire Maintenant'}
                   </button>
                 </div>
               </div>
+            );
+          })}
+        </div>
 
-              {/* Contenu de la facture */}
-              <div className="p-6">
-                {/* Informations de la facture */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-3">Informations de la facture</h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">N° Facture:</span>
-                        <span className="font-medium">PRO-{currentFacturePlan.key.toUpperCase()}-{Date.now().toString().slice(-6)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Date:</span>
-                        <span className="font-medium">{new Date().toLocaleDateString('fr-FR')}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Client:</span>
-                        <span className="font-medium">À définir</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Validité:</span>
-                        <span className="font-medium">30 jours</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-3">Détails du pack</h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Pack:</span>
-                        <span className="font-medium">{currentFacturePlan.name}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Sous-titre:</span>
-                        <span className="font-medium">{currentFacturePlan.subtitle}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Description:</span>
-                        <span className="font-medium">{currentFacturePlan.description}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Prix:</span>
-                        <span className="font-bold text-lg">
-                          {currentFacturePlan.price} {currentFacturePlan.currency}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Fonctionnalités incluses */}
-                <div className="mb-8">
-                  <h3 className="font-semibold text-gray-900 mb-4">Fonctionnalités incluses</h3>
-                  <div className="space-y-3">
-                    {currentFacturePlan.features.map((feature, index) => (
-                      <div key={index} className="flex items-start">
-                        <i className="fas fa-check text-green-500 mt-1 mr-3 flex-shrink-0"></i>
-                        <span className="text-sm text-gray-700">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Calculs et total */}
-                <div className="bg-gray-50 p-6 rounded-lg mb-8">
-                  <h3 className="font-semibold text-gray-900 mb-4">Calculs et total</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Sous-total:</span>
-                      <span className="font-medium">
-                        {currentFacturePlan.price} {currentFacturePlan.currency}
-                      </span>
-                    </div>
-                    
-                    <div className="flex justify-between border-t border-gray-200 pt-3">
-                      <span className="font-semibold text-gray-900 text-lg">Total:</span>
-                      <span className="font-bold text-2xl text-gray-900">
-                        {currentFacturePlan.price} {currentFacturePlan.currency}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Conditions */}
-                <div className="mb-8">
-                  <h3 className="font-semibold text-gray-900 mb-3">Conditions</h3>
-                  <ul className="list-disc list-inside space-y-2 text-sm text-gray-700 ml-4">
-                    <li>Facture valable 30 jours</li>
-                    <li>Paiement à réception de facture</li>
-                    <li>Résiliation possible à tout moment</li>
-                    <li>Support selon le plan choisi</li>
-                    <li>Programme personnalisé selon vos besoins</li>
-                  </ul>
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button
-                    onClick={() => downloadFacturePDF(currentFacturePlan)}
-                    className="bg-fuchsia-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-fuchsia-700 transition duration-200 flex items-center justify-center"
-                  >
-                    <i className="fas fa-download mr-2"></i>
-                    Télécharger PDF
-                  </button>
-                  
-                  <button
-                    onClick={closeFactureModal}
-                    className="bg-gray-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-gray-700 transition duration-200 flex items-center justify-center"
-                  >
-                    <i className="fas fa-times mr-2"></i>
-                    Fermer
-                  </button>
-                </div>
-              </div>
-            </div>
+        {/* Comparatif Tableau */}
+        <div className="mt-16 bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-4 flex items-center gap-3">
+            <i className="fas fa-table text-xl"></i>
+            <h2 className="text-2xl font-bold">Comparatif Complet</h2>
           </div>
-        )}
-
-        {/* CTA Section */}
-        <div className="bg-gradient-to-r from-fuchsia-600 to-purple-600 rounded-xl p-12 text-white text-center">
-          <h2 className="text-3xl font-bold mb-4">Prêt à booster votre carrière ?</h2>
-          <p className="text-xl mb-8 opacity-90 max-w-3xl mx-auto">
-            Rejoignez des centaines de professionnels qui ont transformé leur carrière grâce à nos programmes personnalisés
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={() => handleSubscribe('boost')}
-              className="bg-white text-fuchsia-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition duration-200 font-semibold text-lg shadow-lg"
-            >
-              <i className="fas fa-rocket mr-2"></i>
-              Commencer maintenant
-            </button>
-            <button
-              onClick={handleContact}
-              className="border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-fuchsia-600 transition duration-200 font-semibold text-lg"
-            >
-              <i className="fas fa-phone mr-2"></i>
-              Nous contacter
-            </button>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50 border-b">
+                  <th className="px-6 py-4 text-left font-semibold text-gray-900">Plan</th>
+                  <th className="px-6 py-4 text-left font-semibold text-gray-900">1 mois</th>
+                  <th className="px-6 py-4 text-left font-semibold text-gray-900">3 mois</th>
+                  <th className="px-6 py-4 text-left font-semibold text-gray-900">6 mois</th>
+                  <th className="px-6 py-4 text-left font-semibold text-gray-900">12 mois</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentPlans.map((plan, idx) => (
+                  <tr key={idx} className="border-b hover:bg-gray-50">
+                    <td className="px-6 py-4 font-semibold text-gray-900">{plan.type}</td>
+                    {durations.map((duration) => {
+                      const price = calculatePrice(plan.basePrice, duration.months, duration.discount);
+                      return (
+                        <td key={duration.months} className="px-6 py-4 text-gray-700">
+                          {price === 0 ? (
+                            <span className="font-semibold text-fuchsia-600 flex items-center gap-1">
+                              <i className="fas fa-check"></i>
+                              Gratuit
+                            </span>
+                          ) : (
+                            <div>
+                              <span className="font-semibold text-gray-900">
+                                {price.toLocaleString('fr-FR')} FCFA
+                              </span>
+                              <p className="text-sm text-gray-500">
+                                {Math.round(price / duration.months).toLocaleString('fr-FR')}/mois
+                              </p>
+                            </div>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 
-        {/* Footer Info */}
-        <div className="text-center text-gray-500 text-sm mt-12">
-          <p>
-            <i className="fas fa-shield-alt mr-2"></i>
-            Tous nos programmes sont garantis et personnalisés selon vos besoins
+        {/* FAQ Section */}
+        <div className="mt-16">
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12 flex items-center justify-center gap-3">
+            <i className="fas fa-circle-question text-fuchsia-600"></i>
+            Questions Fréquentes
+          </h2>
+          <div className="grid md:grid-cols-2 gap-8">
+            {[
+              {
+                question: 'Puis-je changer de plan à tout moment ?',
+                answer: 'Oui, vous pouvez mettre à niveau ou rétrograder votre plan à tout moment. Les changements seront facturés au prorata.'
+              },
+              {
+                question: 'Y a-t-il une période d\'essai ?',
+                answer: 'Le plan FREE est gratuit à vie. Vous pouvez l\'utiliser sans limite de temps pour tester la plateforme.'
+              },
+              {
+                question: 'Que signifie la visibilité du profil ?',
+                answer: 'La visibilité affecte la probabilité que votre profil soit découvert par d\'autres utilisateurs. Un score de 90/100 signifie une visibilité maximale.'
+              },
+              {
+                question: 'Comment fonctionnent les réductions ?',
+                answer: 'Les réductions s\'appliquent automatiquement : 5% pour 6 mois et 16.67% pour 12 mois.'
+              }
+            ].map((faq, idx) => (
+              <div key={idx} className="bg-white rounded-lg shadow p-6 border-l-4 border-gradient-to-b from-fuchsia-600 to-orange-500">
+                <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <i className="fas fa-lightbulb text-orange-500"></i>
+                  {faq.question}
+                </h3>
+                <p className="text-gray-600 text-sm">{faq.answer}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA Footer */}
+        <div className="mt-16 bg-gradient-to-r from-fuchsia-600 to-orange-500 rounded-xl p-8 text-white text-center">
+          <h2 className="text-2xl font-bold mb-4 flex items-center justify-center gap-2">
+            <i className="fas fa-rocket"></i>
+            Prêt à démarrer ?
+          </h2>
+          <p className="text-lg opacity-90 mb-6">
+            Rejoignez des milliers d'utilisateurs qui font confiance à DestinyJobs
           </p>
-          <p className="mt-2">
-            <i className="fas fa-globe mr-2"></i>
-            Programme en ligne disponible partout en Afrique de l'Ouest
-          </p>
+          <button
+            onClick={() => navigate('/signup')}
+            className="bg-white text-fuchsia-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200 inline-flex items-center gap-2"
+          >
+            <i className="fas fa-user-plus"></i>
+            Créer un compte gratuit
+          </button>
         </div>
       </div>
     </div>
   );
 };
 
-export default PlanAbonnement; 
+export default PlanAbonnement;

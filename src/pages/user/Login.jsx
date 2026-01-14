@@ -110,7 +110,13 @@ const Login = () => {
       let errorMessage = 'Erreur de connexion';
       let errorTitle = 'Erreur de connexion';
       
-      if (error.response?.data) {
+      // Gestion du code 429 (Too Many Requests)
+      if (error.response?.status === 429) {
+        const retryAfter = error.response?.headers?.['retry-after'];
+        const waitTime = retryAfter || 15; // Par défaut 15 minutes
+        errorTitle = 'Trop de tentatives';
+        errorMessage = `Trop de tentatives de connexion. Veuillez réessayer dans ${waitTime} minutes.`;
+      } else if (error.response?.data) {
         const errorData = error.response.data;
         
         // Gérer les erreurs de validation Django
@@ -280,35 +286,14 @@ const Login = () => {
                       <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-gray-300"></div>
                                     </div>
-                      <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-white text-gray-500">Ou continuer avec</span>
-                                    </div>
                                 </div>
 
                     {/* Social Login Buttons */}
                     <div className="grid grid-cols-2 gap-3">
-                      <button 
-                        type="button" 
-                        onClick={() => handleSocialLogin('Google')}
-                        disabled={isLoading}
-                        className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <i className="fab fa-google mr-2 text-red-500"></i>
-                                        Google
-                                    </button>
-                      <button 
-                        type="button" 
-                        onClick={() => handleSocialLogin('LinkedIn')}
-                        disabled={isLoading}
-                        className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <i className="fab fa-linkedin mr-2 text-fuchsia-600"></i>
-                                        LinkedIn
-                                    </button>
                                 </div>
                             </form>
 
-                  {/* Sign Up Link */}
+                      {/* Sign Up Link */}
                   <div className="mt-8 text-center">
                     <p className="text-sm text-gray-600">
                                     Vous n'avez pas encore de compte ?

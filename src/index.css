@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 /* Styles pour les headers et menus mobiles */
 .mobile-menu-slide {

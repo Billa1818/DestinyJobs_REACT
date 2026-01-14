@@ -54,16 +54,16 @@ const PublicHeader = () => {
               <div className="dropdown-menu absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible z-10">
                 <div className="py-1">
                   <Link to="/jobs" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
-                    <i className="fas fa-briefcase mr-2"></i>Emplois/Jobs
+                    <i className="fas fa-briefcase mr-2"></i>Offre d'emploi
                   </Link>
                   <Link to="/bourses" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
-                    <i className="fas fa-graduation-cap mr-2"></i>Bourses
+                    <i className="fas fa-graduation-cap mr-2"></i>Bourse
                   </Link>
                   <Link to="/financements" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
-                    <i className="fas fa-money-bill-wave mr-2"></i>Financements
+                    <i className="fas fa-money-bill-wave mr-2"></i>Financement
                   </Link>
                   <Link to="/consultations" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600">
-                    <i className="fas fa-comments mr-2"></i>Consultations
+                    <i className="fas fa-comments mr-2"></i>Consultation
                   </Link>
                 </div>
               </div>
@@ -79,10 +79,10 @@ const PublicHeader = () => {
               Boost Careers
             </Link>
             
-            <Link to="/formation" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
+            <a href="https://destinyacademypro.com/" target="_blank" rel="noopener noreferrer" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
               <i className="fas fa-graduation-cap mr-2"></i>
               Formation
-            </Link>
+            </a>
             
             <Link to="/blog" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
               <i className="fas fa-newspaper mr-2"></i>
@@ -142,19 +142,19 @@ const PublicHeader = () => {
               <i className={`fas fa-chevron-down text-xs transform transition-transform ${offresMenuOpen ? 'rotate-180' : ''}`}></i>
             </button>
             <div className={`mobile-menu-slide ml-4 ${offresMenuOpen ? 'show' : ''}`}>
-              <Link to="/jobs" className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md">
-                <i className="fas fa-briefcase mr-2"></i>Emplois/Jobs
-              </Link>
-              <Link to="/bourses" className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md">
-                <i className="fas fa-graduation-cap mr-2"></i>Bourses
-              </Link>
-              <Link to="/financements" className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md">
-                <i className="fas fa-money-bill-wave mr-2"></i>Financements
-              </Link>
-              <Link to="/consultations" className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md">
-                <i className="fas fa-comments mr-2"></i>Consultations
-              </Link>
-            </div>
+               <Link to="/jobs" className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+                 <i className="fas fa-briefcase mr-2"></i>Offre d'emploi
+               </Link>
+               <Link to="/bourses" className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+                 <i className="fas fa-graduation-cap mr-2"></i>Bourse
+               </Link>
+               <Link to="/financements" className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+                 <i className="fas fa-money-bill-wave mr-2"></i>Financement
+               </Link>
+               <Link to="/consultations" className="block px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md">
+                 <i className="fas fa-comments mr-2"></i>Consultation
+               </Link>
+             </div>
           </div>
           <Link to="/utilisateurs" className="text-gray-700 hover:text-orange-600 px-2 py-2 rounded-md text-sm font-medium transition duration-200 flex items-center">
               <i className="fas fa-users mr-2"></i>
@@ -166,10 +166,10 @@ const PublicHeader = () => {
             <i className="fas fa-crown mr-2"></i>
             Boost Careers
           </Link>
-          <Link to="/formation" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
+          <a href="https://destinyacademypro.com/" target="_blank" rel="noopener noreferrer" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
             <i className="fas fa-graduation-cap mr-2"></i>
             Formation
-          </Link>
+          </a>
           <Link to="/blog" className="block px-3 py-2 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-md flex items-center">
             <i className="fas fa-newspaper mr-2"></i>
             Blog

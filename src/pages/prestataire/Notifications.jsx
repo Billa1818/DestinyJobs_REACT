@@ -403,33 +403,6 @@ const Notifications = () => {
                         />
                         <span className="text-sm text-gray-700">Activer les notifications par email</span>
                       </label>
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={preferences.email_new_offers}
-                          onChange={(e) => handlePreferenceChange('email_new_offers', e.target.checked)}
-                          className="mr-3"
-                        />
-                        <span className="text-sm text-gray-700">Nouvelles offres correspondantes</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={preferences.email_application_updates}
-                          onChange={(e) => handlePreferenceChange('email_application_updates', e.target.checked)}
-                          className="mr-3"
-                        />
-                        <span className="text-sm text-gray-700">Mises à jour de candidatures</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={preferences.email_ai_services}
-                          onChange={(e) => handlePreferenceChange('email_ai_services', e.target.checked)}
-                          className="mr-3"
-                        />
-                        <span className="text-sm text-gray-700">Services IA</span>
-                      </label>
                     </div>
                   </div>
 
@@ -449,71 +422,6 @@ const Notifications = () => {
                         />
                         <span className="text-sm text-gray-700">Activer les notifications push</span>
                       </label>
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={preferences.push_new_offers}
-                          onChange={(e) => handlePreferenceChange('push_new_offers', e.target.checked)}
-                          className="mr-3"
-                        />
-                        <span className="text-sm text-gray-700">Nouvelles offres</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={preferences.push_messages}
-                          onChange={(e) => handlePreferenceChange('push_messages', e.target.checked)}
-                          className="mr-3"
-                        />
-                        <span className="text-sm text-gray-700">Nouveaux messages</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Fréquence et heures de silence */}
-                  <div>
-                    <h4 className="text-md font-medium text-gray-900 mb-4">
-                      <i className="fas fa-clock mr-2 text-purple-600"></i>
-                      Fréquence et heures de silence
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Fréquence des notifications
-                        </label>
-                        <select
-                          value={preferences.notification_frequency || 'IMMEDIATE'}
-                          onChange={(e) => handlePreferenceChange('notification_frequency', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                        >
-                          <option value="IMMEDIATE">Immédiat</option>
-                          <option value="HOURLY">Toutes les heures</option>
-                          <option value="DAILY">Quotidien</option>
-                          <option value="WEEKLY">Hebdomadaire</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Heure de début (silence)
-                        </label>
-                        <input
-                          type="time"
-                          value={preferences.quiet_hours_start || ''}
-                          onChange={(e) => handlePreferenceChange('quiet_hours_start', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Heure de fin (silence)
-                        </label>
-                        <input
-                          type="time"
-                          value={preferences.quiet_hours_end || ''}
-                          onChange={(e) => handlePreferenceChange('quiet_hours_end', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                        />
-                      </div>
                     </div>
                   </div>
 

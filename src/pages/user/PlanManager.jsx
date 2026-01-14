@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useAuth } from '../../contexts/AuthContext';
@@ -6,6 +7,7 @@ import subscriptionService from '../../services/subscriptionService';
 
 const PlanManager = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   // État pour les abonnements et plans
   const [currentSubscription, setCurrentSubscription] = useState(null);
@@ -198,12 +200,21 @@ const PlanManager = () => {
     <main className="flex-1 bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-            <i className="fas fa-layer-group text-fuchsia-600 mr-3"></i>
-            Gestion des Abonnements
-          </h1>
-          <p className="text-gray-600 mt-2">Gérez votre plan d'abonnement et vos paiements</p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+              <i className="fas fa-layer-group text-fuchsia-600 mr-3"></i>
+              Gestion des Abonnements
+            </h1>
+            <p className="text-gray-600 mt-2">Gérez votre plan d'abonnement et vos paiements</p>
+          </div>
+          <button
+            onClick={() => navigate('/abonnements')}
+            className="bg-gradient-to-r from-fuchsia-600 to-orange-500 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 flex items-center gap-2 whitespace-nowrap"
+          >
+            <i className="fas fa-tags"></i>
+            Voir les plans
+          </button>
         </div>
 
         {/* Tabs */}
