@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, Outlet } from 'react-router-dom';
 import DynamicHeader from '../components/DynamicHeader';
 import DynamicFooter from '../components/DynamicFooter';
+import ChatbotWidget from '../components/ChatbotWidget';
 
 const BaseLayout = ({ children }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -47,6 +48,9 @@ const BaseLayout = ({ children }) => {
       </main>
 
       <DynamicFooter />
+
+      {/* Chatbot Widget Flottant */}
+      <ChatbotWidget />
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import DynamicHeader from '../components/DynamicHeader';
 import DynamicFooter from '../components/DynamicFooter';
 import RedirectNotification from '../components/RedirectNotification';
+import ChatbotWidget from '../components/ChatbotWidget';
 
 const PublicLayout = () => {
   const location = useLocation();
@@ -16,6 +17,7 @@ const PublicLayout = () => {
         <Outlet />
       </main>
       <DynamicFooter />
+      <ChatbotWidget />
     </div>
   );
 };

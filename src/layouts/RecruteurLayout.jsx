@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import DynamicHeader from '../components/DynamicHeader';
 import DynamicFooter from '../components/DynamicFooter';
+import ChatbotWidget from '../components/ChatbotWidget';
 
 const RecruteurLayout = () => {
   return (
@@ -19,6 +20,7 @@ const RecruteurLayout = () => {
       </main>
 
       <DynamicFooter accountType="recruteur" />
+      <ChatbotWidget />
     </div>
   );
 };
