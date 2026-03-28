@@ -1,10 +1,10 @@
 // Configuration des URLs API et images
 export const API_CONFIG = {
   // URL de base de l'API
-  API_BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:8000',
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000',
   
   // URL de base pour les images et fichiers
-  MEDIA_BASE_URL: process.env.REACT_APP_MEDIA_URL || 'http://localhost:3000',
+  MEDIA_BASE_URL: import.meta.env.VITE_MEDIA_BASE_URL || 'http://127.0.0.1:8000/media',
   
   // Configuration des endpoints
   ENDPOINTS: {
