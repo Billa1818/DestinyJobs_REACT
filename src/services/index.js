@@ -7,6 +7,7 @@ export { default as consultationService } from './consultationService';
 export { default as notificationService } from './notificationService';
 export { default as candidatureService } from './candidatureService';
 export { default as SavedOffersService } from './SavedOffersService';
+export { default as chatbotService } from './chatbotService';
 // Export des types et constantes utiles
 export const USER_TYPES = {
   CANDIDAT: 'CANDIDAT',
