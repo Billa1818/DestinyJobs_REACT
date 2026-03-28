@@ -282,16 +282,16 @@ const RecruteurHeader = () => {
               <div className="dropdown-menu absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible z-10">
                 <div className="py-1">
                   <Link to="/jobs" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-briefcase mr-2"></i>Emplois/Jobs
+                    <i className="fas fa-briefcase mr-2"></i>Offre d'emploi
                   </Link>
                   <Link to="/bourses" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-graduation-cap mr-2"></i>Bourses d'études
+                    <i className="fas fa-graduation-cap mr-2"></i>Bourse
                   </Link>
                   <Link to="/financements" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-money-bill-wave mr-2"></i>Financements de projets
+                    <i className="fas fa-money-bill-wave mr-2"></i>Financement
                   </Link>
                   <Link to="/consultations" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-comments mr-2"></i>Consultations
+                    <i className="fas fa-comments mr-2"></i>Consultation
                   </Link>
                 </div>
               </div>
@@ -306,16 +306,16 @@ const RecruteurHeader = () => {
               <div className="dropdown-menu absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible z-10">
                 <div className="py-1">
                   <Link to="/recruteur/creer-offre" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-briefcase mr-2"></i>Emplois/Jobs
-                  </Link>
-                  <Link to="/recruteur/creer-financement" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-money-bill-wave mr-2"></i>Financements de projets
-                  </Link>
-                  <Link to="/recruteur/creer-consultation" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-comments mr-2"></i>Consultations
+                    <i className="fas fa-briefcase mr-2"></i>Offre d'emploi
                   </Link>
                   <Link to="/recruteur/creer-bourse" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-graduation-cap mr-2"></i>Bourses d'études
+                    <i className="fas fa-graduation-cap mr-2"></i>Bourse
+                  </Link>
+                  <Link to="/recruteur/creer-financement" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
+                    <i className="fas fa-money-bill-wave mr-2"></i>Financement
+                  </Link>
+                  <Link to="/recruteur/creer-consultation" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
+                    <i className="fas fa-comments mr-2"></i>Consultation
                   </Link>
                 </div>
               </div>
@@ -330,16 +330,16 @@ const RecruteurHeader = () => {
               <div className="dropdown-menu absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible z-10">
                 <div className="py-1">
                   <Link to="/recruteur/gestion-offres" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-briefcase mr-2"></i>Emplois/Jobs
+                    <i className="fas fa-briefcase mr-2"></i>Offre d'emploi
                   </Link>
                   <Link to="/recruteur/gestion-bourses" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-graduation-cap mr-2"></i>Bourses d'études
+                    <i className="fas fa-graduation-cap mr-2"></i>Bourse
                   </Link>
                   <Link to="/recruteur/gestion-financements" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-money-bill-wave mr-2"></i>Financements de projets
+                    <i className="fas fa-money-bill-wave mr-2"></i>Financement
                   </Link>
                   <Link to="/recruteur/gestion-consultations" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-comments mr-2"></i>Consultations
+                    <i className="fas fa-comments mr-2"></i>Consultation
                   </Link>
                 </div>
               </div>
@@ -353,7 +353,10 @@ const RecruteurHeader = () => {
               <div className="dropdown-menu absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible z-10">
                 <div className="py-1">
                   <Link to="/recruteur/postulations-offres" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
-                    <i className="fas fa-briefcase mr-2"></i>Offres d'emploi
+                    <i className="fas fa-briefcase mr-2"></i>Offre d'emploi
+                  </Link>
+                  <Link to="/recruteur/postulations-bourses" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
+                    <i className="fas fa-graduation-cap mr-2"></i>Bourse
                   </Link>
                   <Link to="/recruteur/postulations-financements" className="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-600">
                     <i className="fas fa-money-bill-wave mr-2"></i>Financement
@@ -376,9 +379,9 @@ const RecruteurHeader = () => {
             <div className="relative">
               <Link to="/recruteur/notifications" className="text-gray-600 hover:text-fuchsia-600 p-2 rounded-full transition duration-200 relative group">
                 <i className="fas fa-bell text-lg group-hover:scale-110 transition-transform"></i>
-                {/* Badge bleu avec le nombre de notifications - affiché seulement s'il y a des notifications non lues */}
+                {/* Badge fuchsia avec le nombre de notifications - affiché seulement s'il y a des notifications non lues */}
                 {notificationCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full px-2 py-1 font-bold shadow-lg">
+                  <span className="absolute -top-2 -right-2 bg-fuchsia-500 text-white text-xs rounded-full px-2 py-1 font-bold shadow-lg">
                     {notificationCount}
                   </span>
                 )}
@@ -556,16 +559,16 @@ const RecruteurHeader = () => {
             {mobileOffresOpen && (
               <div className="ml-4 space-y-0">
                 <Link to="/jobs" onClick={() => setMobileOffresOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-                  <i className="fas fa-briefcase mr-2"></i>Emplois/Jobs
+                  <i className="fas fa-briefcase mr-2"></i>Offre d'emploi
                 </Link>
                 <Link to="/bourses" onClick={() => setMobileOffresOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-                  <i className="fas fa-graduation-cap mr-2"></i>Bourses d'études
+                  <i className="fas fa-graduation-cap mr-2"></i>Bourse
                 </Link>
                 <Link to="/financements" onClick={() => setMobileOffresOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-                  <i className="fas fa-money-bill-wave mr-2"></i>Financements de projets
+                  <i className="fas fa-money-bill-wave mr-2"></i>Financement
                 </Link>
                 <Link to="/consultations" onClick={() => setMobileOffresOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-                  <i className="fas fa-comments mr-2"></i>Consultations
+                  <i className="fas fa-comments mr-2"></i>Consultation
                 </Link>
               </div>
             )}
@@ -582,10 +585,10 @@ const RecruteurHeader = () => {
             </button>
             {mobileOffersOpen && (
               <div className="ml-4 space-y-0">
-                <Link to="/recruteur/creer-offre" onClick={() => setMobileOffersOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">Emplois/Jobs</Link>
-                <Link to="/recruteur/creer-financement" onClick={() => setMobileOffersOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">Financements de projets</Link>
-                <Link to="/recruteur/creer-consultation" onClick={() => setMobileOffersOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">Consultations</Link>
-                <Link to="/recruteur/creer-bourse" onClick={() => setMobileOffersOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">Bourses d'études</Link>
+                <Link to="/recruteur/creer-offre" onClick={() => setMobileOffersOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">Offre d'emploi</Link>
+                <Link to="/recruteur/creer-bourse" onClick={() => setMobileOffersOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">Bourse</Link>
+                <Link to="/recruteur/creer-financement" onClick={() => setMobileOffersOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">Financement</Link>
+                <Link to="/recruteur/creer-consultation" onClick={() => setMobileOffersOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">Consultation</Link>
               </div>
             )}
           </div>
@@ -601,10 +604,10 @@ const RecruteurHeader = () => {
             </button>
             {mobileManageOpen && (
               <div className="ml-4 space-y-0">
-                <Link to="/recruteur/gestion-offres" onClick={() => setMobileManageOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">Emplois/Jobs</Link>
-                <Link to="/recruteur/gestion-financements" onClick={() => setMobileManageOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">Financements de projets</Link>
-                <Link to="/recruteur/gestion-consultations" onClick={() => setMobileManageOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">Consultations</Link>
-                <Link to="/recruteur/gestion-bourses" onClick={() => setMobileManageOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">Bourses d'études</Link>
+                <Link to="/recruteur/gestion-offres" onClick={() => setMobileManageOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">Offre d'emploi</Link>
+                <Link to="/recruteur/gestion-bourses" onClick={() => setMobileManageOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">Bourse</Link>
+                <Link to="/recruteur/gestion-financements" onClick={() => setMobileManageOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">Financement</Link>
+                <Link to="/recruteur/gestion-consultations" onClick={() => setMobileManageOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">Consultation</Link>
               </div>
             )}
           </div>
@@ -621,10 +624,13 @@ const RecruteurHeader = () => {
             {mobileCandidatureOpen && (
               <div className="ml-4 space-y-0">
                 <Link to="/recruteur/postulations-offres" onClick={() => setMobileCandidatureOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-                  <i className="fas fa-briefcase mr-2"></i>Offres d'emploi
+                  <i className="fas fa-briefcase mr-2"></i>Offre d'emploi
+                </Link>
+                <Link to="/recruteur/postulations-bourses" onClick={() => setMobileCandidatureOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
+                  <i className="fas fa-graduation-cap mr-2"></i>Bourse
                 </Link>
                 <Link to="/recruteur/postulations-financements" onClick={() => setMobileCandidatureOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
-                  <i className="fas fa-money-bill-wave mr-2"></i>Financement de projets
+                  <i className="fas fa-money-bill-wave mr-2"></i>Financement
                 </Link>
                 <Link to="/recruteur/postulations-consultations" onClick={() => setMobileCandidatureOpen(false)} className="block px-3 py-2 text-sm text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-md">
                   <i className="fas fa-comments mr-2"></i>Consultation

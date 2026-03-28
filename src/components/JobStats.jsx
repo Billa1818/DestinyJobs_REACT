@@ -11,22 +11,7 @@ const JobStats = ({ offres }) => {
     rejected: offres.filter(o => o.status === 'REJECTED').length,
     // Seulement les données disponibles dans l'API
     totalApplications: offres.reduce((sum, o) => sum + (o.applications_count || 0), 0),
-    totalViews: offres.reduce((sum, o) => sum + (o.views_count || 0), 0),
-    // Nouvelles statistiques pour les dates limites
-    withDeadline: offres.filter(o => o.application_deadline).length,
-    deadlineSoon: offres.filter(o => {
-      if (!o.application_deadline) return false;
-      const deadline = new Date(o.application_deadline);
-      const now = new Date();
-      const diffDays = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
-      return diffDays <= 30 && diffDays > 0; // Dans les 30 prochains jours
-    }).length,
-    deadlineExpired: offres.filter(o => {
-      if (!o.application_deadline) return false;
-      const deadline = new Date(o.application_deadline);
-      const now = new Date();
-      return deadline < now;
-    }).length
+    totalViews: offres.reduce((sum, o) => sum + (o.views_count || 0), 0)
   };
 
   const statCards = [
@@ -66,18 +51,18 @@ const JobStats = ({ offres }) => {
       bgColor: 'bg-fuchsia-50'
     },
     {
-      title: 'Limite proche (≤30j)',
-      value: stats.deadlineSoon,
-      icon: 'fas fa-exclamation-triangle',
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50'
-    },
-    {
-      title: 'Limite expirée',
-      value: stats.deadlineExpired,
+      title: 'Expirées',
+      value: stats.expired,
       icon: 'fas fa-calendar-times',
       color: 'text-red-600',
       bgColor: 'bg-red-50'
+    },
+    {
+      title: 'Fermées',
+      value: stats.closed,
+      icon: 'fas fa-lock',
+      color: 'text-gray-600',
+      bgColor: 'bg-gray-50'
     }
   ];
 
@@ -149,22 +134,36 @@ const JobStats = ({ offres }) => {
                   </div>
                 </div>
               )}
-              {stats.deadlineExpired > 0 && (
+              {stats.expired > 0 && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Limite expirée</span>
+                  <span className="text-sm text-gray-600">Expirées</span>
                   <div className="flex items-center">
                     <div className="w-20 bg-gray-200 rounded-full h-2 mr-2">
                       <div 
                         className="bg-red-600 h-2 rounded-full" 
-                        style={{ width: `${(stats.deadlineExpired / stats.total) * 100}%` }}
+                        style={{ width: `${(stats.expired / stats.total) * 100}%` }}
                       ></div>
                     </div>
-                    <span className="text-sm font-medium text-gray-900">{stats.deadlineExpired}</span>
+                    <span className="text-sm font-medium text-gray-900">{stats.expired}</span>
                   </div>
                 </div>
               )}
-            </div>
-          </div>
+              {stats.closed > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Fermées</span>
+                  <div className="flex items-center">
+                    <div className="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                      <div 
+                        className="bg-gray-500 h-2 rounded-full" 
+                        style={{ width: `${(stats.closed / stats.total) * 100}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-sm font-medium text-gray-900">{stats.closed}</span>
+                  </div>
+                </div>
+              )}
+              </div>
+              </div>
 
           <div>
             <h3 className="text-sm font-medium text-gray-700 mb-3">Métriques des candidatures</h3>
@@ -190,22 +189,12 @@ const JobStats = ({ offres }) => {
             <p className="text-sm text-fuchsia-800 mb-2">
               <strong>Résumé :</strong> Vous avez créé {stats.total} offre{stats.total > 1 ? 's' : ''} d'emploi au total.
             </p>
-            {stats.deadlineSoon > 0 && (
-              <div className="bg-orange-50 border border-orange-200 rounded-md p-3 mb-2">
-                <div className="flex items-center">
-                  <i className="fas fa-exclamation-triangle text-orange-500 mr-2"></i>
-                  <span className="text-sm text-orange-800 font-medium">
-                    ⚠️ {stats.deadlineSoon} offre{stats.deadlineSoon > 1 ? 's' : ''} avec date limite proche (≤30 jours)
-                  </span>
-                </div>
-              </div>
-            )}
-            {stats.deadlineExpired > 0 && (
+            {stats.expired > 0 && (
               <div className="bg-red-50 border border-red-200 rounded-md p-3">
                 <div className="flex items-center">
                   <i className="fas fa-exclamation-circle text-red-500 mr-2"></i>
                   <span className="text-sm text-red-800 font-medium">
-                    🚨 {stats.deadlineExpired} offre{stats.deadlineExpired > 1 ? 's' : ''} avec date limite expirée
+                    🚨 {stats.expired} offre{stats.expired > 1 ? 's' : ''} expirée{stats.expired > 1 ? 's' : ''}
                   </span>
                 </div>
               </div>

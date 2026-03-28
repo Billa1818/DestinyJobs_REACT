@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const ShareModal = ({ isOpen, onClose, isLoggedIn = false, title = "Partager cette offre" }) => {
+const ShareModal = ({ isOpen, onClose, isLoggedIn = false, title = "Partager cette offre", shareUrl = null }) => {
     const navigate = useNavigate();
     const [useProfileInfo, setUseProfileInfo] = useState(false);
     const [motivationLetter, setMotivationLetter] = useState('');
     const [cvFile, setCvFile] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [copiedLink, setCopiedLink] = useState(false);
+
+    // Utiliser shareUrl si fourni, sinon utiliser window.location.href
+    const urlToShare = shareUrl || window.location.href;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -30,8 +33,7 @@ const ShareModal = ({ isOpen, onClose, isLoggedIn = false, title = "Partager cet
 
     // Copier le lien
     const handleCopyLink = () => {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => {
+        navigator.clipboard.writeText(urlToShare).then(() => {
             setCopiedLink(true);
             setTimeout(() => setCopiedLink(false), 2000);
         });
@@ -39,7 +41,7 @@ const ShareModal = ({ isOpen, onClose, isLoggedIn = false, title = "Partager cet
 
     // Partager sur les réseaux sociaux
     const shareOnNetwork = (platform) => {
-        const url = encodeURIComponent(window.location.href);
+        const url = encodeURIComponent(urlToShare);
         const text = encodeURIComponent(`Découvrez cette offre : ${title}`);
         let shareUrl;
 
@@ -114,7 +116,7 @@ const ShareModal = ({ isOpen, onClose, isLoggedIn = false, title = "Partager cet
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
-                                        value={window.location.href}
+                                        value={urlToShare}
                                         readOnly
                                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-600"
                                     />
